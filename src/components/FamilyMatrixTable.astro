@@ -1,6 +1,7 @@
 ---
 import { ALESSANDRO_DATA, SEBASTIAN_DATA, PARENT_DUTIES } from '../data/schoolData';
 
+const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
 const daysKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 const dayIndex = new Date().getDay();
 const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'monday';
@@ -37,22 +38,45 @@ const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'mond
 
           <!-- Duty Strip -->
           <div class="duty-bar">
-            <span class={`badge ${duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'}`} style="font-size: 0.7rem; padding: 2px 8px;">
-              <span class="lang-it">{duty.parentNameIt.split(' ')[1]} ({duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
-              <span class="lang-en">{duty.parentNameEn.split(' ')[1]} ({duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
-            </span>
-            {duty.afternoonCareIt && (
-              <span class="badge badge-emerald" style="font-size: 0.68rem; padding: 2px 8px;">
-                <span class="lang-it">{duty.afternoonCareIt}</span>
-                <span class="lang-en">{duty.afternoonCareEn}</span>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+              {duty.avatarImg && (
+                <img 
+                  src={`${baseUrl}${duty.avatarImg}`} 
+                  alt="Duty" 
+                  class="w-5 h-5 rounded-full object-cover ring-1 ring-amber-400/50"
+                />
+              )}
+              <span class={`badge ${duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'}`} style="font-size: 0.7rem; padding: 2px 8px;">
+                <span class="lang-it">{duty.parentNameIt.split(' ')[1]} ({duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
+                <span class="lang-en">{duty.parentNameEn.split(' ')[1]} ({duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
               </span>
+            </div>
+            {duty.afternoonCareIt && (
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <img 
+                  src={`${baseUrl}/avatars/avatar_silvana.png`} 
+                  alt="Silvana" 
+                  class="w-4 h-4 rounded-full object-cover ring-1 ring-emerald-400/50"
+                />
+                <span class="badge badge-emerald" style="font-size: 0.68rem; padding: 2px 8px;">
+                  <span class="lang-it">{duty.afternoonCareIt}</span>
+                  <span class="lang-en">{duty.afternoonCareEn}</span>
+                </span>
+              </div>
             )}
           </div>
 
           <!-- Alessandro Block -->
           <div style="padding: 10px; background: rgba(30, 58, 138, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; gap: 6px;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span style="font-size: 0.8rem; font-weight: 900; color: #93c5fd;">👦 Ale (P3)</span>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <img 
+                  src={`${baseUrl}/avatars/avatar_ale.png`} 
+                  alt="Ale" 
+                  class="w-5 h-5 rounded-full object-cover ring-1 ring-blue-400"
+                />
+                <span style="font-size: 0.8rem; font-weight: 900; color: #93c5fd;">Ale (P3)</span>
+              </div>
               <span style="font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: #cbd5e1;">{aleDay.dropOff.split('–')[0].trim()}➔{aleDay.pickUpIt.split(' ')[0]}</span>
             </div>
             
@@ -88,7 +112,14 @@ const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'mond
           <!-- Sebastian Block -->
           <div style="padding: 10px; background: rgba(6, 78, 59, 0.2); display: flex; flex-direction: column; gap: 6px; flex-grow: 1;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span style="font-size: 0.8rem; font-weight: 900; color: #6ee7b7;">🧒 Sebi (P1)</span>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <img 
+                  src={`${baseUrl}/avatars/avatar_sebi.png`} 
+                  alt="Sebi" 
+                  class="w-5 h-5 rounded-full object-cover ring-1 ring-emerald-400"
+                />
+                <span style="font-size: 0.8rem; font-weight: 900; color: #6ee7b7;">Sebi (P1)</span>
+              </div>
               <span style="font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: #cbd5e1;">{sebiDay.dropOff.split('–')[0].trim()}➔{sebiDay.pickUpIt.split(' ')[0]}</span>
             </div>
             

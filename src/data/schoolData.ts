@@ -2,6 +2,7 @@ export interface DutyInfo {
   parent: 'mamma' | 'papa';
   parentNameIt: string;
   parentNameEn: string;
+  avatarImg?: string;
   notesIt: string;
   notesEn: string;
   afternoonCareIt?: string;
@@ -18,6 +19,7 @@ export interface TimeSlot {
   notesIt?: string;
   notesEn?: string;
   isSpecial?: boolean;
+  avatarImg?: string;
 }
 
 export interface ChecklistItem {
@@ -54,7 +56,7 @@ export interface ChildData {
   classTeacher: string;
   avatarEmoji: string;
   avatarBg: string;
-  avatarImg?: string;
+  avatarImg: string;
   pdfUrl: string;
   pdfLabelIt: string;
   pdfLabelEn: string;
@@ -80,6 +82,7 @@ export const PARENT_DUTIES: Record<string, DutyInfo> = {
     parent: 'papa',
     parentNameIt: '🟡 Papà (Riccardo)',
     parentNameEn: '🟡 Dad (Riccardo)',
+    avatarImg: '/avatars/avatar_riccardo.png',
     notesIt: 'Il Papà porta al mattino. Uscita ore 12:30!',
     notesEn: 'Dad handles morning drop-off. Early dismissal at 12:30!',
     afternoonCareIt: '🏠 Pomeriggio con Silvana!',
@@ -89,6 +92,7 @@ export const PARENT_DUTIES: Record<string, DutyInfo> = {
     parent: 'papa',
     parentNameIt: '🟡 Papà (Riccardo)',
     parentNameEn: '🟡 Dad (Riccardo)',
+    avatarImg: '/avatars/avatar_riccardo.png',
     notesIt: 'Il Papà porta a scuola e gestisce il rientro',
     notesEn: 'Dad handles morning drop-off & afternoon pick-up'
   },
@@ -110,7 +114,7 @@ export const ALESSANDRO_DATA: ChildData = {
   classTeacher: 'Herr Marvin Biehl (DE) & Mr Dannie Keates (EN)',
   avatarEmoji: '👦',
   avatarBg: 'bg-gradient-to-br from-blue-500 to-indigo-700',
-  avatarImg: '/avatars/avatar_ale_circle_transparent.png',
+  avatarImg: '/avatars/avatar_ale.png',
   pdfUrl: '/docs/Primary-3-Info-Evening-Tandem.pdf',
   pdfLabelIt: 'Scarica PDF Ufficiale Primary 3 (Info Evening & Orari)',
   pdfLabelEn: 'Download Official Primary 3 PDF (Info Evening & Schedule)',
@@ -230,13 +234,13 @@ export const ALESSANDRO_DATA: ChildData = {
         {
           type: 'backpack',
           when: 'morning',
-          icon: '🏠',
-          categoryLabelIt: 'Pomeriggio',
-          categoryLabelEn: 'Afternoon',
+          icon: '👨‍👦',
+          categoryLabelIt: 'Pranzo Papino',
+          categoryLabelEn: 'Lunch with Dad',
           target: 'parent',
           urgent: true,
-          textIt: 'Uscita ore 12:30: Pranzo con Papà & Pomeriggio con Silvana!',
-          textEn: 'Pick-up at 12:30: Lunch with Dad & Afternoon with Silvana!'
+          textIt: 'Uscita ore 12:30: Pranzo speciale a casa con Papino (Riccardo)!',
+          textEn: 'Pick-up at 12:30: Special lunch at home with Dad (Riccardo)!'
         },
         {
           type: 'homework',
@@ -255,8 +259,8 @@ export const ALESSANDRO_DATA: ChildData = {
         { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
         { time: '10:50 – 11:35', type: 'lesson', subjectIt: 'Enquiry', subjectEn: 'Enquiry', teacher: 'D. Keates', location: 'Classroom P3', notesIt: 'Roman Times & Ecosystems', notesEn: 'Roman Times & Ecosystems' },
         { time: '11:40 – 12:25', type: 'lesson', subjectIt: 'Music (Tedesco)', subjectEn: 'Music (German)', teacher: 'Music Staff', location: 'Music Room', notesIt: 'Canto ed espressione musicale', notesEn: 'Singing & musical expression' },
-        { time: '12:30', type: 'lunch', isSpecial: true, subjectIt: '🏠 12:30 USCITA ANTICIPATA & PRANZO A CASA CON PAPÀ! 👨‍👦‍👦', subjectEn: '🏠 12:30 EARLY FINISH & LUNCH AT HOME WITH DAD! 👨‍👦‍👦', notesIt: 'Nessuna mensa a scuola. Si pranza tutti a casa!', notesEn: 'No school lunch. Family lunch at home!' },
-        { time: '13:50 – 15:55', type: 'afternoon_home', isSpecial: true, subjectIt: '🏠 Pomeriggio a Casa con Silvana & Relax', subjectEn: '🏠 Afternoon at Home with Silvana', notesIt: '16:10–17:25: Ale Drama Club (Simply Theatre Studios Zurigo)', notesEn: '16:10–17:25: Ale Drama Club (Simply Theatre Studios Zurich)' }
+        { time: '12:30', type: 'lunch', isSpecial: true, avatarImg: '/avatars/avatar_riccardo.png', subjectIt: '🏠 12:30 USCITA ANTICIPATA & PRANZO CON PAPINO (Riccardo)! 👨‍👦‍👦', subjectEn: '🏠 12:30 EARLY FINISH & LUNCH WITH DAD (Riccardo)! 👨‍👦‍👦', notesIt: 'Nessuna mensa a scuola. Si torna a casa e si mangia con Papino!', notesEn: 'No school lunch. Head home and eat with Dad!' },
+        { time: '13:50 – 15:55', type: 'afternoon_home', isSpecial: true, avatarImg: '/avatars/avatar_silvana.png', subjectIt: '🏠 Pomeriggio con Silvana (e 16:10 Drama Club)', subjectEn: '🏠 Afternoon with Silvana (and 16:10 Drama Club)', notesIt: '16:10–17:25: Ale Drama Club (Simply Theatre Studios Zurigo)', notesEn: '16:10–17:25: Ale Drama Club (Simply Theatre Studios Zurich)' }
       ]
     },
     thursday: {
@@ -377,7 +381,7 @@ export const SEBASTIAN_DATA: ChildData = {
   classTeacher: 'Ms Faux & Ms Rayment',
   avatarEmoji: '🧒',
   avatarBg: 'bg-gradient-to-br from-emerald-500 to-teal-700',
-  avatarImg: '/avatars/avatar_sebi_circle_transparent.png',
+  avatarImg: '/avatars/avatar_sebi.png',
   pdfUrl: '/docs/Primary-1-Attendance-Tandem.pdf',
   pdfLabelIt: 'Scarica Documento Ufficiale Primary 1 (Attendance & Info)',
   pdfLabelEn: 'Download Official Primary 1 Document (Attendance & Info)',
@@ -497,13 +501,13 @@ export const SEBASTIAN_DATA: ChildData = {
         {
           type: 'backpack',
           when: 'morning',
-          icon: '🏠',
-          categoryLabelIt: 'Pomeriggio',
-          categoryLabelEn: 'Afternoon',
+          icon: '👨‍👦',
+          categoryLabelIt: 'Pranzo Papino',
+          categoryLabelEn: 'Lunch with Dad',
           target: 'parent',
           urgent: true,
-          textIt: 'Uscita ore 12:30: Pranzo con Papà & Pomeriggio con Silvana a casa!',
-          textEn: 'Pick-up at 12:30: Lunch with Dad & Afternoon with Silvana at home!'
+          textIt: 'Uscita ore 12:30: Pranzo speciale a casa con Papino (Riccardo)!',
+          textEn: 'Pick-up at 12:30: Special lunch at home with Dad (Riccardo)!'
         }
       ],
       schedule: [
@@ -512,8 +516,8 @@ export const SEBASTIAN_DATA: ChildData = {
         { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
         { time: '10:50 – 11:35', type: 'lesson', subjectIt: 'Movement & Rhythm', subjectEn: 'Movement & Rhythm', teacher: 'Team P1', location: 'Gym', notesIt: 'Movimento e coordinazione', notesEn: 'Movement & coordination' },
         { time: '11:40 – 12:25', type: 'lesson', subjectIt: 'Singing & Music', subjectEn: 'Singing & Music', teacher: 'Music Staff', location: 'Music Room', notesIt: 'Musica per i più piccoli', notesEn: 'Music and nursery rhymes' },
-        { time: '12:30', type: 'lunch', isSpecial: true, subjectIt: '🏠 12:30 USCITA ANTICIPATA & PRANZO A CASA CON PAPÀ! 👨‍👦‍👦', subjectEn: '🏠 12:30 EARLY FINISH & LUNCH AT HOME WITH DAD! 👨‍👦‍👦', notesIt: 'Nessuna mensa a scuola. Si pranza tutti a casa!', notesEn: 'No school lunch. Family lunch at home!' },
-        { time: '13:50 – 15:55', type: 'afternoon_home', isSpecial: true, subjectIt: '🏠 Pomeriggio a Casa con Silvana & Giochi', subjectEn: '🏠 Afternoon at Home with Silvana', notesIt: 'Pomeriggio tranquillo e giochi educativi', notesEn: 'Afternoon play & activities with Silvana' }
+        { time: '12:30', type: 'lunch', isSpecial: true, avatarImg: '/avatars/avatar_riccardo.png', subjectIt: '🏠 12:30 USCITA ANTICIPATA & PRANZO CON PAPINO (Riccardo)! 👨‍👦‍👦', subjectEn: '🏠 12:30 EARLY FINISH & LUNCH WITH DAD (Riccardo)! 👨‍👦‍👦', notesIt: 'Nessuna mensa a scuola. Si torna a casa e si mangia con Papino!', notesEn: 'No school lunch. Head home and eat with Dad!' },
+        { time: '13:50 – 15:55', type: 'afternoon_home', isSpecial: true, avatarImg: '/avatars/avatar_silvana.png', subjectIt: '🏠 Pomeriggio a Casa con Silvana & Giochi', subjectEn: '🏠 Afternoon at Home with Silvana', notesIt: 'Pomeriggio tranquillo e giochi educativi', notesEn: 'Afternoon play & activities with Silvana' }
       ]
     },
     thursday: {

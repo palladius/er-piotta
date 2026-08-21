@@ -6,6 +6,7 @@ interface Props {
 }
 
 const { child } = Astro.props;
+const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
 const daysKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 const dayIndex = new Date().getDay();
 const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'monday';
@@ -68,15 +69,31 @@ function getTagClass(type: string) {
 
           <!-- Duty Strip -->
           <div class="duty-bar">
-            <span class={`badge ${d.duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'}`} style="font-size: 0.7rem; padding: 2px 8px;">
-              <span class="lang-it">{d.duty.parentNameIt.split(' ')[1]} ({d.duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
-              <span class="lang-en">{d.duty.parentNameEn.split(' ')[1]} ({d.duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
-            </span>
-            {d.duty.afternoonCareIt && (
-              <span class="badge badge-emerald" style="font-size: 0.68rem; padding: 2px 8px;">
-                <span class="lang-it">{d.duty.afternoonCareIt}</span>
-                <span class="lang-en">{d.duty.afternoonCareEn}</span>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+              {d.duty.avatarImg && (
+                <img 
+                  src={`${baseUrl}${d.duty.avatarImg}`} 
+                  alt="Duty" 
+                  class="w-5 h-5 rounded-full object-cover ring-1 ring-amber-400/50"
+                />
+              )}
+              <span class={`badge ${d.duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'}`} style="font-size: 0.7rem; padding: 2px 8px;">
+                <span class="lang-it">{d.duty.parentNameIt.split(' ')[1]} ({d.duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
+                <span class="lang-en">{d.duty.parentNameEn.split(' ')[1]} ({d.duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
               </span>
+            </div>
+            {d.duty.afternoonCareIt && (
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <img 
+                  src={`${baseUrl}/avatars/avatar_silvana.png`} 
+                  alt="Silvana" 
+                  class="w-4 h-4 rounded-full object-cover ring-1 ring-emerald-400/50"
+                />
+                <span class="badge badge-emerald" style="font-size: 0.68rem; padding: 2px 8px;">
+                  <span class="lang-it">{d.duty.afternoonCareIt}</span>
+                  <span class="lang-en">{d.duty.afternoonCareEn}</span>
+                </span>
+              </div>
             )}
           </div>
 
@@ -114,9 +131,18 @@ function getTagClass(type: string) {
                     </span>
                   )}
                 </div>
-                <div class="slot-title">
-                  <span class="lang-it">{s.subjectIt}</span>
-                  <span class="lang-en">{s.subjectEn}</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  {s.avatarImg && (
+                    <img 
+                      src={`${baseUrl}${s.avatarImg}`} 
+                      alt="Avatar" 
+                      class="w-6 h-6 rounded-full object-cover ring-1 ring-amber-400 shadow shrink-0 bg-slate-950"
+                    />
+                  )}
+                  <div class="slot-title">
+                    <span class="lang-it">{s.subjectIt}</span>
+                    <span class="lang-en">{s.subjectEn}</span>
+                  </div>
                 </div>
                 {s.teacher && (
                   <div class="slot-meta">
