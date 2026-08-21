@@ -58,17 +58,16 @@ export interface DayScheduleBlocks {
   extra: ExtraActivity;
 }
 
-export interface WeekendActivity {
+export interface WeekendItem {
+  dayKey: 'saturday' | 'sunday';
   dayNameIt: string;
   dayNameEn: string;
   emoji: string;
   time: string;
-  icon: string;
   titleIt: string;
   titleEn: string;
   notesIt: string;
   notesEn: string;
-  location?: string;
 }
 
 export interface DaySchedule {
@@ -98,7 +97,7 @@ export interface ChildData {
   pdfLabelIt: string;
   pdfLabelEn: string;
   days: Record<string, DaySchedule>;
-  weekend: WeekendActivity[];
+  weekend: WeekendItem[];
 }
 
 export const PARENT_DUTIES: Record<string, DutyInfo> = {
@@ -106,8 +105,8 @@ export const PARENT_DUTIES: Record<string, DutyInfo> = {
     parent: 'mamma',
     parentNameIt: '🟣 Mamma (Kate)',
     parentNameEn: '🟣 Mum (Kate)',
-    notesIt: 'La Mamma porta a scuola e gestisce il rientro',
-    notesEn: 'Mum handles morning drop-off & afternoon pick-up'
+    notesIt: 'La Mamma porta a scuola e gestisce il rientro e le attività (Strong & Piano)',
+    notesEn: 'Mum handles morning drop-off, pick-up and activities (Strong & Piano)'
   },
   tuesday: {
     parent: 'mamma',
@@ -132,15 +131,15 @@ export const PARENT_DUTIES: Record<string, DutyInfo> = {
     parentNameIt: '🟡 Papà (Riccardo)',
     parentNameEn: '🟡 Dad (Riccardo)',
     avatarImg: '/avatars/avatar_riccardo.png',
-    notesIt: 'Il Papà porta a scuola e gestisce il rientro',
-    notesEn: 'Dad handles morning drop-off & afternoon pick-up'
+    notesIt: 'Il Papà porta a scuola e ritira al Tandem alle 18:30',
+    notesEn: 'Dad handles morning drop-off & collects from Tandem at 18:30'
   },
   friday: {
     parent: 'mamma',
     parentNameIt: '🟣 Mamma (Kate)',
     parentNameEn: '🟣 Mum (Kate)',
-    notesIt: 'La Mamma porta a scuola e gestisce il rientro',
-    notesEn: 'Mum handles morning drop-off & afternoon pick-up'
+    notesIt: 'La Mamma porta a scuola e gestisce il rientro e nuoto di Sebi (18:00)',
+    notesEn: 'Mum handles morning drop-off, pick-up and Sebi swimming (18:00)'
   }
 };
 
@@ -157,30 +156,6 @@ export const ALESSANDRO_DATA: ChildData = {
   pdfUrl: '/docs/Primary-3-Info-Evening-Tandem.pdf',
   pdfLabelIt: 'Scarica PDF Ufficiale Primary 3 (Info Evening & Orari)',
   pdfLabelEn: 'Download Official Primary 3 PDF (Info Evening & Schedule)',
-  weekend: [
-    {
-      dayNameIt: 'Sabato',
-      dayNameEn: 'Saturday',
-      emoji: '🎈',
-      time: 'Tutto il giorno',
-      icon: '✨',
-      titleIt: 'Weekend Libero & Tempo in Famiglia',
-      titleEn: 'Free Weekend & Family Time',
-      notesIt: 'Giochi, uscite, sport e relax con mamma e papà',
-      notesEn: 'Games, outings, sports and relax with mum & dad'
-    },
-    {
-      dayNameIt: 'Domenica',
-      dayNameEn: 'Sunday',
-      emoji: '🏊',
-      time: 'Tutto il giorno',
-      icon: '🌊',
-      titleIt: 'Gite, Lago & Limmat',
-      titleEn: 'Day Trips, Lake & Limmat',
-      notesIt: 'Passeggiate e gite al lago di Zurigo',
-      notesEn: 'Walks and trips around Lake Zurich'
-    }
-  ],
   days: {
     monday: {
       dayKey: 'monday',
@@ -245,15 +220,15 @@ export const ALESSANDRO_DATA: ChildData = {
           { time: '15:35 – 15:55', startTime: '15:35', endTime: '15:55', type: 'dismissal', icon: '📝', subjectIt: 'Compiti & Uscita (15:55)', subjectEn: 'Homework & Dismissal (15:55)', teacher: 'M. Biehl', location: 'Aula P3', notesIt: 'Compiti del giorno in tedesco', notesEn: 'Daily homework in German' }
         ],
         extra: {
-          time: '17:30',
-          icon: '🏃',
-          titleIt: 'Rientro con Mamma',
-          titleEn: 'Evening with Mum',
+          time: '16:00 – 17:30',
+          icon: '💪',
+          titleIt: 'Corso STRONG (16:00–17:30)',
+          titleEn: 'STRONG Class (4:00–5:30pm)',
           managedByIt: 'Mamma (Kate)',
           managedByEn: 'Mum (Kate)',
-          notesIt: 'Rientro serale con Kate',
-          notesEn: 'Evening home routine with Kate',
-          hasActivity: false
+          notesIt: 'Alessandro fa il corso STRONG dalle 16:00 alle 17:30 gestito da Kate',
+          notesEn: 'Alessandro has STRONG class from 4:00pm to 5:30pm with Kate',
+          hasActivity: true
         }
       }
     },
@@ -312,11 +287,11 @@ export const ALESSANDRO_DATA: ChildData = {
           time: '16:30',
           icon: '🏠',
           titleIt: 'Rientro autonomo a casa (16:30)',
-          titleEn: 'Kids come home (16:30)',
+          titleEn: 'Kids come home (4:30pm)',
           managedByIt: 'Mamma a casa',
           managedByEn: 'Kate home to manage',
           notesIt: 'I bimbi tornano a casa verso le 16:30',
-          notesEn: 'Kids arrive home around 16:30',
+          notesEn: 'Kids arrive home around 4:30pm',
           hasActivity: true
         }
       }
@@ -393,21 +368,22 @@ export const ALESSANDRO_DATA: ChildData = {
             isSpecial: true,
             icon: '🏠',
             avatarImg: '/avatars/avatar_silvana.png',
-            subjectIt: 'Silvana a Casa (13:30–19:00) · 🎭 16:10 Drama Club',
-            subjectEn: 'Silvana at Home (13:30–19:00) · 🎭 16:10 Drama Club',
-            notesIt: 'Tata Silvana gestisce il pomeriggio e accompagna Ale al Drama Club (16:10–17:25 Simply Theatre Studios Zurigo)',
-            notesEn: 'Silvana manages afternoon and brings Ale to Drama Club (16:10–17:25 Simply Theatre Studios Zurich)'
+            subjectIt: 'Silvana a Casa · 🎭 16:10 Drama Club',
+            subjectEn: 'Silvana at Home · 🎭 4:10pm Drama Club',
+            notesIt: 'Silvana gestisce il pomeriggio e porta Ale al Drama Club (16:10–17:25 Simply Theatre Studios Zurigo)',
+            notesEn: 'Silvana manages the afternoon and takes Ale to Drama Club (4:10–5:25pm Simply Theatre Studios Zurich)'
           }
         ],
         extra: {
-          time: '13:30 – 19:00',
-          icon: '🏠',
-          titleIt: 'Gestione Pomeriggio Integrata con Silvana',
-          titleEn: 'Integrated Afternoon Care with Silvana',
-          managedByIt: 'Silvana (13:30–19:00)',
-          managedByEn: 'Silvana (13:30–19:00)',
-          notesIt: 'Pomeriggio e Drama Club inclusi nella gestione di Silvana',
-          notesEn: 'Afternoon & Drama Club included in Silvana care',
+          time: '16:10 – 17:25',
+          icon: '🎭',
+          titleIt: 'Drama Club (Incluso con Silvana)',
+          titleEn: 'Drama Club (Managed by Silvana)',
+          location: 'Simply Theatre Studios Zurigo',
+          managedByIt: 'Silvana / Papà',
+          managedByEn: 'Silvana / Dad',
+          notesIt: 'Corso di recitazione e teatro in inglese a Zurigo (16:10–17:25)',
+          notesEn: 'English theatre & drama acting studio in Zurich (4:10–5:25pm)',
           hasActivity: false
         }
       }
@@ -480,11 +456,11 @@ export const ALESSANDRO_DATA: ChildData = {
           time: '18:30',
           icon: '🏫',
           titleIt: 'Ritiro Tandem ore 18:30',
-          titleEn: 'Tandem Collect at 18:30',
+          titleEn: 'Tandem Collect at 6:30pm',
           managedByIt: 'Papà (Riccardo)',
           managedByEn: 'Dad (Riccardo)',
           notesIt: 'Papà ritira i bimbi al Tandem alle 18:30',
-          notesEn: 'Dad collects kids from Tandem at 18:30',
+          notesEn: 'Dad collects kids from Tandem at 6:30pm',
           hasActivity: true
         }
       }
@@ -567,7 +543,31 @@ export const ALESSANDRO_DATA: ChildData = {
         }
       }
     }
-  }
+  },
+  weekend: [
+    {
+      dayKey: 'saturday',
+      dayNameIt: 'Sabato',
+      dayNameEn: 'Saturday',
+      emoji: '🌿',
+      time: 'Pomeriggio / Afternoon',
+      titleIt: 'Tempo Libero & Famiglia',
+      titleEn: 'Free Time & Family Play',
+      notesIt: 'Giochi all\'aperto, compiti e relax',
+      notesEn: 'Outdoor games, homework and relaxing'
+    },
+    {
+      dayKey: 'sunday',
+      dayNameIt: 'Domenica',
+      dayNameEn: 'Sunday',
+      emoji: '🌊',
+      time: 'Tutto il giorno / All day',
+      titleIt: 'Gite & Lago di Zurigo (Limmat)',
+      titleEn: 'Day Trips & Zurich Lake / Limmat',
+      notesIt: 'Tempo speciale in famiglia',
+      notesEn: 'Special family time'
+    }
+  ]
 };
 
 export const SEBASTIAN_DATA: ChildData = {
@@ -583,30 +583,6 @@ export const SEBASTIAN_DATA: ChildData = {
   pdfUrl: '/docs/Primary-1-Attendance-Tandem.pdf',
   pdfLabelIt: 'Scarica Documento Ufficiale Primary 1 (Attendance & Info)',
   pdfLabelEn: 'Download Official Primary 1 Document (Attendance & Info)',
-  weekend: [
-    {
-      dayNameIt: 'Sabato',
-      dayNameEn: 'Saturday',
-      emoji: '🐴',
-      time: 'Pomeriggio',
-      icon: '🏇',
-      titleIt: 'Lezione di Cavallo (Equitazione)',
-      titleEn: 'Horse Riding Lesson',
-      notesIt: 'Corso pomeridiano di equitazione e cavallo per Sebi',
-      notesEn: 'Saturday afternoon horse riding lesson for Sebi'
-    },
-    {
-      dayNameIt: 'Domenica',
-      dayNameEn: 'Sunday',
-      emoji: '🎈',
-      time: 'Tutto il giorno',
-      icon: '✨',
-      titleIt: 'Relax & Giochi in Famiglia',
-      titleEn: 'Family Games & Fun',
-      notesIt: 'Passeggiate e gite con la famiglia',
-      notesEn: 'Outings and family time'
-    }
-  ],
   days: {
     monday: {
       dayKey: 'monday',
@@ -658,17 +634,17 @@ export const SEBASTIAN_DATA: ChildData = {
         },
         afternoon: [
           { time: '13:50 – 15:35', startTime: '13:50', endTime: '15:35', type: 'lesson', icon: '📖', subjectIt: 'Storie & Lettura P1', subjectEn: 'Topic & Storytime', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Racconti illustrati & scoperta', notesEn: 'Picture books & discovery' },
-          { time: '15:35 – 15:55', startTime: '15:35', endTime: '15:55', type: 'dismissal', icon: '🎒', subjectIt: 'Zainetti & Uscita (15:55)', subjectEn: 'Wrap-up & Dismissal (15:55)', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Preparazione per le attività serali', notesEn: 'Getting ready for evening activities' }
+          { time: '15:35 – 15:55', startTime: '15:35', endTime: '15:55', type: 'dismissal', icon: '🎒', subjectIt: 'Zainetti & Uscita (15:55)', subjectEn: 'Wrap-up & Dismissal (15:55)', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Preparazione per Strong e Pianoforte', notesEn: 'Getting ready for Strong & Piano' }
         ],
         extra: {
-          time: '17:30 – 18:30',
-          icon: '🎹',
-          titleIt: 'Corso Strong (17:30) + Pianoforte (18:30)',
-          titleEn: 'Strong Finish (17:30) + Piano (18:30)',
+          time: '16:00 – 18:30',
+          icon: '💪🎹',
+          titleIt: 'STRONG (17:30) + Pianoforte (18:30)',
+          titleEn: 'STRONG (5:30pm) + Piano (6:30pm)',
           managedByIt: 'Mamma (Kate)',
           managedByEn: 'Mum (Kate)',
-          notesIt: 'Corso Strong alle 17:30 e poi lezione di pianoforte fino alle 18:30 con Kate',
-          notesEn: 'Strong class at 17:30 and piano lesson finishing at 18:30 with Kate',
+          notesIt: 'Corso Strong fino alle 17:30 e poi lezione di Pianoforte (solo Sebi) fino alle 18:30 con Kate',
+          notesEn: 'STRONG class until 5:30pm then Piano lesson (Sebi only) until 6:30pm with Kate',
           hasActivity: true
         }
       }
@@ -728,11 +704,11 @@ export const SEBASTIAN_DATA: ChildData = {
           time: '16:30',
           icon: '🏠',
           titleIt: 'Rientro a casa (16:30)',
-          titleEn: 'Kids come home (16:30)',
+          titleEn: 'Kids come home (4:30pm)',
           managedByIt: 'Mamma a casa',
           managedByEn: 'Kate home to manage',
           notesIt: 'I bimbi sono a casa alle 16:30',
-          notesEn: 'Kids are home by 16:30',
+          notesEn: 'Kids are home by 4:30pm',
           hasActivity: true
         }
       }
@@ -801,19 +777,19 @@ export const SEBASTIAN_DATA: ChildData = {
             avatarImg: '/avatars/avatar_silvana.png',
             subjectIt: 'Silvana a Casa (13:30–19:00)',
             subjectEn: 'Silvana at Home (13:30–19:00)',
-            notesIt: 'Tata Silvana gestisce l intero pomeriggio a casa, giochi e relax dalle 13:30 alle 19:00',
-            notesEn: 'Silvana manages the entire afternoon at home, play and care from 13:30 to 19:00'
+            notesIt: 'Tata Silvana gestisce il pomeriggio a casa e giochi dalle 13:30 alle 19:00',
+            notesEn: 'Silvana manages afternoon at home & play from 1:30pm to 7:00pm'
           }
         ],
         extra: {
-          time: '13:30 – 19:00',
-          icon: '🏠',
-          titleIt: 'Pomeriggio Integrato con Silvana',
-          titleEn: 'Integrated Afternoon Care with Silvana',
-          managedByIt: 'Silvana (13:30–19:00)',
-          managedByEn: 'Silvana (13:30–19:00)',
-          notesIt: 'Copre l intero pomeriggio fino a sera',
-          notesEn: 'Covers the whole afternoon until evening',
+          time: '16:00',
+          icon: '🎨',
+          titleIt: 'Pomeriggio Giochi (Incluso con Silvana)',
+          titleEn: 'Playtime at home (Managed by Silvana)',
+          managedByIt: 'Silvana',
+          managedByEn: 'Silvana',
+          notesIt: 'Disegno, puzzle e storie a casa con Tata Silvana',
+          notesEn: 'Drawing, puzzles and stories at home with Silvana',
           hasActivity: false
         }
       }
@@ -875,19 +851,19 @@ export const SEBASTIAN_DATA: ChildData = {
           time: '18:30',
           icon: '🏫',
           titleIt: 'Ritiro Tandem ore 18:30',
-          titleEn: 'Tandem Collect at 18:30',
+          titleEn: 'Tandem Collect at 6:30pm',
           managedByIt: 'Papà (Riccardo)',
           managedByEn: 'Dad (Riccardo)',
           notesIt: 'Papà ritira i bimbi al Tandem alle 18:30',
-          notesEn: 'Dad collects kids from Tandem at 18:30',
+          notesEn: 'Dad collects kids from Tandem at 6:30pm',
           hasActivity: true
         }
       }
     },
     friday: {
       dayKey: 'friday',
-      dayNameIt: 'Venerdì (Craft & Weekend)',
-      dayNameEn: 'Friday (Craft & Weekend)',
+      dayNameIt: 'Venerdì (Craft & Nuoto)',
+      dayNameEn: 'Friday (Craft & Swimming)',
       emoji: '🟣',
       dropOff: '08:15 – 08:30',
       pickUpIt: '15:55',
@@ -918,12 +894,13 @@ export const SEBASTIAN_DATA: ChildData = {
         {
           type: 'backpack',
           when: 'morning',
-          icon: '🎒',
-          categoryLabelIt: 'Weekend',
-          categoryLabelEn: 'Weekend',
+          icon: '🏊',
+          categoryLabelIt: 'Sacca Nuoto',
+          categoryLabelEn: 'Swimming Bag',
           target: 'parent',
-          textIt: 'Svuotare e ripulire zainetto per il weekend!',
-          textEn: 'Empty backpack for weekend!'
+          urgent: true,
+          textIt: 'PREPARARE SACCA NUOTO PER STASERA (Costume, cuffia, ciabatte, telo)',
+          textEn: 'PREPARE SWIMMING BAG FOR TONIGHT (Swimsuit, cap, towel)'
         }
       ],
       blocks: {
@@ -945,20 +922,44 @@ export const SEBASTIAN_DATA: ChildData = {
         },
         afternoon: [
           { time: '13:50 – 15:35', startTime: '13:50', endTime: '15:35', type: 'lesson', icon: '🧩', subjectIt: 'Gioco Libero & Costruzioni', subjectEn: 'Free Play & Construction', teacher: 'Team P1', location: 'Play Area', notesIt: 'Costruzioni e creatività', notesEn: 'Building blocks & creativity' },
-          { time: '15:35 – 15:55', startTime: '15:35', endTime: '15:55', type: 'dismissal', icon: '👋', subjectIt: 'Saluto del Venerdì & Uscita (15:55)', subjectEn: 'Weekend Circle & Dismissal (15:55)', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Preparazione per il weekend', notesEn: 'Getting ready for weekend' }
+          { time: '15:35 – 15:55', startTime: '15:35', endTime: '15:55', type: 'dismissal', icon: '👋', subjectIt: 'Saluto del Venerdì & Uscita (15:55)', subjectEn: 'Weekend Circle & Dismissal (15:55)', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Preparazione per il nuoto serale', notesEn: 'Getting ready for evening swimming' }
         ],
         extra: {
           time: '18:00 – 18:30',
           icon: '🏊',
-          titleIt: 'Nuoto di Sebi (18:00–18:30)',
-          titleEn: 'Sebi Swimming (18:00–18:30)',
-          managedByIt: 'Genitori',
-          managedByEn: 'Parents',
-          notesIt: 'Lezione di nuoto del venerdì sera dalle 18:00 alle 18:30',
-          notesEn: 'Friday evening swimming lesson 18:00–18:30',
+          titleIt: 'Nuoto Sebi (18:00–18:30)',
+          titleEn: 'Sebi Swimming (6:00–6:30pm)',
+          managedByIt: 'Mamma (Kate)',
+          managedByEn: 'Mum (Kate)',
+          notesIt: 'Lezione di nuoto di Sebastian dalle 18:00 alle 18:30 con Kate',
+          notesEn: 'Sebastian swimming lesson from 6:00pm to 6:30pm with Kate',
           hasActivity: true
         }
       }
     }
-  }
+  },
+  weekend: [
+    {
+      dayKey: 'saturday',
+      dayNameIt: 'Sabato (Cavallo)',
+      dayNameEn: 'Saturday (Horse Riding)',
+      emoji: '🐴',
+      time: 'Pomeriggio / Afternoon',
+      titleIt: 'Lezione di Cavallo (Equitazione)',
+      titleEn: 'Horse Riding Lesson',
+      notesIt: 'Lezione di equitazione di Sebastian al sabato pomeriggio!',
+      notesEn: 'Sebastian\'s horse riding lesson on Saturday afternoon!'
+    },
+    {
+      dayKey: 'sunday',
+      dayNameIt: 'Domenica',
+      dayNameEn: 'Sunday',
+      emoji: '🌊',
+      time: 'Tutto il giorno / All day',
+      titleIt: 'Gite & Lago di Zurigo (Limmat)',
+      titleEn: 'Day Trips & Zurich Lake / Limmat',
+      notesIt: 'Tempo speciale in famiglia',
+      notesEn: 'Special family time'
+    }
+  ]
 };
