@@ -1,4 +1,4 @@
-/* Er Piotta - Clean Hierarchy Schedule Grid */
+/* Er Piotta - True 2D Matrix Table Grid (Laser Aligned Rows) */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
 
 :root {
@@ -17,6 +17,12 @@
   --text-primary: #ffffff;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
+  
+  --color-amber: #f59e0b;
+  --color-purple: #a855f7;
+  --color-blue: #3b82f6;
+  --color-emerald: #10b981;
+  --color-rose: #f43f5e;
   
   --radius-lg: 20px;
   --radius-md: 14px;
@@ -38,7 +44,7 @@ body {
     radial-gradient(circle at 50% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 45%);
   background-attachment: fixed;
   color: var(--text-primary);
-  line-height: 1.4;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
@@ -96,139 +102,98 @@ html[data-lang="en"] .lang-en-flex {
 }
 
 /* ============================================================
-   GOOGLE CALENDAR 5-COLUMN MATRIX GRID
+   TRUE 2D GRID TABLE (Laser Aligned Rows: 1 Row per Time Section)
    ============================================================ */
-.calendar-wrapper {
+.table-scroll-wrapper {
   overflow-x: auto;
-  padding-bottom: 12px;
+  padding-bottom: 16px;
 }
 
-.calendar-container {
+.table-2d-matrix {
   display: grid;
-  grid-template-columns: 65px repeat(5, minmax(215px, 1fr));
-  gap: 10px;
+  grid-template-columns: 65px repeat(5, minmax(210px, 1fr));
+  gap: 8px 10px;
   min-width: 1140px;
+  align-items: stretch;
 }
 
-/* Left Time Axis Column */
-.time-axis {
+/* Column 1: Time Axis Cells */
+.axis-cell {
   display: flex;
   flex-direction: column;
-  padding-top: 140px; /* Aligns with start of morning schedule */
-  gap: 6px;
-}
-
-.time-axis-label {
+  justify-content: center;
+  align-items: flex-end;
+  padding-right: 8px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-weight: 800;
   color: #64748b;
-  text-align: right;
-  padding-right: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
 }
 
-/* Day Column Container */
-.day-column {
-  display: flex;
-  flex-direction: column;
-  background: rgba(10, 15, 29, 0.95);
+/* ROW 1: Day Header Cells */
+.row-header-cell {
+  background: rgba(22, 31, 56, 0.95);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  gap: 8px;
-  padding-bottom: 8px;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.day-column-today {
-  border-color: rgba(245, 158, 11, 0.8) !important;
-  background: rgba(15, 22, 42, 0.98) !important;
-  box-shadow: 0 0 24px rgba(245, 158, 11, 0.25), 0 0 0 2px rgba(245, 158, 11, 0.5) !important;
-}
-
-/* Column Header */
-.day-column-header {
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   padding: 8px 10px;
-  background: rgba(18, 26, 48, 0.95);
-  border-bottom: 1px solid var(--border-subtle);
   text-align: center;
 }
 
-.day-column-header-today {
+.row-header-today {
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.35)) !important;
-  border-bottom-color: rgba(245, 158, 11, 0.5) !important;
+  border-color: rgba(245, 158, 11, 0.6) !important;
 }
 
-/* Duty Bar */
-.duty-bar {
-  padding: 4px 8px;
-  background: rgba(8, 12, 24, 0.7);
-  border-bottom: 1px solid var(--border-subtle);
+/* ROW 2: Duty Cells */
+.row-duty-cell {
+  background: rgba(8, 12, 24, 0.85);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 5px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  min-height: 44px;
   justify-content: center;
+  gap: 3px;
+  min-height: 48px;
 }
 
-/* ============================================================
-   1. GHOST / TRASPARENZA: ZAINO MATTINA (In cima)
-   ============================================================ */
-.ghost-backpack-card {
-  margin: 0 6px;
-  padding: 5px 8px;
-  border-radius: 8px;
+/* ROW 3: 🎒 Ghost Checklist Cells */
+.row-ghost-checklist {
   background: rgba(255, 255, 255, 0.03);
   border: 1px dashed rgba(56, 189, 248, 0.35);
+  border-radius: 10px;
+  padding: 6px 8px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-height: 52px;
+  gap: 3px;
+  min-height: 90px;
   justify-content: center;
 }
 
-.ghost-header {
-  font-size: 0.58rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #38bdf8;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  opacity: 0.9;
-}
-
-.ghost-row {
+.ghost-checklist-row {
   display: flex;
   align-items: flex-start;
-  gap: 5px;
+  gap: 6px;
   font-size: 0.68rem;
   font-weight: 600;
-  color: #cbd5e1;
-  line-height: 1.2;
+  line-height: 1.25;
+  color: #e2e8f0;
 }
 
-/* ============================================================
-   2. LOOK SOLIDO: MATTINO (08:30 – 12:25)
-   ============================================================ */
-.solid-morning-container {
-  margin: 0 6px;
-  border-radius: 12px;
-  border: 1.5px solid rgba(59, 130, 246, 0.5);
+/* ROW 4: ☀️ Solid Morning Block Cells (Laser Aligned Height) */
+.row-solid-morning {
   background: #0b1120;
+  border: 1.5px solid #2563eb;
+  border-radius: 12px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  height: 290px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  height: 310px; /* Exact uniform height across all 5 columns */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
-.solid-block-header {
+.solid-header {
   padding: 4px 8px;
   font-size: 0.65rem;
   font-weight: 900;
@@ -241,11 +206,21 @@ html[data-lang="en"] .lang-en-flex {
 }
 
 .solid-header-morning {
-  background: #1e3a8a;
-  color: #ffffff;
+  background: linear-gradient(135deg, #1e3a8a, #1e293b);
+  color: #93c5fd;
 }
 
-.solid-slots-inner {
+.solid-header-afternoon {
+  background: linear-gradient(135deg, #581c87, #1e293b);
+  color: #d8b4fe;
+}
+
+.solid-header-extra {
+  background: linear-gradient(135deg, #312e81, #1e293b);
+  color: #c7d2fe;
+}
+
+.solid-slots-container {
   padding: 5px;
   display: flex;
   flex-direction: column;
@@ -254,119 +229,102 @@ html[data-lang="en"] .lang-en-flex {
   justify-content: space-between;
 }
 
-/* ============================================================
-   3. GHOST / TRASPARENZA: PAUSA PRANZO (12:25 – 13:50)
-   ============================================================ */
-/* Mon, Tue, Thu, Fri: Thin, transparent, almost invisible hatched strip */
-.ghost-lunch-strip {
-  margin: 0 6px;
-  border-radius: 8px;
-  padding: 4px 8px;
-  height: 32px; /* Super thin, discrete */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.02),
-    rgba(255, 255, 255, 0.02) 6px,
-    rgba(255, 255, 255, 0.05) 6px,
-    rgba(255, 255, 255, 0.05) 12px
-  );
-  border: 1px dashed rgba(255, 255, 255, 0.18);
-  opacity: 0.55;
-  transition: opacity 0.2s ease;
-}
-
-.ghost-lunch-strip:hover {
-  opacity: 0.9;
-}
-
-/* Mercoledì: SOLID, HIGHLIGHTED, PRANZO CON PAPINO! */
-.solid-lunch-papino {
-  margin: 0 6px;
-  border-radius: 10px;
-  padding: 6px 10px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #d97706, #b45309);
-  border: 1.5px solid #fbbf24;
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
-}
-
-/* ============================================================
-   4. LOOK SOLIDO: POMERIGGIO (13:50 – 15:55)
-   ============================================================ */
-.solid-afternoon-container {
-  margin: 0 6px;
+/* ROW 5: 🍽️ Lunch Ribbon Cells (Uniform Laser Aligned Row Across Mon–Fri) */
+.row-lunch-ribbon {
   border-radius: 12px;
-  border: 1.5px solid rgba(168, 85, 247, 0.5);
-  background: #0b1120;
+  padding: 6px 8px;
+  height: 72px; /* Exact uniform height */
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  height: 180px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-}
-
-.solid-header-afternoon {
-  background: #581c87;
-  color: #ffffff;
-}
-
-/* ============================================================
-   5. GHOST / TRASPARENZA: COMPITI SERA & EXTRA (In fondo)
-   ============================================================ */
-.ghost-evening-card {
-  margin: 0 6px;
-  padding: 5px 8px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px dashed rgba(192, 132, 252, 0.35);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-height: 52px;
   justify-content: center;
 }
 
-.ghost-evening-header {
-  font-size: 0.58rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #c084fc;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  opacity: 0.9;
+.lunch-school-transparent {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(16, 185, 129, 0.06),
+    rgba(16, 185, 129, 0.06) 8px,
+    rgba(6, 78, 59, 0.2) 8px,
+    rgba(6, 78, 59, 0.2) 16px
+  );
+  border: 1px dashed rgba(16, 185, 129, 0.45);
+  backdrop-filter: blur(6px);
 }
 
-/* Solid Lessons inside Morning & Afternoon */
-.slot-solid-card {
-  padding: 5px 7px;
+.lunch-home-papino {
+  background: linear-gradient(135deg, #d97706, #b45309) !important;
+  border: 2px solid #fef08a !important;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4) !important;
+}
+
+/* ROW 6: 🌤️ Solid Afternoon Block Cells (Laser Aligned Height) */
+.row-solid-afternoon {
+  background: #0b1120;
+  border: 1.5px solid #9333ea;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 185px; /* Exact uniform height across all 5 columns */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* ROW 7: ⭐ Extra-Curriculars Cells (Laser Aligned Height) */
+.row-ghost-extra {
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 82px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+.extra-inner-content {
+  padding: 5px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+}
+
+.extra-active-card {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.25));
+  border: 1px dashed rgba(129, 140, 248, 0.6);
+  border-radius: 8px;
+  padding: 4px 6px;
+}
+
+.extra-relax-card {
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px 6px;
+}
+
+/* Individual Slot Cards */
+.slot-card {
+  padding: 4px 6px;
   border-radius: 7px;
+  border: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   gap: 1px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   transition: transform 0.15s ease, filter 0.15s ease;
 }
 
-.slot-solid-card:hover {
+.slot-card:hover {
   transform: translateY(-1px);
   filter: brightness(1.15);
 }
 
-.slot-double-height {
-  min-height: 72px;
+.slot-double-period {
+  min-height: 70px;
   justify-content: center;
 }
 
-.slot-single-height {
-  min-height: 44px;
+.slot-single-period {
+  min-height: 42px;
 }
 
 .slot-time {
@@ -377,7 +335,7 @@ html[data-lang="en"] .lang-en-flex {
 }
 
 .slot-title {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 800;
   color: #ffffff;
   line-height: 1.15;
@@ -385,91 +343,91 @@ html[data-lang="en"] .lang-en-flex {
 
 .slot-meta {
   font-size: 0.62rem;
-  opacity: 0.8;
+  opacity: 0.75;
   line-height: 1.15;
 }
 
 /* Break & Dismissal Slots */
-.slot-break-dashed {
+.slot-break {
   background: repeating-linear-gradient(
     -45deg,
-    rgba(30, 41, 59, 0.5),
-    rgba(30, 41, 59, 0.5) 6px,
-    rgba(51, 65, 85, 0.4) 6px,
-    rgba(51, 65, 85, 0.4) 12px
+    rgba(30, 41, 59, 0.4),
+    rgba(30, 41, 59, 0.4) 6px,
+    rgba(51, 65, 85, 0.3) 6px,
+    rgba(51, 65, 85, 0.3) 12px
   ) !important;
-  border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.15) !important;
   padding: 3px 5px !important;
-  min-height: 28px !important;
+  min-height: 26px !important;
 }
-.slot-break-dashed .slot-title {
+.slot-break .slot-title {
   font-size: 0.68rem !important;
   color: #94a3b8 !important;
 }
 
-.slot-dismissal-solid {
-  background: #1e293b !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  padding: 3px 6px !important;
+.slot-dismissal {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 3px 5px !important;
   min-height: 32px !important;
 }
-.slot-dismissal-solid .slot-title {
+.slot-dismissal .slot-title {
   font-size: 0.68rem !important;
   color: #cbd5e1 !important;
 }
 
-.slot-silvana-home {
-  background: linear-gradient(135deg, #6b21a8, #4c1d95) !important;
-  border: 1.5px solid #c084fc !important;
+.slot-afternoon-silvana {
+  background: linear-gradient(135deg, #581c87, #3b0764) !important;
+  border: 1.5px dashed #c084fc !important;
   height: 100% !important;
   justify-content: center !important;
 }
 
-/* Rich Vibrant Solid Subject Colors */
+/* Subject Colors */
 .subject-deutsch {
-  background: #be123c !important;
-  border: 1px solid #f43f5e !important;
-  color: #ffffff !important;
+  background: rgba(225, 29, 72, 0.22);
+  border-color: rgba(244, 63, 94, 0.5);
+  color: #fecdd3;
 }
 .subject-math {
-  background: #b45309 !important;
-  border: 1px solid #f59e0b !important;
-  color: #ffffff !important;
+  background: rgba(217, 119, 6, 0.22);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fef08a;
 }
 .subject-english {
-  background: #0369a1 !important;
-  border: 1px solid #38bdf8 !important;
-  color: #ffffff !important;
+  background: rgba(14, 165, 233, 0.22);
+  border-color: rgba(56, 189, 248, 0.5);
+  color: #bae6fd;
 }
 .subject-french {
-  background: #047857 !important;
-  border: 1px solid #34d399 !important;
-  color: #ffffff !important;
+  background: rgba(16, 185, 129, 0.22);
+  border-color: rgba(52, 211, 153, 0.5);
+  color: #a7f3d0;
 }
 .subject-sport {
-  background: #1d4ed8 !important;
-  border: 1px solid #60a5fa !important;
-  color: #ffffff !important;
+  background: rgba(59, 130, 246, 0.28);
+  border-color: rgba(96, 165, 250, 0.6);
+  color: #dbeafe;
 }
 .subject-art {
-  background: #7e22ce !important;
-  border: 1px solid #c084fc !important;
-  color: #ffffff !important;
+  background: rgba(168, 85, 247, 0.22);
+  border-color: rgba(192, 132, 252, 0.5);
+  color: #f3e8ff;
 }
 .subject-music {
-  background: #be185d !important;
-  border: 1px solid #f472b6 !important;
-  color: #ffffff !important;
+  background: rgba(236, 72, 153, 0.22);
+  border-color: rgba(244, 114, 182, 0.5);
+  color: #fbcfe8;
 }
 .subject-enquiry {
-  background: #4338ca !important;
-  border: 1px solid #818cf8 !important;
-  color: #ffffff !important;
+  background: rgba(99, 102, 241, 0.22);
+  border-color: rgba(129, 140, 248, 0.5);
+  color: #e0e7ff;
 }
 .subject-default {
-  background: #334155 !important;
-  border: 1px solid #64748b !important;
-  color: #ffffff !important;
+  background: rgba(30, 41, 59, 0.7);
+  border-color: rgba(71, 85, 105, 0.6);
+  color: #e2e8f0;
 }
 
 /* Badges */
