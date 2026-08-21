@@ -16,19 +16,18 @@ function isDoublePeriod(timeStr: string) {
 }
 
 function getSlotClass(slot: any) {
-  if (slot.type === 'break') return 'slot-break';
   if (slot.type === 'dismissal') return 'slot-dismissal';
   if (slot.type === 'afternoon_home') return 'slot-afternoon-silvana';
 
   const s = (slot.subjectIt || '').toLowerCase();
-  if (s.includes('sport') || s.includes('pe') || s.includes('movement')) return 'subject-sport';
-  if (s.includes('deutsch') || s.includes('german')) return 'subject-deutsch';
-  if (s.includes('math') || s.includes('mathe') || s.includes('wochenplan')) return 'subject-math';
-  if (s.includes('english') || s.includes('phonic')) return 'subject-english';
-  if (s.includes('french') || s.includes('français')) return 'subject-french';
-  if (s.includes('art') || s.includes('tessile') || s.includes('craft')) return 'subject-art';
-  if (s.includes('music') || s.includes('singing')) return 'subject-music';
-  if (s.includes('enquiry')) return 'subject-enquiry';
+  if (s.includes('sport') || s.includes('movimento')) return 'subject-sport';
+  if (s.includes('tedesco') || s.includes('german')) return 'subject-deutsch';
+  if (s.includes('matematica') || s.includes('maths') || s.includes('numeri')) return 'subject-math';
+  if (s.includes('inglese') || s.includes('fonetica')) return 'subject-english';
+  if (s.includes('francese') || s.includes('french')) return 'subject-french';
+  if (s.includes('arte') || s.includes('disegno') || s.includes('lavoretti')) return 'subject-art';
+  if (s.includes('musica') || s.includes('canto')) return 'subject-music';
+  if (s.includes('scienze') || s.includes('enquiry') || s.includes('natura')) return 'subject-enquiry';
   return 'subject-default';
 }
 
@@ -142,7 +141,7 @@ function getEveningItems(checklist: ChecklistItem[]) {
          ======================================================== -->
     <div class="axis-cell">
       <span style="color: #93c5fd; font-weight: 900; font-size: 0.72rem;">08:30</span>
-      <span style="color: #94a3b8; font-size: 0.62rem; margin: 40px 0;">10:05 ☕</span>
+      <span style="color: #64748b; font-size: 0.62rem; margin: 40px 0;">10:50</span>
       <span style="color: #93c5fd; font-weight: 900; font-size: 0.72rem;">12:25</span>
     </div>
     {daysKeys.map((key) => {
@@ -159,14 +158,16 @@ function getEveningItems(checklist: ChecklistItem[]) {
           </div>
           <div class="solid-slots-container">
             {b.morning.map((s) => (
-              <div class={`slot-card ${getSlotClass(s)} ${isDoublePeriod(s.time) ? 'slot-double-period' : 'slot-single-period'}`}>
+              <div 
+                class={`slot-card ${getSlotClass(s)} ${isDoublePeriod(s.time) ? 'slot-double-period' : 'slot-single-period'}`}
+                title={`${s.time} · ${s.location ? s.location + ' · ' : ''}${s.teacher ? 'Prof: ' + s.teacher : ''}`}
+              >
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
-                  <span class="slot-time">{s.time}</span>
-                  {s.location && (
-                    <span style="font-size: 0.6rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                      {s.location}
-                    </span>
-                  )}
+                  <!-- Start Time in Bold (full time & classroom in tooltip) -->
+                  <span class="slot-time font-black" style="font-size: 0.72rem; color: #fef08a;">
+                    {s.startTime}
+                  </span>
+                  <span style="font-size: 0.8rem;">{s.icon}</span>
                 </div>
                 <div class="slot-title">
                   <span class="lang-it">{s.subjectIt}</span>
@@ -203,10 +204,10 @@ function getEveningItems(checklist: ChecklistItem[]) {
       const d = child.days[key];
       const b = d.blocks;
       return (
-        <div class={`row-lunch-ribbon ${b.lunch.isSpecial ? 'lunch-home-papino' : 'lunch-school-transparent'}`}>
+        <div class={`row-lunch-ribbon ${b.lunch.isSpecial ? 'lunch-home-papino' : 'lunch-school-transparent'}`} title={`${b.lunch.time} · ${b.lunch.notesIt}`}>
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
-            <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 800; color: #fef08a;">
-              {b.lunch.time}
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 900; color: #fef08a;">
+              {b.lunch.startTime}
             </span>
             <span style="font-size: 0.58rem; font-weight: 800; text-transform: uppercase; opacity: 0.85; color: #cbd5e1;">
               <span class="lang-it">PRANZO</span>
@@ -258,15 +259,18 @@ function getEveningItems(checklist: ChecklistItem[]) {
           </div>
           <div class="solid-slots-container">
             {b.afternoon.map((s) => (
-              <div class={`slot-card ${getSlotClass(s)} ${s.type === 'afternoon_home' ? '' : (isDoublePeriod(s.time) ? 'slot-double-period' : 'slot-single-period')}`}>
+              <div 
+                class={`slot-card ${getSlotClass(s)} ${s.type === 'afternoon_home' ? '' : (isDoublePeriod(s.time) ? 'slot-double-period' : 'slot-single-period')}`}
+                title={`${s.time} · ${s.location ? s.location + ' · ' : ''}${s.teacher ? 'Prof: ' + s.teacher : ''}`}
+              >
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
-                  <span class="slot-time">{s.time}</span>
-                  {s.location && (
-                    <span style="font-size: 0.6rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                      {s.location}
-                    </span>
-                  )}
+                  <!-- Start time in bold -->
+                  <span class="slot-time font-black" style="font-size: 0.72rem; color: #fef08a;">
+                    {s.startTime}
+                  </span>
+                  <span style="font-size: 0.8rem;">{s.icon}</span>
                 </div>
+                
                 <div style="display: flex; align-items: center; gap: 5px;">
                   {s.avatarImg && (
                     <img src={`${baseUrl}${s.avatarImg}`} alt="Silvana" class="w-5 h-5 rounded-full object-cover ring-1 ring-purple-400 shadow shrink-0 bg-slate-950" />
@@ -276,6 +280,7 @@ function getEveningItems(checklist: ChecklistItem[]) {
                     <span class="lang-en">{s.subjectEn}</span>
                   </div>
                 </div>
+
                 {s.teacher && (
                   <div class="slot-meta">
                     <span class="lang-it">Prof: {s.teacher}</span>
