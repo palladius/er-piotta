@@ -22,13 +22,15 @@ const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'mond
             <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 2px;">
               <span style="font-size: 1.25rem;">{aleDay.emoji}</span>
               <strong style="font-size: 1rem; color: #ffffff; text-transform: capitalize;">
-                {aleDay.dayName.split(' ')[0]}
+                <span class="lang-it">{aleDay.dayNameIt.split(' ')[0]}</span>
+                <span class="lang-en">{aleDay.dayNameEn.split(' ')[0]}</span>
               </strong>
             </div>
             
             {isToday && (
               <span style="display: inline-block; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; background: #f59e0b; color: #000000; padding: 1px 8px; border-radius: 9999px; margin-bottom: 2px;">
-                Oggi
+                <span class="lang-it">Oggi</span>
+                <span class="lang-en">Today</span>
               </span>
             )}
           </div>
@@ -36,11 +38,13 @@ const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'mond
           <!-- Duty Strip -->
           <div class="duty-bar">
             <span class={`badge ${duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'}`} style="font-size: 0.7rem; padding: 2px 8px;">
-              {duty.parentName.split(' ')[1]} ({duty.parent === 'mamma' ? 'Kate' : 'Ricc'})
+              <span class="lang-it">{duty.parentNameIt.split(' ')[1]} ({duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
+              <span class="lang-en">{duty.parentNameEn.split(' ')[1]} ({duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
             </span>
-            {duty.afternoonCare && (
+            {duty.afternoonCareIt && (
               <span class="badge badge-emerald" style="font-size: 0.68rem; padding: 2px 8px;">
-                {duty.afternoonCare}
+                <span class="lang-it">{duty.afternoonCareIt}</span>
+                <span class="lang-en">{duty.afternoonCareEn}</span>
               </span>
             )}
           </div>
@@ -49,15 +53,20 @@ const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'mond
           <div style="padding: 10px; background: rgba(30, 58, 138, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; gap: 6px;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <span style="font-size: 0.8rem; font-weight: 900; color: #93c5fd;">👦 Ale (P3)</span>
-              <span style="font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: #cbd5e1;">{aleDay.dropOff.split('–')[0].trim()}➔{aleDay.pickUp.split(' ')[0]}</span>
+              <span style="font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: #cbd5e1;">{aleDay.dropOff.split('–')[0].trim()}➔{aleDay.pickUpIt.split(' ')[0]}</span>
             </div>
             
-            <!-- Ale Gear -->
+            <!-- Ale Checklist -->
             <div style="display: flex; flex-direction: column; gap: 4px;">
-              {aleDay.gearAndDeadlines.map((g) => (
-                <div class={`gear-chip ${g.urgent ? 'gear-chip-urgent' : ''}`} style="padding: 4px 6px; font-size: 0.72rem;">
-                  <span>{g.icon}</span>
-                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{g.text}</span>
+              {aleDay.checklist.map((g) => (
+                <div class={`checklist-chip ${g.urgent ? 'checklist-chip-urgent' : ''}`} style="padding: 4px 6px;">
+                  <div class="checklist-chip-content" style="font-size: 0.7rem;">
+                    <span>{g.icon}</span>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                      <span class="lang-it">{g.textIt}</span>
+                      <span class="lang-en">{g.textEn}</span>
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -65,9 +74,12 @@ const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'mond
             <!-- Ale Schedule -->
             <div style="display: flex; flex-direction: column; gap: 3px; margin-top: 2px;">
               {aleDay.schedule.map((s) => (
-                <div style="font-size: 0.7rem; background: rgba(15, 23, 42, 0.9); padding: 3px 6px; border-radius: 6px; border: 1px solid rgba(59, 130, 246, 0.3); display: flex; justify-content: space-between; gap: 4px; color: #f1f5f9;">
+                <div style={`font-size: 0.7rem; padding: 3px 6px; border-radius: 6px; display: flex; justify-content: space-between; gap: 4px; ${s.type === 'break' ? 'background: rgba(30, 41, 59, 0.5); border: 1px dashed rgba(255, 255, 255, 0.15); color: #94a3b8;' : s.type === 'lunch' ? (s.isSpecial ? 'background: rgba(245, 158, 11, 0.25); border: 1px solid rgba(245, 158, 11, 0.6); color: #fef08a; font-weight: bold;' : 'background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #a7f3d0;') : s.type === 'afternoon_home' ? 'background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); color: #e9d5ff;' : 'background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(59, 130, 246, 0.3); color: #f1f5f9;'}`}>
                   <span style="font-family: 'JetBrains Mono', monospace; color: #fef08a; font-weight: 700;">{s.time.split('–')[0].trim()}</span>
-                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">{s.subject}</span>
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">
+                    <span class="lang-it">{s.subjectIt}</span>
+                    <span class="lang-en">{s.subjectEn}</span>
+                  </span>
                 </div>
               ))}
             </div>
@@ -77,15 +89,20 @@ const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'mond
           <div style="padding: 10px; background: rgba(6, 78, 59, 0.2); display: flex; flex-direction: column; gap: 6px; flex-grow: 1;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <span style="font-size: 0.8rem; font-weight: 900; color: #6ee7b7;">🧒 Sebi (P1)</span>
-              <span style="font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: #cbd5e1;">{sebiDay.dropOff.split('–')[0].trim()}➔{sebiDay.pickUp.split(' ')[0]}</span>
+              <span style="font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: #cbd5e1;">{sebiDay.dropOff.split('–')[0].trim()}➔{sebiDay.pickUpIt.split(' ')[0]}</span>
             </div>
             
-            <!-- Sebi Gear -->
+            <!-- Sebi Checklist -->
             <div style="display: flex; flex-direction: column; gap: 4px;">
-              {sebiDay.gearAndDeadlines.map((g) => (
-                <div class={`gear-chip ${g.urgent ? 'gear-chip-urgent' : ''}`} style="padding: 4px 6px; font-size: 0.72rem;">
-                  <span>{g.icon}</span>
-                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{g.text}</span>
+              {sebiDay.checklist.map((g) => (
+                <div class={`checklist-chip ${g.urgent ? 'checklist-chip-urgent' : ''}`} style="padding: 4px 6px;">
+                  <div class="checklist-chip-content" style="font-size: 0.7rem;">
+                    <span>{g.icon}</span>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                      <span class="lang-it">{g.textIt}</span>
+                      <span class="lang-en">{g.textEn}</span>
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -93,9 +110,12 @@ const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'mond
             <!-- Sebi Schedule -->
             <div style="display: flex; flex-direction: column; gap: 3px; margin-top: 2px;">
               {sebiDay.schedule.map((s) => (
-                <div style="font-size: 0.7rem; background: rgba(15, 23, 42, 0.9); padding: 3px 6px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); display: flex; justify-content: space-between; gap: 4px; color: #f1f5f9;">
+                <div style={`font-size: 0.7rem; padding: 3px 6px; border-radius: 6px; display: flex; justify-content: space-between; gap: 4px; ${s.type === 'break' ? 'background: rgba(30, 41, 59, 0.5); border: 1px dashed rgba(255, 255, 255, 0.15); color: #94a3b8;' : s.type === 'lunch' ? (s.isSpecial ? 'background: rgba(245, 158, 11, 0.25); border: 1px solid rgba(245, 158, 11, 0.6); color: #fef08a; font-weight: bold;' : 'background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #a7f3d0;') : s.type === 'afternoon_home' ? 'background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); color: #e9d5ff;' : 'background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(16, 185, 129, 0.3); color: #f1f5f9;'}`}>
                   <span style="font-family: 'JetBrains Mono', monospace; color: #fef08a; font-weight: 700;">{s.time.split('–')[0].trim()}</span>
-                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">{s.subject}</span>
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">
+                    <span class="lang-it">{s.subjectIt}</span>
+                    <span class="lang-en">{s.subjectEn}</span>
+                  </span>
                 </div>
               ))}
             </div>

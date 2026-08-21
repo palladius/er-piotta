@@ -49,11 +49,48 @@ body {
   min-height: 100vh;
 }
 
-/* Layout Utilities */
-.app-container {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 16px;
+/* ============================================================
+   Bilingual Switcher Rules (IT / EN)
+   ============================================================ */
+html:not([data-lang="en"]) .lang-en,
+html:not([data-lang="en"]) .lang-en-block,
+html:not([data-lang="en"]) .lang-en-flex {
+  display: none !important;
+}
+
+html[data-lang="en"] .lang-it,
+html[data-lang="en"] .lang-it-block,
+html[data-lang="en"] .lang-it-flex {
+  display: none !important;
+}
+
+html[data-lang="en"] .lang-en-block {
+  display: block !important;
+}
+html[data-lang="en"] .lang-en-flex {
+  display: flex !important;
+}
+
+.lang-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  background: transparent;
+  color: #94a3b8;
+}
+
+.lang-toggle-btn.active {
+  background: #1e293b;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Glass Panels */
@@ -69,7 +106,7 @@ body {
 /* 5-Column Timetable Grid */
 .timetable-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(220px, 1fr));
+  grid-template-columns: repeat(5, minmax(210px, 1fr));
   gap: 12px;
   width: 100%;
 }
@@ -80,7 +117,7 @@ body {
     padding-bottom: 12px;
   }
   .timetable-grid {
-    min-width: 1100px;
+    min-width: 1080px;
   }
 }
 
@@ -125,48 +162,79 @@ body {
   gap: 4px;
 }
 
-/* Gear Checklist Box */
-.gear-box {
+/* Checklist Box (Zaino / Compiti / Consegne) */
+.checklist-box {
   padding: 8px 10px;
   background: rgba(15, 23, 42, 0.75);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
 
-.gear-chip {
+.checklist-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.checklist-chip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.tag-backpack {
+  color: #38bdf8;
+}
+.tag-homework {
+  color: #c084fc;
+}
+.tag-deadline {
+  color: #f59e0b;
+}
+
+.checklist-chip-content {
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  font-size: 0.75rem;
+  font-size: 0.73rem;
   font-weight: 600;
   line-height: 1.25;
-  background: rgba(2, 6, 23, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.08);
   color: #e2e8f0;
 }
 
-.gear-chip-urgent {
+.checklist-chip-urgent {
   background: rgba(245, 158, 11, 0.18) !important;
   border-color: rgba(245, 158, 11, 0.5) !important;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.15);
+}
+
+.checklist-chip-urgent .checklist-chip-content {
   color: #fef08a !important;
   font-weight: 700 !important;
 }
 
-/* Lesson Cards in Column */
+/* Time Slot Rows in Column */
 .lessons-container {
-  padding: 10px;
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   flex-grow: 1;
 }
 
-.lesson-chip {
-  padding: 8px 10px;
+.slot-card {
+  padding: 7px 9px;
   border-radius: 10px;
   border: 1px solid var(--border-subtle);
   display: flex;
@@ -175,29 +243,78 @@ body {
   transition: transform 0.15s ease, filter 0.15s ease;
 }
 
-.lesson-chip:hover {
+.slot-card:hover {
   transform: translateY(-1px);
   filter: brightness(1.15);
 }
 
-.lesson-time {
+.slot-time {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 800;
   opacity: 0.85;
 }
 
-.lesson-title {
-  font-size: 0.82rem;
+.slot-title {
+  font-size: 0.8rem;
   font-weight: 800;
   color: #ffffff;
   line-height: 1.2;
 }
 
-.lesson-meta {
-  font-size: 0.7rem;
+.slot-meta {
+  font-size: 0.68rem;
   opacity: 0.75;
   line-height: 1.2;
+}
+
+/* Special Time Slot Types: Break, Lunch, Afternoon Home */
+.slot-break {
+  background: rgba(30, 41, 59, 0.5) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.15) !important;
+  padding: 5px 8px !important;
+}
+.slot-break .slot-title {
+  font-size: 0.72rem !important;
+  color: #94a3b8 !important;
+}
+
+.slot-lunch {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+}
+.slot-lunch .slot-title {
+  color: #a7f3d0 !important;
+  font-weight: 800 !important;
+}
+
+.slot-lunch-home {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.35)) !important;
+  border: 1px solid rgba(245, 158, 11, 0.7) !important;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.2) !important;
+}
+.slot-lunch-home .slot-title {
+  color: #fef08a !important;
+  font-weight: 900 !important;
+}
+
+.slot-afternoon-home {
+  background: rgba(168, 85, 247, 0.15) !important;
+  border: 1px solid rgba(168, 85, 247, 0.4) !important;
+}
+.slot-afternoon-home .slot-title {
+  color: #e9d5ff !important;
+  font-weight: 800 !important;
+}
+
+.slot-dismissal {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 6px 8px !important;
+}
+.slot-dismissal .slot-title {
+  font-size: 0.75rem !important;
+  color: #cbd5e1 !important;
 }
 
 /* Subject Colors */

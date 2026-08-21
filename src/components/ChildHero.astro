@@ -8,23 +8,35 @@ interface Props {
 const { child } = Astro.props;
 const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
 const fullPdfUrl = `${baseUrl}${child.pdfUrl}`;
+const fullAvatarUrl = child.avatarImg ? `${baseUrl}${child.avatarImg}` : null;
 ---
 
 <div class="glass-panel p-3.5 md:p-4 mb-4 flex flex-wrap items-center justify-between gap-3">
-  <!-- Left: Child Info & Teachers -->
+  <!-- Left: Child Avatar + Info & Teachers -->
   <div class="flex items-center space-x-3">
-    <div class={`w-12 h-12 rounded-xl ${child.avatarBg} flex items-center justify-center text-2xl shadow-md ring-2 ${child.id === 'ale' ? 'ring-blue-500/40' : 'ring-emerald-500/40'} shrink-0`}>
-      {child.avatarEmoji}
-    </div>
+    {fullAvatarUrl ? (
+      <img 
+        src={fullAvatarUrl} 
+        alt={child.name} 
+        class="w-14 h-14 rounded-full object-cover shadow-lg ring-2 ring-amber-400/40 shrink-0 bg-slate-900"
+      />
+    ) : (
+      <div class={`w-12 h-12 rounded-xl ${child.avatarBg} flex items-center justify-center text-2xl shadow-md ring-2 ${child.id === 'ale' ? 'ring-blue-500/40' : 'ring-emerald-500/40'} shrink-0`}>
+        {child.avatarEmoji}
+      </div>
+    )}
     <div>
       <div class="flex items-center gap-2">
         <h2 class="text-lg md:text-xl font-black text-white">{child.name}</h2>
         <span class={`badge ${child.id === 'ale' ? 'badge-blue' : 'badge-emerald'}`}>
-          {child.grade}
+          <span class="lang-it">{child.gradeIt}</span>
+          <span class="lang-en">{child.gradeEn}</span>
         </span>
       </div>
       <p class="text-xs text-slate-300">
-        👩‍🏫 Insegnanti: <strong class="text-amber-300">{child.classTeacher}</strong>
+        <span class="lang-it">👩‍🏫 Insegnanti:</span>
+        <span class="lang-en">👩‍🏫 Teachers:</span>
+        <strong class="text-amber-300 ml-1">{child.classTeacher}</strong>
       </p>
     </div>
   </div>
@@ -33,15 +45,18 @@ const fullPdfUrl = `${baseUrl}${child.pdfUrl}`;
   <div class="flex flex-wrap items-center gap-2.5">
     <div class="bg-slate-950/80 px-3 py-1.5 rounded-lg border border-slate-800 text-xs text-slate-300 flex items-center gap-1.5">
       <i class="fa-solid fa-bell text-amber-400"></i>
-      <span>Entrata: <strong class="text-white font-mono">08:15–08:30</strong></span>
+      <span class="lang-it">Entrata: <strong class="text-white font-mono">08:15–08:30</strong></span>
+      <span class="lang-en">Drop-off: <strong class="text-white font-mono">08:15–08:30</strong></span>
     </div>
     <div class="bg-slate-950/80 px-3 py-1.5 rounded-lg border border-slate-800 text-xs text-slate-300 flex items-center gap-1.5">
       <i class="fa-solid fa-clock text-amber-400"></i>
-      <span>Uscita: <strong class="text-white font-mono">15:55</strong> (Mer: <strong class="text-emerald-400 font-mono">12:30</strong>)</span>
+      <span class="lang-it">Uscita: <strong class="text-white font-mono">15:55</strong> (Mer: <strong class="text-emerald-400 font-mono">12:30</strong>)</span>
+      <span class="lang-en">Pick-up: <strong class="text-white font-mono">15:55</strong> (Wed: <strong class="text-emerald-400 font-mono">12:30</strong>)</span>
     </div>
     <a href={fullPdfUrl} download target="_blank" class="btn-download">
       <i class="fa-solid fa-file-pdf"></i>
-      <span>{child.pdfLabel}</span>
+      <span class="lang-it">{child.pdfLabelIt}</span>
+      <span class="lang-en">{child.pdfLabelEn}</span>
     </a>
   </div>
 </div>

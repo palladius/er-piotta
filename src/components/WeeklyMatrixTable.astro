@@ -10,8 +10,13 @@ const daysKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 const dayIndex = new Date().getDay();
 const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'monday';
 
-function getSubjectClass(subject: string) {
-  const s = subject.toLowerCase();
+function getSlotClass(slot: any) {
+  if (slot.type === 'break') return 'slot-break';
+  if (slot.type === 'lunch') return slot.isSpecial ? 'slot-lunch-home' : 'slot-lunch';
+  if (slot.type === 'afternoon_home') return 'slot-afternoon-home';
+  if (slot.type === 'dismissal') return 'slot-dismissal';
+
+  const s = (slot.subjectIt || '').toLowerCase();
   if (s.includes('sport') || s.includes('pe') || s.includes('movement')) return 'subject-sport';
   if (s.includes('deutsch') || s.includes('german')) return 'subject-deutsch';
   if (s.includes('math') || s.includes('mathe') || s.includes('wochenplan')) return 'subject-math';
@@ -21,6 +26,12 @@ function getSubjectClass(subject: string) {
   if (s.includes('music') || s.includes('singing')) return 'subject-music';
   if (s.includes('enquiry')) return 'subject-enquiry';
   return 'subject-default';
+}
+
+function getTagClass(type: string) {
+  if (type === 'backpack') return 'tag-backpack';
+  if (type === 'homework') return 'tag-homework';
+  return 'tag-deadline';
 }
 ---
 
@@ -38,64 +49,86 @@ function getSubjectClass(subject: string) {
             <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 2px;">
               <span style="font-size: 1.25rem;">{d.emoji}</span>
               <strong style="font-size: 1rem; color: #ffffff; text-transform: capitalize;">
-                {d.dayName.split(' ')[0]}
+                <span class="lang-it">{d.dayNameIt.split(' ')[0]}</span>
+                <span class="lang-en">{d.dayNameEn.split(' ')[0]}</span>
               </strong>
             </div>
             
             {isToday && (
               <span style="display: inline-block; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; background: #f59e0b; color: #000000; padding: 1px 8px; border-radius: 9999px; margin-bottom: 2px;">
-                Oggi
+                <span class="lang-it">Oggi</span>
+                <span class="lang-en">Today</span>
               </span>
             )}
 
             <div style="font-size: 0.72rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace;">
-              {d.dropOff.split('–')[0].trim()} ➔ {d.pickUp.split(' ')[0]}
+              {d.dropOff.split('–')[0].trim()} ➔ {d.pickUpIt.split(' ')[0]}
             </div>
           </div>
 
           <!-- Duty Strip -->
           <div class="duty-bar">
             <span class={`badge ${d.duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'}`} style="font-size: 0.7rem; padding: 2px 8px;">
-              {d.duty.parentName.split(' ')[1]} ({d.duty.parent === 'mamma' ? 'Kate' : 'Ricc'})
+              <span class="lang-it">{d.duty.parentNameIt.split(' ')[1]} ({d.duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
+              <span class="lang-en">{d.duty.parentNameEn.split(' ')[1]} ({d.duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
             </span>
-            {d.duty.afternoonCare && (
+            {d.duty.afternoonCareIt && (
               <span class="badge badge-emerald" style="font-size: 0.68rem; padding: 2px 8px;">
-                {d.duty.afternoonCare}
+                <span class="lang-it">{d.duty.afternoonCareIt}</span>
+                <span class="lang-en">{d.duty.afternoonCareEn}</span>
               </span>
             )}
           </div>
 
-          <!-- Cose da Portare (CHECK IN CIMA) -->
-          <div class="gear-box">
-            <div style="font-size: 0.65rem; font-weight: 900; text-transform: uppercase; color: #f59e0b; letter-spacing: 0.05em; display: flex; align-items: center; gap: 4px;">
-              <i class="fa-solid fa-backpack"></i> Check Zaino:
-            </div>
-            {d.gearAndDeadlines.map((g) => (
-              <div class={`gear-chip ${g.urgent ? 'gear-chip-urgent' : ''}`}>
-                <span style="font-size: 0.9rem; flex-shrink: 0;">{g.icon}</span>
-                <span>{g.text}</span>
+          <!-- Cose da Fare & Portare (Checklist) -->
+          <div class="checklist-box">
+            {d.checklist.map((c) => (
+              <div class={`checklist-chip ${c.urgent ? 'checklist-chip-urgent' : ''}`}>
+                <div class={`checklist-chip-header ${getTagClass(c.type)}`}>
+                  <span>
+                    <span class="lang-it">{c.categoryLabelIt}</span>
+                    <span class="lang-en">{c.categoryLabelEn}</span>
+                  </span>
+                  {c.urgent && <span style="color: #f59e0b; font-size: 0.6rem;">⚠️</span>}
+                </div>
+                <div class="checklist-chip-content">
+                  <span style="font-size: 0.85rem; flex-shrink: 0;">{c.icon}</span>
+                  <span>
+                    <span class="lang-it">{c.textIt}</span>
+                    <span class="lang-en">{c.textEn}</span>
+                  </span>
+                </div>
               </div>
             ))}
           </div>
 
-          <!-- Lessons Grid Slots -->
+          <!-- Time Slots Grid (Lezioni + Break + Pranzo Costante + Dismissal) -->
           <div class="lessons-container">
             {d.schedule.map((s) => (
-              <div class={`lesson-chip ${getSubjectClass(s.subject)}`}>
+              <div class={`slot-card ${getSlotClass(s)}`}>
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
-                  <span class="lesson-time">{s.time}</span>
+                  <span class="slot-time">{s.time}</span>
                   {s.location && (
                     <span style="font-size: 0.65rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                       {s.location}
                     </span>
                   )}
                 </div>
-                <div class="lesson-title">{s.subject}</div>
+                <div class="slot-title">
+                  <span class="lang-it">{s.subjectIt}</span>
+                  <span class="lang-en">{s.subjectEn}</span>
+                </div>
                 {s.teacher && (
-                  <div class="lesson-meta">Prof: {s.teacher}</div>
+                  <div class="slot-meta">
+                    <span class="lang-it">Prof: {s.teacher}</span>
+                    <span class="lang-en">Teacher: {s.teacher}</span>
+                  </div>
                 )}
-                {s.notes && (
-                  <div class="lesson-meta" style="font-style: italic; opacity: 0.85;">{s.notes}</div>
+                {(s.notesIt || s.notesEn) && (
+                  <div class="slot-meta" style="font-style: italic; opacity: 0.85;">
+                    <span class="lang-it">{s.notesIt}</span>
+                    <span class="lang-en">{s.notesEn}</span>
+                  </div>
                 )}
               </div>
             ))}

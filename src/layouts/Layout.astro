@@ -11,12 +11,24 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" data-lang="it">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{title} · Er Piotta Tandem IMS</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Instant Lang Initialization to prevent layout flash -->
+  <script is:inline>
+    (function() {
+      const savedLang = localStorage.getItem('er_piotta_lang');
+      if (savedLang === 'en' || (!savedLang && navigator.language.startsWith('en'))) {
+        document.documentElement.setAttribute('data-lang', 'en');
+      } else {
+        document.documentElement.setAttribute('data-lang', 'it');
+      }
+    })();
+  </script>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
 
@@ -34,7 +46,10 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
             <span class="font-extrabold text-lg text-white tracking-tight group-hover:text-amber-400 transition">Er Piotta</span>
             <span class="text-[10px] uppercase font-mono font-bold bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-400/30">Tandem IMS</span>
           </div>
-          <p class="text-[11px] text-slate-400">Guida & Orari Settimanali Carlesso Family</p>
+          <p class="text-[11px] text-slate-400">
+            <span class="lang-it">Guida & Orari Settimanali Carlesso</span>
+            <span class="lang-en">Carlesso Family Weekly Schedule</span>
+          </p>
         </div>
       </a>
 
@@ -52,19 +67,42 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
 
         <a href={`${baseUrl}/famiglia`} class={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition no-underline ${activeTab === 'famiglia' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/30 ring-2 ring-purple-400' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-800'}`}>
           <span class="text-sm">👥</span>
-          <span>Famiglia (Confronto)</span>
+          <span>
+            <span class="lang-it">Famiglia</span>
+            <span class="lang-en">Family</span>
+          </span>
         </a>
       </div>
 
-      <!-- Quick Parent Duty Legend Pill -->
-      <div class="hidden lg:flex items-center space-x-2 text-xs font-bold">
-        <span class="badge badge-purple">
-          <span class="w-2 h-2 rounded-full bg-purple-400"></span> Mamma (Kate): Lun, Mar, Ven
-        </span>
-        <span class="badge badge-amber">
-          <span class="w-2 h-2 rounded-full bg-amber-400"></span> Papà (Ricc): Mer, Gio
-        </span>
+      <!-- Right Controls: Parent Duty Legend + Language Switcher -->
+      <div class="flex items-center gap-3">
+        <!-- Quick Parent Duty Legend Pill -->
+        <div class="hidden xl:flex items-center space-x-2 text-xs font-bold">
+          <span class="badge badge-purple">
+            <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+            <span class="lang-it">Mamma (Kate): Lun, Mar, Ven</span>
+            <span class="lang-en">Mum (Kate): Mon, Tue, Fri</span>
+          </span>
+          <span class="badge badge-amber">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span class="lang-it">Papà (Ricc): Mer, Gio</span>
+            <span class="lang-en">Dad (Ricc): Wed, Thu</span>
+          </span>
+        </div>
+
+        <!-- Language Switcher Pill Toggle -->
+        <div class="bg-slate-900 p-1 rounded-xl border border-slate-800 flex items-center gap-1 shadow-inner" id="lang-switcher">
+          <button type="button" class="lang-toggle-btn active" data-set-lang="it" title="Italiano">
+            <span>🇮🇹</span>
+            <span>IT</span>
+          </button>
+          <button type="button" class="lang-toggle-btn" data-set-lang="en" title="English">
+            <span>🇬🇧</span>
+            <span>EN</span>
+          </button>
+        </div>
       </div>
+
     </div>
   </header>
 
@@ -78,11 +116,17 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     <div class="max-w-[1440px] mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2.5 text-center md:text-left">
       <div class="flex items-center space-x-2">
         <span class="text-amber-400 text-base">🚛</span>
-        <span><strong>Er Piotta</strong> per Riccardo, Kate, Ale e Sebi · Creato da <strong>Ermete Bottazzi</strong></span>
+        <span>
+          <strong>Er Piotta</strong> 
+          <span class="lang-it">per Riccardo, Kate, Ale e Sebi · Creato da <strong>Ermete Bottazzi</strong></span>
+          <span class="lang-en">for Riccardo, Kate, Ale & Sebi · Crafted by <strong>Ermete Bottazzi</strong></span>
+        </span>
       </div>
       <div class="flex flex-wrap items-center justify-center gap-3">
         <a href="tel:0435001030" class="text-slate-300 hover:text-amber-400 flex items-center gap-1.5 no-underline transition">
-          <i class="fa-solid fa-phone text-amber-500"></i> Segreteria: 043 500 10 30
+          <i class="fa-solid fa-phone text-amber-500"></i>
+          <span class="lang-it">Segreteria: 043 500 10 30</span>
+          <span class="lang-en">School Office: 043 500 10 30</span>
         </a>
         <span class="text-slate-700">|</span>
         <a href="tel:0435001099" class="text-slate-300 hover:text-amber-400 flex items-center gap-1.5 no-underline transition">
@@ -91,6 +135,41 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
       </div>
     </div>
   </footer>
+
+  <!-- Language Switcher Script -->
+  <script is:inline>
+    function updateLangButtons(lang) {
+      const itBtn = document.querySelector('[data-set-lang="it"]');
+      const enBtn = document.querySelector('[data-set-lang="en"]');
+      if (itBtn && enBtn) {
+        if (lang === 'en') {
+          itBtn.classList.remove('active');
+          enBtn.classList.add('active');
+        } else {
+          enBtn.classList.remove('active');
+          itBtn.classList.add('active');
+        }
+      }
+    }
+
+    function setLanguage(lang) {
+      document.documentElement.setAttribute('data-lang', lang);
+      localStorage.setItem('er_piotta_lang', lang);
+      updateLangButtons(lang);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const current = document.documentElement.getAttribute('data-lang') || 'it';
+      updateLangButtons(current);
+
+      document.querySelectorAll('[data-set-lang]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const targetLang = btn.getAttribute('data-set-lang');
+          if (targetLang) setLanguage(targetLang);
+        });
+      });
+    });
+  </script>
 
 </body>
 </html>
