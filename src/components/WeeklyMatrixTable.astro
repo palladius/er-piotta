@@ -219,7 +219,7 @@ function getEveningItems(checklist: ChecklistItem[]) {
     })}
 
     <!-- ========================================================
-         ROW 6: 🌤️ SOLID POMERIGGIO (With 3x Silvana Avatar)
+         ROW 6: 🌤️ SOLID POMERIGGIO (With Large Silvana Avatar)
          ======================================================== -->
     <div class="axis-cell">
       <span style="color: #d8b4fe; font-weight: 900; font-size: 0.72rem;">13:50</span>
@@ -241,7 +241,7 @@ function getEveningItems(checklist: ChecklistItem[]) {
           <div class="afternoon-grid-slots">
             {b.afternoon.map((s) => (
               s.type === 'afternoon_home' ? (
-                <!-- Wednesday Silvana Large 3x Avatar Highlight -->
+                <!-- Wednesday Silvana Large Avatar Highlight (13:30 - 19:00) -->
                 <div class="slot-afternoon-silvana-large" title={`${s.time} · ${s.notesIt || ''}`}>
                   {s.avatarImg && (
                     <img src={`${baseUrl}${s.avatarImg}`} alt="Silvana" class="w-12 h-12 rounded-full object-cover ring-2 ring-purple-300 shadow-xl shrink-0 bg-slate-950" />
@@ -252,8 +252,8 @@ function getEveningItems(checklist: ChecklistItem[]) {
                       <span class="lang-en">{s.subjectEn}</span>
                     </div>
                     <div style="font-size: 0.65rem; color: #e9d5ff; opacity: 0.9; margin-top: 2px;">
-                      <span class="lang-it">Tata Silvana a casa</span>
-                      <span class="lang-en">Nanny Silvana at home</span>
+                      <span class="lang-it">Tata Silvana a casa (13:30–19:00)</span>
+                      <span class="lang-en">Nanny Silvana at home (13:30–19:00)</span>
                     </div>
                   </div>
                 </div>
@@ -307,6 +307,12 @@ function getEveningItems(checklist: ChecklistItem[]) {
                   <span class="lang-en">{b.extra.titleEn}</span>
                 </span>
               </div>
+              {b.extra.hasActivity && (
+                <div style="font-size: 0.6rem; color: #cbd5e1; opacity: 0.9; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  <span class="lang-it">{b.extra.notesIt}</span>
+                  <span class="lang-en">{b.extra.notesEn}</span>
+                </div>
+              )}
               {eveningHomework.length > 0 && (
                 <div style="font-size: 0.58rem; color: #fef08a; margin-top: 2px; display: flex; align-items: center; gap: 3px;">
                   <span>🌙</span>

@@ -364,13 +364,13 @@ export const ALESSANDRO_DATA: ChildData = {
         extra: {
           time: '16:10 – 17:25',
           icon: '🎭',
-          titleIt: 'Ale Drama Club (16:10–17:25)',
-          titleEn: 'Ale Drama Club (16:10–17:25)',
-          location: 'Simply Theatre Studios Zurigo',
+          titleIt: '🎭 Drama Club (16:10–17:25)',
+          titleEn: '🎭 Drama Club (16:10–17:25)',
+          location: 'Simply Theatre Studios, Zurigo',
           managedByIt: 'Silvana / Papà',
           managedByEn: 'Silvana / Dad',
-          notesIt: 'Corso di recitazione e teatro in inglese a Zurigo',
-          notesEn: 'English theatre & drama acting studio in Zurich',
+          notesIt: 'Corso di recitazione e teatro per Ale @ Simply Theatre Studios Zurigo',
+          notesEn: 'Drama and theatre acting club for Ale @ Simply Theatre Studios Zurich',
           hasActivity: true
         }
       }
@@ -738,22 +738,22 @@ export const SEBASTIAN_DATA: ChildData = {
             isSpecial: true,
             icon: '🏠',
             avatarImg: '/avatars/avatar_silvana.png',
-            subjectIt: 'Silvana a Casa (13:30–19:00)',
-            subjectEn: 'Silvana at Home (13:30–19:00)',
-            notesIt: 'Tata Silvana gestisce il pomeriggio a casa e giochi dalle 13:30 alle 19:00',
-            notesEn: 'Silvana manages afternoon at home & play from 13:30 to 19:00'
+            subjectIt: 'Tata Silvana a Casa (13:30–19:00)',
+            subjectEn: 'Nanny Silvana at Home (13:30–19:00)',
+            notesIt: 'Pomeriggio e dopo-scuola a casa con Tata Silvana (giochi, merenda e relax)',
+            notesEn: 'Afternoon & after-school at home with Nanny Silvana (play, snack & relax)'
           }
         ],
         extra: {
-          time: '16:00',
-          icon: '🎨',
-          titleIt: 'Pomeriggio Giochi con Silvana & Ale',
-          titleEn: 'Playtime at home with Silvana & Ale',
+          time: '13:30–19:00',
+          icon: '🏠',
+          titleIt: 'Pomeriggio & Sera con Silvana',
+          titleEn: 'Afternoon & Evening with Silvana',
           managedByIt: 'Silvana',
           managedByEn: 'Silvana',
-          notesIt: 'Disegno, puzzle e storie a casa',
-          notesEn: 'Drawing, puzzles and stories at home',
-          hasActivity: true
+          notesIt: 'Tutto il doposcuola fino alle 19:00 è gestito a casa da Silvana',
+          notesEn: 'All after-school until 19:00 is managed at home by Silvana',
+          hasActivity: false
         }
       }
     },
