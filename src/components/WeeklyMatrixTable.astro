@@ -11,10 +11,14 @@ const daysKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 const dayIndex = new Date().getDay();
 const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'monday';
 
+function isDoublePeriod(timeStr: string) {
+  return timeStr.includes('10:05') || timeStr.includes('12:25') || timeStr.includes('15:35');
+}
+
 function getSlotClass(slot: any) {
   if (slot.type === 'break') return 'slot-break';
   if (slot.type === 'dismissal') return 'slot-dismissal';
-  if (slot.type === 'afternoon_home') return 'slot-afternoon-home';
+  if (slot.type === 'afternoon_home') return 'slot-afternoon-silvana';
 
   const s = (slot.subjectIt || '').toLowerCase();
   if (s.includes('sport') || s.includes('pe') || s.includes('movement')) return 'subject-sport';
@@ -35,8 +39,34 @@ function getTagClass(type: string) {
 }
 ---
 
-<div class="timetable-wrapper">
-  <div class="timetable-grid">
+<div class="calendar-wrapper">
+  <div class="calendar-container">
+
+    <!-- 0. Left Time Axis (Google Calendar Style) -->
+    <div class="time-axis hidden md:flex">
+      <!-- Morning Markers -->
+      <div style="height: 295px; display: flex; flex-direction: column; justify-content: space-between; padding: 22px 0 6px 0;">
+        <span class="time-axis-label">08:30</span>
+        <span class="time-axis-label" style="color: #94a3b8;">10:05 ☕</span>
+        <span class="time-axis-label">10:50</span>
+        <span class="time-axis-label">12:25</span>
+      </div>
+
+      <!-- Lunch Marker -->
+      <div style="height: 72px; display: flex; flex-direction: column; justify-content: center;">
+        <span class="time-axis-label" style="color: #f59e0b; font-weight: 900;">12:25 🍽️</span>
+        <span class="time-axis-label" style="color: #64748b; font-size: 0.58rem;">13:50</span>
+      </div>
+
+      <!-- Afternoon Markers -->
+      <div style="height: 185px; display: flex; flex-direction: column; justify-content: space-between; padding: 22px 0 6px 0;">
+        <span class="time-axis-label">13:50</span>
+        <span class="time-axis-label">15:35</span>
+        <span class="time-axis-label" style="color: #38bdf8; font-weight: 900;">15:55 🔔</span>
+      </div>
+    </div>
+
+    <!-- 1-5. Mon to Fri 5 Columns -->
     {daysKeys.map((key) => {
       const d = child.days[key];
       const isToday = key === todayKey;
@@ -45,7 +75,7 @@ function getTagClass(type: string) {
       return (
         <div class={`day-column ${isToday ? 'day-column-today' : ''}`}>
           
-          <!-- 1. Column Day Header -->
+          <!-- Column Day Header -->
           <div class={`day-column-header ${isToday ? 'day-column-header-today' : ''}`}>
             <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 2px;">
               <span style="font-size: 1.25rem;">{d.emoji}</span>
@@ -67,7 +97,7 @@ function getTagClass(type: string) {
             </div>
           </div>
 
-          <!-- 2. Duty Strip -->
+          <!-- Duty Strip -->
           <div class="duty-bar">
             <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
               {d.duty.avatarImg && (
@@ -97,7 +127,7 @@ function getTagClass(type: string) {
             )}
           </div>
 
-          <!-- 3. Checklist (Zaino / Compiti / Consegne) -->
+          <!-- Checklist (Zaino / Compiti / Consegne) -->
           <div class="checklist-box">
             {d.checklist.map((c) => (
               <div class={`checklist-chip ${c.urgent ? 'checklist-chip-urgent' : ''}`}>
@@ -119,23 +149,23 @@ function getTagClass(type: string) {
             ))}
           </div>
 
-          <!-- 4. RETTANGOLONE MATTINA (08:30 - 12:25) -->
-          <div class="macro-block macro-block-morning">
-            <div class="macro-block-header macro-header-morning">
+          <!-- 1. RETTANGOLONE MATTINA (08:30 - 12:25) -->
+          <div class="block-morning-container">
+            <div class="block-header block-header-morning">
               <span>
-                <span class="lang-it">☀️ Mattina</span>
-                <span class="lang-en">☀️ Morning</span>
+                <span class="lang-it">☀️ MATTINO</span>
+                <span class="lang-en">☀️ MORNING</span>
               </span>
               <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; opacity: 0.8;">08:30–12:25</span>
             </div>
             
-            <div class="macro-slots-container">
+            <div class="slots-inner-morning">
               {b.morning.map((s) => (
-                <div class={`slot-card ${getSlotClass(s)}`}>
+                <div class={`slot-card ${getSlotClass(s)} ${isDoublePeriod(s.time) ? 'slot-double-period' : 'slot-single-period'}`}>
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
                     <span class="slot-time">{s.time}</span>
                     {s.location && (
-                      <span style="font-size: 0.65rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      <span style="font-size: 0.62rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                         {s.location}
                       </span>
                     )}
@@ -161,33 +191,35 @@ function getTagClass(type: string) {
             </div>
           </div>
 
-          <!-- 5. RETTANGOLINO PAUSA PRANZO COSTANTE (12:25 - 13:50) -->
-          <div class={`lunch-ribbon-container ${b.lunch.isSpecial ? 'lunch-home-dad' : 'lunch-school'}`}>
+          <!-- 2. RETTANGOLINO PAUSA PRANZO (12:25 - 13:50) TRASPARENZA vs PAPÀ -->
+          <div class={`block-lunch-ribbon ${b.lunch.isSpecial ? 'lunch-home-dad' : 'lunch-school-transparent'}`}>
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
               <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 800; color: #fef08a;">
                 {b.lunch.time}
               </span>
               <span style="font-size: 0.62rem; font-weight: 800; text-transform: uppercase; opacity: 0.85; color: #cbd5e1;">
-                <span class="lang-it">Pausa Pranzo</span>
-                <span class="lang-en">Lunch Break</span>
+                <span class="lang-it">PRANZO</span>
+                <span class="lang-en">LUNCH</span>
               </span>
             </div>
 
             <div style="display: flex; align-items: center; gap: 6px;">
-              {b.lunch.avatarImg && (
+              {b.lunch.avatarImg ? (
                 <img 
                   src={`${baseUrl}${b.lunch.avatarImg}`} 
                   alt="Papino" 
                   class="w-7 h-7 rounded-full object-cover ring-2 ring-amber-400 shadow shrink-0 bg-slate-950"
                 />
+              ) : (
+                <span style="font-size: 1.1rem;">🍽️</span>
               )}
               <div>
-                <div style="font-size: 0.76rem; font-weight: 900; line-height: 1.2; color: #ffffff;">
+                <div style="font-size: 0.74rem; font-weight: 900; line-height: 1.2; color: #ffffff;">
                   <span class="lang-it">{b.lunch.subjectIt}</span>
                   <span class="lang-en">{b.lunch.subjectEn}</span>
                 </div>
                 {(b.lunch.notesIt || b.lunch.notesEn) && (
-                  <div style="font-size: 0.65rem; opacity: 0.85; margin-top: 1px; color: #cbd5e1;">
+                  <div style="font-size: 0.62rem; opacity: 0.85; margin-top: 1px; color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px;">
                     <span class="lang-it">{b.lunch.notesIt}</span>
                     <span class="lang-en">{b.lunch.notesEn}</span>
                   </div>
@@ -196,23 +228,23 @@ function getTagClass(type: string) {
             </div>
           </div>
 
-          <!-- 6. RETTANGOLONE POMERIGGIO (13:50 - 15:55) -->
-          <div class="macro-block macro-block-afternoon">
-            <div class="macro-block-header macro-header-afternoon">
+          <!-- 3. RETTANGOLONE POMERIGGIO (13:50 - 15:55) -->
+          <div class="block-afternoon-container">
+            <div class="block-header block-header-afternoon">
               <span>
-                <span class="lang-it">🌤️ Pomeriggio</span>
-                <span class="lang-en">🌤️ Afternoon</span>
+                <span class="lang-it">🌤️ POMERIGGIO</span>
+                <span class="lang-en">🌤️ AFTERNOON</span>
               </span>
               <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; opacity: 0.8;">13:50–15:55</span>
             </div>
             
-            <div class="macro-slots-container">
+            <div class="slots-inner-afternoon">
               {b.afternoon.map((s) => (
-                <div class={`slot-card ${getSlotClass(s)}`}>
+                <div class={`slot-card ${getSlotClass(s)} ${s.type === 'afternoon_home' ? '' : (isDoublePeriod(s.time) ? 'slot-double-period' : 'slot-single-period')}`}>
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
                     <span class="slot-time">{s.time}</span>
                     {s.location && (
-                      <span style="font-size: 0.65rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      <span style="font-size: 0.62rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                         {s.location}
                       </span>
                     )}

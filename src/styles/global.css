@@ -1,4 +1,4 @@
-/* Er Piotta Core Design System - Premium High-Density Schedule Matrix */
+/* Er Piotta - Calendar Timetable Grid System */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
 
 :root {
@@ -49,9 +49,7 @@ body {
   min-height: 100vh;
 }
 
-/* ============================================================
-   Bilingual Switcher Rules (IT / EN)
-   ============================================================ */
+/* Bilingual Switcher */
 html:not([data-lang="en"]) .lang-en,
 html:not([data-lang="en"]) .lang-en-block,
 html:not([data-lang="en"]) .lang-en-flex {
@@ -103,25 +101,42 @@ html[data-lang="en"] .lang-en-flex {
   box-shadow: 0 12px 36px -6px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.08) inset !important;
 }
 
-/* 5-Column Timetable Grid */
-.timetable-grid {
+/* ============================================================
+   GOOGLE CALENDAR / PROPORTIONAL SCHEDULE GRID
+   ============================================================ */
+.calendar-wrapper {
+  overflow-x: auto;
+  padding-bottom: 12px;
+}
+
+.calendar-container {
   display: grid;
-  grid-template-columns: repeat(5, minmax(220px, 1fr));
-  gap: 12px;
-  width: 100%;
+  grid-template-columns: 70px repeat(5, minmax(210px, 1fr));
+  gap: 10px;
+  min-width: 1140px;
 }
 
-@media (max-width: 1180px) {
-  .timetable-wrapper {
-    overflow-x: auto;
-    padding-bottom: 12px;
-  }
-  .timetable-grid {
-    min-width: 1100px;
-  }
+/* Left Time Axis Column */
+.time-axis {
+  display: flex;
+  flex-direction: column;
+  padding-top: 155px; /* Aligns with start of morning schedule below headers & checklist */
+  gap: 6px;
 }
 
-/* Day Column Card */
+.time-axis-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #64748b;
+  text-align: right;
+  padding-right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Day Column */
 .day-column {
   display: flex;
   flex-direction: column;
@@ -142,7 +157,7 @@ html[data-lang="en"] .lang-en-flex {
 
 /* Column Header */
 .day-column-header {
-  padding: 10px 12px;
+  padding: 8px 10px;
   background: rgba(22, 31, 56, 0.95);
   border-bottom: 1px solid var(--border-subtle);
   text-align: center;
@@ -155,33 +170,36 @@ html[data-lang="en"] .lang-en-flex {
 
 /* Duty Bar */
 .duty-bar {
-  padding: 6px 10px;
+  padding: 5px 8px;
   background: rgba(8, 12, 24, 0.85);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  min-height: 48px;
+  justify-content: center;
 }
 
 /* Checklist Box (Zaino / Compiti / Consegne) */
 .checklist-box {
-  padding: 8px 10px;
-  margin: 0 8px;
+  padding: 6px 8px;
+  margin: 0 6px;
   background: rgba(15, 23, 42, 0.85);
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
+  min-height: 95px;
 }
 
 .checklist-chip {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 5px 8px;
-  border-radius: 8px;
+  padding: 4px 6px;
+  border-radius: 6px;
   background: rgba(2, 6, 23, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -191,7 +209,7 @@ html[data-lang="en"] .lang-en-flex {
   align-items: center;
   justify-content: space-between;
   gap: 4px;
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -204,112 +222,130 @@ html[data-lang="en"] .lang-en-flex {
 .checklist-chip-content {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
-  font-size: 0.72rem;
+  gap: 5px;
+  font-size: 0.68rem;
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.2;
   color: #e2e8f0;
 }
 
 .checklist-chip-urgent {
   background: rgba(245, 158, 11, 0.18) !important;
   border-color: rgba(245, 158, 11, 0.5) !important;
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.15);
 }
-
 .checklist-chip-urgent .checklist-chip-content {
   color: #fef08a !important;
   font-weight: 700 !important;
 }
 
 /* ============================================================
-   3 MACRO-BLOCKS (Mattina, Pranzo Costante, Pomeriggio)
+   3 SECTIONS (MATTINO, PRANZO TRASPARENZA, POMERIGGIO)
    ============================================================ */
 
-/* 1. Rettangolone Mattina */
-.macro-block {
-  margin: 0 8px;
+/* 1. RETTANGOLONE MATTINA */
+.block-morning-container {
+  margin: 0 6px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  background: rgba(15, 23, 42, 0.92);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  height: 295px; /* Fixed height for exact horizontal alignment */
 }
 
-.macro-block-morning {
-  background: rgba(15, 23, 42, 0.92);
-  border-color: rgba(59, 130, 246, 0.35);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-}
-
-.macro-block-header {
-  padding: 6px 10px;
-  font-size: 0.68rem;
+.block-header {
+  padding: 4px 8px;
+  font-size: 0.65rem;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.macro-header-morning {
+.block-header-morning {
   background: linear-gradient(135deg, rgba(30, 58, 138, 0.5), rgba(30, 41, 59, 0.6));
   color: #93c5fd;
 }
 
-.macro-header-afternoon {
+.block-header-afternoon {
   background: linear-gradient(135deg, rgba(88, 28, 135, 0.5), rgba(30, 41, 59, 0.6));
   color: #d8b4fe;
 }
 
-.macro-slots-container {
-  padding: 6px 8px;
+.slots-inner-morning {
+  padding: 5px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
+  flex: 1;
+  justify-content: space-between;
 }
 
-/* 2. RETTANGOLINO PAUSA PRANZO COSTANTE (12:25 - 13:50) */
-.lunch-ribbon-container {
-  margin: 0 8px;
+/* 2. RETTANGOLINO PAUSA PRANZO COSTANTE (CON TRASPARENZA / STRIPES) */
+.block-lunch-ribbon {
+  margin: 0 6px;
   border-radius: 12px;
-  padding: 8px 10px;
+  padding: 6px 8px;
+  height: 72px; /* Exact uniform height across all 5 columns */
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 78px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: transform 0.15s ease;
 }
 
-.lunch-school {
-  background: rgba(6, 78, 59, 0.25);
-  border: 1px solid rgba(16, 185, 129, 0.45);
+/* School Lunch with Transparency / Diagonal Hatching */
+.lunch-school-transparent {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(16, 185, 129, 0.08),
+    rgba(16, 185, 129, 0.08) 10px,
+    rgba(6, 78, 59, 0.22) 10px,
+    rgba(6, 78, 59, 0.22) 20px
+  );
+  border: 1px dashed rgba(16, 185, 129, 0.5);
+  backdrop-filter: blur(8px);
 }
 
+/* Wednesday Home Lunch with Dad */
 .lunch-home-dad {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.35));
-  border: 1px solid rgba(245, 158, 11, 0.75);
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.45));
+  border: 1.5px solid rgba(245, 158, 11, 0.85);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
 }
 
-/* 3. Rettangolone Pomeriggio */
-.macro-block-afternoon {
+/* 3. RETTANGOLONE POMERIGGIO */
+.block-afternoon-container {
+  margin: 0 6px;
+  border-radius: 12px;
+  border: 1px solid rgba(168, 85, 247, 0.35);
   background: rgba(15, 23, 42, 0.92);
-  border-color: rgba(168, 85, 247, 0.35);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 185px; /* Fixed height for exact horizontal alignment */
 }
 
-/* Individual Slot Chips inside Macro Blocks */
+.slots-inner-afternoon {
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  justify-content: space-between;
+}
+
+/* Slot Card with Proportional Heights */
 .slot-card {
-  padding: 6px 8px;
-  border-radius: 8px;
+  padding: 4px 6px;
+  border-radius: 7px;
   border: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   transition: transform 0.15s ease, filter 0.15s ease;
 }
 
@@ -318,45 +354,70 @@ html[data-lang="en"] .lang-en-flex {
   filter: brightness(1.15);
 }
 
+/* Double Period is twice as tall */
+.slot-double-period {
+  min-height: 72px;
+  justify-content: center;
+}
+
+.slot-single-period {
+  min-height: 44px;
+}
+
 .slot-time {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 800;
   opacity: 0.85;
 }
 
 .slot-title {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 800;
   color: #ffffff;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .slot-meta {
-  font-size: 0.66rem;
+  font-size: 0.62rem;
   opacity: 0.75;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
-/* Break & Dismissal Slot Styling */
+/* Break & Dismissal Slots */
 .slot-break {
-  background: rgba(30, 41, 59, 0.4) !important;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(30, 41, 59, 0.4),
+    rgba(30, 41, 59, 0.4) 6px,
+    rgba(51, 65, 85, 0.3) 6px,
+    rgba(51, 65, 85, 0.3) 12px
+  ) !important;
   border: 1px dashed rgba(255, 255, 255, 0.15) !important;
-  padding: 4px 6px !important;
+  padding: 3px 5px !important;
+  min-height: 28px !important;
 }
 .slot-break .slot-title {
-  font-size: 0.7rem !important;
+  font-size: 0.68rem !important;
   color: #94a3b8 !important;
 }
 
 .slot-dismissal {
   background: rgba(15, 23, 42, 0.85) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  padding: 5px 7px !important;
+  padding: 3px 5px !important;
+  min-height: 32px !important;
 }
 .slot-dismissal .slot-title {
-  font-size: 0.73rem !important;
+  font-size: 0.68rem !important;
   color: #cbd5e1 !important;
+}
+
+.slot-afternoon-silvana {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(126, 34, 206, 0.25)) !important;
+  border: 1.5px dashed rgba(168, 85, 247, 0.6) !important;
+  height: 100% !important;
+  justify-content: center !important;
 }
 
 /* Subject Colors */
@@ -410,10 +471,10 @@ html[data-lang="en"] .lang-en-flex {
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
+  gap: 4px;
+  padding: 3px 8px;
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.02em;
   white-space: nowrap;
