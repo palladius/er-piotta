@@ -1,4 +1,4 @@
-/* Er Piotta - 5-Row Complete Calendar Timetable Matrix */
+/* Er Piotta - Clean Hierarchy Schedule Grid */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
 
 :root {
@@ -17,12 +17,6 @@
   --text-primary: #ffffff;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
-  
-  --color-amber: #f59e0b;
-  --color-purple: #a855f7;
-  --color-blue: #3b82f6;
-  --color-emerald: #10b981;
-  --color-rose: #f43f5e;
   
   --radius-lg: 20px;
   --radius-md: 14px;
@@ -44,7 +38,7 @@ body {
     radial-gradient(circle at 50% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 45%);
   background-attachment: fixed;
   color: var(--text-primary);
-  line-height: 1.45;
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
@@ -102,7 +96,7 @@ html[data-lang="en"] .lang-en-flex {
 }
 
 /* ============================================================
-   GOOGLE CALENDAR / PROPORTIONAL SCHEDULE GRID
+   GOOGLE CALENDAR 5-COLUMN MATRIX GRID
    ============================================================ */
 .calendar-wrapper {
   overflow-x: auto;
@@ -111,7 +105,7 @@ html[data-lang="en"] .lang-en-flex {
 
 .calendar-container {
   display: grid;
-  grid-template-columns: 70px repeat(5, minmax(210px, 1fr));
+  grid-template-columns: 65px repeat(5, minmax(215px, 1fr));
   gap: 10px;
   min-width: 1140px;
 }
@@ -120,13 +114,13 @@ html[data-lang="en"] .lang-en-flex {
 .time-axis {
   display: flex;
   flex-direction: column;
-  padding-top: 155px;
+  padding-top: 140px; /* Aligns with start of morning schedule */
   gap: 6px;
 }
 
 .time-axis-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 800;
   color: #64748b;
   text-align: right;
@@ -136,11 +130,11 @@ html[data-lang="en"] .lang-en-flex {
   justify-content: flex-end;
 }
 
-/* Day Column */
+/* Day Column Container */
 .day-column {
   display: flex;
   flex-direction: column;
-  background: rgba(13, 19, 36, 0.92);
+  background: rgba(10, 15, 29, 0.95);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -151,14 +145,14 @@ html[data-lang="en"] .lang-en-flex {
 
 .day-column-today {
   border-color: rgba(245, 158, 11, 0.8) !important;
-  background: rgba(18, 26, 48, 0.98) !important;
+  background: rgba(15, 22, 42, 0.98) !important;
   box-shadow: 0 0 24px rgba(245, 158, 11, 0.25), 0 0 0 2px rgba(245, 158, 11, 0.5) !important;
 }
 
 /* Column Header */
 .day-column-header {
   padding: 8px 10px;
-  background: rgba(22, 31, 56, 0.95);
+  background: rgba(18, 26, 48, 0.95);
   border-bottom: 1px solid var(--border-subtle);
   text-align: center;
 }
@@ -170,110 +164,71 @@ html[data-lang="en"] .lang-en-flex {
 
 /* Duty Bar */
 .duty-bar {
-  padding: 5px 8px;
-  background: rgba(8, 12, 24, 0.85);
+  padding: 4px 8px;
+  background: rgba(8, 12, 24, 0.7);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  min-height: 48px;
+  gap: 2px;
+  min-height: 44px;
   justify-content: center;
 }
 
 /* ============================================================
-   5 EXPLICIT HORIZONTAL ROWS
+   1. GHOST / TRASPARENZA: ZAINO MATTINA (In cima)
    ============================================================ */
-
-/* RIGA 1: ZAINO & COMPITI (Aggregated Single Card) */
-.row-checklist-box {
-  padding: 6px 8px;
+.ghost-backpack-card {
   margin: 0 6px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-height: 95px;
-}
-
-.checklist-group-card {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 5px 7px;
+  padding: 5px 8px;
   border-radius: 8px;
-  background: rgba(2, 6, 23, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(56, 189, 248, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 52px;
+  justify-content: center;
 }
 
-.checklist-group-header {
+.ghost-header {
+  font-size: 0.58rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #38bdf8;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 4px;
-  font-size: 0.62rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  padding-bottom: 2px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  opacity: 0.9;
 }
 
-.tag-backpack { color: #38bdf8; }
-.tag-homework { color: #c084fc; }
-.tag-deadline { color: #f59e0b; }
-
-.checklist-group-items {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding-top: 2px;
-}
-
-.checklist-group-row {
+.ghost-row {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  gap: 5px;
   font-size: 0.68rem;
   font-weight: 600;
-  line-height: 1.25;
-  color: #e2e8f0;
+  color: #cbd5e1;
+  line-height: 1.2;
 }
 
-.checklist-row-icon {
-  font-size: 0.82rem;
-  flex-shrink: 0;
-  margin-top: 0.5px;
-}
-
-.checklist-row-text {
-  flex: 1;
-}
-
-.checklist-group-urgent {
-  background: rgba(245, 158, 11, 0.16) !important;
-  border-color: rgba(245, 158, 11, 0.5) !important;
-}
-.checklist-group-urgent .checklist-group-row {
-  color: #fef08a !important;
-  font-weight: 700 !important;
-}
-
-/* RIGA 2: RETTANGOLONE MATTINA (08:30 - 12:25) */
-.row-morning-container {
+/* ============================================================
+   2. LOOK SOLIDO: MATTINO (08:30 – 12:25)
+   ============================================================ */
+.solid-morning-container {
   margin: 0 6px;
   border-radius: 12px;
-  border: 1px solid rgba(59, 130, 246, 0.35);
-  background: rgba(15, 23, 42, 0.92);
+  border: 1.5px solid rgba(59, 130, 246, 0.5);
+  background: #0b1120;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  height: 295px;
+  height: 290px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
-.block-header {
+.solid-block-header {
   padding: 4px 8px;
   font-size: 0.65rem;
   font-weight: 900;
@@ -282,25 +237,15 @@ html[data-lang="en"] .lang-en-flex {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.block-header-morning {
-  background: linear-gradient(135deg, rgba(30, 58, 138, 0.5), rgba(30, 41, 59, 0.6));
-  color: #93c5fd;
+.solid-header-morning {
+  background: #1e3a8a;
+  color: #ffffff;
 }
 
-.block-header-afternoon {
-  background: linear-gradient(135deg, rgba(88, 28, 135, 0.5), rgba(30, 41, 59, 0.6));
-  color: #d8b4fe;
-}
-
-.block-header-extra {
-  background: linear-gradient(135deg, rgba(67, 56, 202, 0.5), rgba(15, 23, 42, 0.8));
-  color: #c7d2fe;
-}
-
-.slots-inner-morning {
+.solid-slots-inner {
   padding: 5px;
   display: flex;
   flex-direction: column;
@@ -309,115 +254,118 @@ html[data-lang="en"] .lang-en-flex {
   justify-content: space-between;
 }
 
-/* RIGA 3: RETTANGOLINO PAUSA PRANZO COSTANTE (12:25 - 13:50) */
-.row-lunch-ribbon {
+/* ============================================================
+   3. GHOST / TRASPARENZA: PAUSA PRANZO (12:25 – 13:50)
+   ============================================================ */
+/* Mon, Tue, Thu, Fri: Thin, transparent, almost invisible hatched strip */
+.ghost-lunch-strip {
   margin: 0 6px;
-  border-radius: 12px;
-  padding: 6px 8px;
-  height: 72px;
+  border-radius: 8px;
+  padding: 4px 8px;
+  height: 32px; /* Super thin, discrete */
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.lunch-school-transparent {
+  align-items: center;
+  justify-content: space-between;
   background: repeating-linear-gradient(
     45deg,
-    rgba(16, 185, 129, 0.08),
-    rgba(16, 185, 129, 0.08) 10px,
-    rgba(6, 78, 59, 0.22) 10px,
-    rgba(6, 78, 59, 0.22) 20px
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.02) 6px,
+    rgba(255, 255, 255, 0.05) 6px,
+    rgba(255, 255, 255, 0.05) 12px
   );
-  border: 1px dashed rgba(16, 185, 129, 0.5);
-  backdrop-filter: blur(8px);
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
 }
 
-.lunch-home-dad {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.45));
-  border: 1.5px solid rgba(245, 158, 11, 0.85);
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
+.ghost-lunch-strip:hover {
+  opacity: 0.9;
 }
 
-/* RIGA 4: RETTANGOLONE POMERIGGIO (13:50 - 15:55) */
-.row-afternoon-container {
+/* Mercoledì: SOLID, HIGHLIGHTED, PRANZO CON PAPINO! */
+.solid-lunch-papino {
+  margin: 0 6px;
+  border-radius: 10px;
+  padding: 6px 10px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #d97706, #b45309);
+  border: 1.5px solid #fbbf24;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+}
+
+/* ============================================================
+   4. LOOK SOLIDO: POMERIGGIO (13:50 – 15:55)
+   ============================================================ */
+.solid-afternoon-container {
   margin: 0 6px;
   border-radius: 12px;
-  border: 1px solid rgba(168, 85, 247, 0.35);
-  background: rgba(15, 23, 42, 0.92);
+  border: 1.5px solid rgba(168, 85, 247, 0.5);
+  background: #0b1120;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  height: 185px;
+  height: 180px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
-.slots-inner-afternoon {
-  padding: 5px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-  justify-content: space-between;
+.solid-header-afternoon {
+  background: #581c87;
+  color: #ffffff;
 }
 
-/* RIGA 5: RETTANGOLO EXTRA-CURRICULARI & DOPO SCUOLA (16:00+) */
-.row-extra-container {
+/* ============================================================
+   5. GHOST / TRASPARENZA: COMPITI SERA & EXTRA (In fondo)
+   ============================================================ */
+.ghost-evening-card {
   margin: 0 6px;
-  border-radius: 12px;
-  border: 1px solid rgba(99, 102, 241, 0.35);
-  background: rgba(15, 23, 42, 0.92);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-height: 82px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-}
-
-.extra-card-content {
-  padding: 6px 8px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(192, 132, 252, 0.35);
   display: flex;
   flex-direction: column;
   gap: 2px;
-  flex: 1;
+  min-height: 52px;
   justify-content: center;
 }
 
-.extra-has-activity {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.25));
-  border: 1px dashed rgba(129, 140, 248, 0.6);
-  border-radius: 8px;
-  padding: 5px 7px;
+.ghost-evening-header {
+  font-size: 0.58rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #c084fc;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0.9;
 }
 
-.extra-relax {
-  background: rgba(30, 41, 59, 0.3);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+/* Solid Lessons inside Morning & Afternoon */
+.slot-solid-card {
   padding: 5px 7px;
-}
-
-/* Slot Card with Proportional Heights */
-.slot-card {
-  padding: 4px 6px;
   border-radius: 7px;
-  border: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   gap: 1px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   transition: transform 0.15s ease, filter 0.15s ease;
 }
 
-.slot-card:hover {
+.slot-solid-card:hover {
   transform: translateY(-1px);
   filter: brightness(1.15);
 }
 
-.slot-double-period {
+.slot-double-height {
   min-height: 72px;
   justify-content: center;
 }
 
-.slot-single-period {
+.slot-single-height {
   min-height: 44px;
 }
 
@@ -429,7 +377,7 @@ html[data-lang="en"] .lang-en-flex {
 }
 
 .slot-title {
-  font-size: 0.74rem;
+  font-size: 0.76rem;
   font-weight: 800;
   color: #ffffff;
   line-height: 1.15;
@@ -437,91 +385,91 @@ html[data-lang="en"] .lang-en-flex {
 
 .slot-meta {
   font-size: 0.62rem;
-  opacity: 0.75;
+  opacity: 0.8;
   line-height: 1.15;
 }
 
 /* Break & Dismissal Slots */
-.slot-break {
+.slot-break-dashed {
   background: repeating-linear-gradient(
     -45deg,
-    rgba(30, 41, 59, 0.4),
-    rgba(30, 41, 59, 0.4) 6px,
-    rgba(51, 65, 85, 0.3) 6px,
-    rgba(51, 65, 85, 0.3) 12px
+    rgba(30, 41, 59, 0.5),
+    rgba(30, 41, 59, 0.5) 6px,
+    rgba(51, 65, 85, 0.4) 6px,
+    rgba(51, 65, 85, 0.4) 12px
   ) !important;
-  border: 1px dashed rgba(255, 255, 255, 0.15) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.2) !important;
   padding: 3px 5px !important;
   min-height: 28px !important;
 }
-.slot-break .slot-title {
+.slot-break-dashed .slot-title {
   font-size: 0.68rem !important;
   color: #94a3b8 !important;
 }
 
-.slot-dismissal {
-  background: rgba(15, 23, 42, 0.85) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  padding: 3px 5px !important;
+.slot-dismissal-solid {
+  background: #1e293b !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  padding: 3px 6px !important;
   min-height: 32px !important;
 }
-.slot-dismissal .slot-title {
+.slot-dismissal-solid .slot-title {
   font-size: 0.68rem !important;
   color: #cbd5e1 !important;
 }
 
-.slot-afternoon-silvana {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(126, 34, 206, 0.25)) !important;
-  border: 1.5px dashed rgba(168, 85, 247, 0.6) !important;
+.slot-silvana-home {
+  background: linear-gradient(135deg, #6b21a8, #4c1d95) !important;
+  border: 1.5px solid #c084fc !important;
   height: 100% !important;
   justify-content: center !important;
 }
 
-/* Subject Colors */
+/* Rich Vibrant Solid Subject Colors */
 .subject-deutsch {
-  background: rgba(225, 29, 72, 0.22);
-  border-color: rgba(244, 63, 94, 0.5);
-  color: #fecdd3;
+  background: #be123c !important;
+  border: 1px solid #f43f5e !important;
+  color: #ffffff !important;
 }
 .subject-math {
-  background: rgba(217, 119, 6, 0.22);
-  border-color: rgba(245, 158, 11, 0.5);
-  color: #fef08a;
+  background: #b45309 !important;
+  border: 1px solid #f59e0b !important;
+  color: #ffffff !important;
 }
 .subject-english {
-  background: rgba(14, 165, 233, 0.22);
-  border-color: rgba(56, 189, 248, 0.5);
-  color: #bae6fd;
+  background: #0369a1 !important;
+  border: 1px solid #38bdf8 !important;
+  color: #ffffff !important;
 }
 .subject-french {
-  background: rgba(16, 185, 129, 0.22);
-  border-color: rgba(52, 211, 153, 0.5);
-  color: #a7f3d0;
+  background: #047857 !important;
+  border: 1px solid #34d399 !important;
+  color: #ffffff !important;
 }
 .subject-sport {
-  background: rgba(59, 130, 246, 0.28);
-  border-color: rgba(96, 165, 250, 0.6);
-  color: #dbeafe;
+  background: #1d4ed8 !important;
+  border: 1px solid #60a5fa !important;
+  color: #ffffff !important;
 }
 .subject-art {
-  background: rgba(168, 85, 247, 0.22);
-  border-color: rgba(192, 132, 252, 0.5);
-  color: #f3e8ff;
+  background: #7e22ce !important;
+  border: 1px solid #c084fc !important;
+  color: #ffffff !important;
 }
 .subject-music {
-  background: rgba(236, 72, 153, 0.22);
-  border-color: rgba(244, 114, 182, 0.5);
-  color: #fbcfe8;
+  background: #be185d !important;
+  border: 1px solid #f472b6 !important;
+  color: #ffffff !important;
 }
 .subject-enquiry {
-  background: rgba(99, 102, 241, 0.22);
-  border-color: rgba(129, 140, 248, 0.5);
-  color: #e0e7ff;
+  background: #4338ca !important;
+  border: 1px solid #818cf8 !important;
+  color: #ffffff !important;
 }
 .subject-default {
-  background: rgba(30, 41, 59, 0.7);
-  border-color: rgba(71, 85, 105, 0.6);
-  color: #e2e8f0;
+  background: #334155 !important;
+  border: 1px solid #64748b !important;
+  color: #ffffff !important;
 }
 
 /* Badges */

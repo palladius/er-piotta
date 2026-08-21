@@ -7,24 +7,12 @@ const daysKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 const dayIndex = new Date().getDay();
 const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'monday';
 
-function groupChecklist(items: ChecklistItem[]) {
-  const groups: { [key: string]: { type: string; categoryLabelIt: string; categoryLabelEn: string; items: ChecklistItem[]; urgent: boolean } } = {};
-  
-  for (const item of items) {
-    const key = item.type;
-    if (!groups[key]) {
-      groups[key] = {
-        type: item.type,
-        categoryLabelIt: item.categoryLabelIt,
-        categoryLabelEn: item.categoryLabelEn,
-        items: [],
-        urgent: false
-      };
-    }
-    groups[key].items.push(item);
-    if (item.urgent) groups[key].urgent = true;
-  }
-  return Object.values(groups);
+function getBackpackItems(checklist: ChecklistItem[]) {
+  return checklist.filter(c => c.type === 'backpack');
+}
+
+function getEveningItems(checklist: ChecklistItem[]) {
+  return checklist.filter(c => c.type === 'homework' || c.type === 'deadline');
 }
 ---
 
@@ -35,8 +23,11 @@ function groupChecklist(items: ChecklistItem[]) {
       const sebiDay = SEBASTIAN_DATA.days[key];
       const duty = PARENT_DUTIES[key];
       const isToday = key === todayKey;
-      const aleGrouped = groupChecklist(aleDay.checklist);
-      const sebiGrouped = groupChecklist(sebiDay.checklist);
+
+      const aleBackpack = getBackpackItems(aleDay.checklist);
+      const sebiBackpack = getBackpackItems(sebiDay.checklist);
+      const aleEvening = getEveningItems(aleDay.checklist);
+      const sebiEvening = getEveningItems(sebiDay.checklist);
 
       return (
         <div class={`day-column ${isToday ? 'day-column-today' : ''}`}>
@@ -89,134 +80,126 @@ function groupChecklist(items: ChecklistItem[]) {
             )}
           </div>
 
-          <!-- Alessandro Block -->
-          <div style="padding: 8px; background: rgba(30, 58, 138, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; gap: 5px; margin: 0 6px; border-radius: 10px;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div style="display: flex; align-items: center; gap: 5px;">
-                <img 
-                  src={`${baseUrl}/avatars/avatar_ale.png`} 
-                  alt="Ale" 
-                  class="w-5 h-5 rounded-full object-cover ring-1 ring-blue-400"
-                />
-                <span style="font-size: 0.78rem; font-weight: 900; color: #93c5fd;">Ale (P3)</span>
-              </div>
-              <span style="font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: #cbd5e1;">{aleDay.dropOff.split('–')[0].trim()}➔{aleDay.pickUpIt.split(' ')[0]}</span>
+          <!-- 1. GHOST: ZAINO MATTINA FAMIGLIA -->
+          <div class="ghost-backpack-card">
+            <div class="ghost-header">
+              <span>🎒</span>
+              <span class="lang-it">ZAINI MATTINO</span>
+              <span class="lang-en">MORNING BAGS</span>
             </div>
-            
-            <!-- Ale Aggregated Checklist -->
-            <div style="display: flex; flex-direction: column; gap: 3px;">
-              {aleGrouped.map((group) => (
-                <div class={`checklist-group-card ${group.urgent ? 'checklist-group-urgent' : ''}`} style="padding: 3px 5px;">
-                  <div class="checklist-group-items">
-                    {group.items.map((item) => (
-                      <div class="checklist-group-row" style="font-size: 0.65rem;">
-                        <span class="checklist-row-icon">{item.icon}</span>
-                        <span class="checklist-row-text">
-                          <span class="lang-it">{item.textIt}</span>
-                          <span class="lang-en">{item.textEn}</span>
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+            <!-- Ale -->
+            <div class="ghost-row" style="font-size: 0.65rem;">
+              <span style="color: #93c5fd; font-weight: 800;">Ale:</span>
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+                {aleBackpack.map(i => i.textIt).join(', ')}
+              </span>
+            </div>
+            <!-- Sebi -->
+            <div class="ghost-row" style="font-size: 0.65rem;">
+              <span style="color: #6ee7b7; font-weight: 800;">Sebi:</span>
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+                {sebiBackpack.map(i => i.textIt).join(', ')}
+              </span>
+            </div>
+          </div>
+
+          <!-- 2. SOLIDO: MATTINO CONFRONTO -->
+          <div class="solid-morning-container">
+            <div class="solid-block-header solid-header-morning">
+              <span>☀️ MATTINO</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;">08:30–12:25</span>
             </div>
 
-            <!-- Ale Schedule Summary -->
-            <div style="display: flex; flex-direction: column; gap: 2px; margin-top: 2px;">
-              {aleDay.blocks.morning.map((s) => (
-                <div style={`font-size: 0.68rem; padding: 2px 5px; border-radius: 4px; display: flex; justify-content: space-between; gap: 4px; ${s.type === 'break' ? 'background: rgba(30, 41, 59, 0.4); border: 1px dashed rgba(255, 255, 255, 0.15); color: #94a3b8;' : 'background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(59, 130, 246, 0.3); color: #f1f5f9;'}`}>
-                  <span style="font-family: 'JetBrains Mono', monospace; color: #fef08a; font-weight: 700;">{s.time.split('–')[0].trim()}</span>
-                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">
-                    <span class="lang-it">{s.subjectIt}</span>
-                    <span class="lang-en">{s.subjectEn}</span>
-                  </span>
+            <div class="solid-slots-inner">
+              <!-- Ale morning -->
+              <div style="background: rgba(30, 58, 138, 0.4); border: 1px solid #3b82f6; border-radius: 6px; padding: 4px 6px;">
+                <div style="font-size: 0.72rem; font-weight: 900; color: #93c5fd; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
+                  <img src={`${baseUrl}/avatars/avatar_ale.png`} class="w-4 h-4 rounded-full" alt="Ale" />
+                  <span>Ale (P3)</span>
                 </div>
-              ))}
-              <!-- Lunch -->
-              <div style={`font-size: 0.68rem; padding: 3px 5px; border-radius: 4px; display: flex; justify-content: space-between; gap: 4px; font-weight: bold; ${aleDay.blocks.lunch.isSpecial ? 'background: rgba(245, 158, 11, 0.25); border: 1px solid rgba(245, 158, 11, 0.6); color: #fef08a;' : 'background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #a7f3d0;'}`}>
-                <span style="font-family: 'JetBrains Mono', monospace;">{aleDay.blocks.lunch.time}</span>
-                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                  <span class="lang-it">{aleDay.blocks.lunch.subjectIt}</span>
-                  <span class="lang-en">{aleDay.blocks.lunch.subjectEn}</span>
-                </span>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  {aleDay.blocks.morning.map(s => (
+                    <div style="font-size: 0.65rem; display: flex; justify-content: space-between; color: #f1f5f9;">
+                      <span style="color: #fef08a; font-family: 'JetBrains Mono', monospace;">{s.time.split('–')[0].trim()}</span>
+                      <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{s.subjectIt}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <!-- Afternoon -->
-              {aleDay.blocks.afternoon.map((s) => (
-                <div style={`font-size: 0.68rem; padding: 2px 5px; border-radius: 4px; display: flex; justify-content: space-between; gap: 4px; ${s.type === 'afternoon_home' ? 'background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); color: #e9d5ff;' : 'background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(59, 130, 246, 0.3); color: #f1f5f9;'}`}>
-                  <span style="font-family: 'JetBrains Mono', monospace; color: #fef08a; font-weight: 700;">{s.time.split('–')[0].trim()}</span>
-                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">
-                    <span class="lang-it">{s.subjectIt}</span>
-                    <span class="lang-en">{s.subjectEn}</span>
-                  </span>
+
+              <!-- Sebi morning -->
+              <div style="background: rgba(6, 78, 59, 0.4); border: 1px solid #10b981; border-radius: 6px; padding: 4px 6px;">
+                <div style="font-size: 0.72rem; font-weight: 900; color: #6ee7b7; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
+                  <img src={`${baseUrl}/avatars/avatar_sebi.png`} class="w-4 h-4 rounded-full" alt="Sebi" />
+                  <span>Sebi (P1)</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  {sebiDay.blocks.morning.map(s => (
+                    <div style="font-size: 0.65rem; display: flex; justify-content: space-between; color: #f1f5f9;">
+                      <span style="color: #fef08a; font-family: 'JetBrains Mono', monospace;">{s.time.split('–')[0].trim()}</span>
+                      <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{s.subjectIt}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. PAUSA PRANZO (12:25 – 13:50) -->
+          {aleDay.blocks.lunch.isSpecial ? (
+            <div class="solid-lunch-papino">
+              <img src={`${baseUrl}/avatars/avatar_riccardo.png`} class="w-8 h-8 rounded-full ring-2 ring-amber-300 bg-slate-950" alt="Papino" />
+              <div style="overflow: hidden;">
+                <div style="font-size: 0.74rem; font-weight: 900; color: #ffffff;">🏠 12:30 PRANZO CON PAPINO!</div>
+                <div style="font-size: 0.62rem; color: #fef08a;">Uscita anticipata per entrambi</div>
+              </div>
+            </div>
+          ) : (
+            <div class="ghost-lunch-strip">
+              <span style="font-size: 0.65rem; color: #94a3b8;">🍽️ 12:25–13:50 Mensa a Scuola (Entrambi)</span>
+              <span style="font-size: 0.58rem; color: #64748b;">85m</span>
+            </div>
+          )}
+
+          <!-- 4. SOLIDO: POMERIGGIO CONFRONTO -->
+          <div class="solid-afternoon-container">
+            <div class="solid-block-header solid-header-afternoon">
+              <span>🌤️ POMERIGGIO</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;">13:50–15:55</span>
+            </div>
+
+            <div class="solid-slots-inner">
+              {aleDay.blocks.afternoon.map(s => (
+                <div style={`font-size: 0.68rem; padding: 4px 6px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; ${s.type === 'afternoon_home' ? 'background: #581c87; border: 1px solid #c084fc; color: #ffffff;' : 'background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.15); color: #f1f5f9;'}`}>
+                  <span style="font-family: 'JetBrains Mono', monospace; color: #fef08a;">{s.time.split('–')[0].trim()}</span>
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700;">{s.subjectIt}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <!-- Sebastian Block -->
-          <div style="padding: 8px; background: rgba(6, 78, 59, 0.2); display: flex; flex-direction: column; gap: 5px; margin: 0 6px; border-radius: 10px; flex-grow: 1;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div style="display: flex; align-items: center; gap: 5px;">
-                <img 
-                  src={`${baseUrl}/avatars/avatar_sebi.png`} 
-                  alt="Sebi" 
-                  class="w-5 h-5 rounded-full object-cover ring-1 ring-emerald-400"
-                />
-                <span style="font-size: 0.78rem; font-weight: 900; color: #6ee7b7;">Sebi (P1)</span>
-              </div>
-              <span style="font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: #cbd5e1;">{sebiDay.dropOff.split('–')[0].trim()}➔{sebiDay.pickUpIt.split(' ')[0]}</span>
+          <!-- 5. GHOST: COMPITI SERA & EXTRA -->
+          <div class="ghost-evening-card">
+            <div class="ghost-evening-header">
+              <span>🌙</span>
+              <span>EXTRA & COMPITI</span>
             </div>
-            
-            <!-- Sebi Aggregated Checklist -->
-            <div style="display: flex; flex-direction: column; gap: 3px;">
-              {sebiGrouped.map((group) => (
-                <div class={`checklist-group-card ${group.urgent ? 'checklist-group-urgent' : ''}`} style="padding: 3px 5px;">
-                  <div class="checklist-group-items">
-                    {group.items.map((item) => (
-                      <div class="checklist-group-row" style="font-size: 0.65rem;">
-                        <span class="checklist-row-icon">{item.icon}</span>
-                        <span class="checklist-row-text">
-                          <span class="lang-it">{item.textIt}</span>
-                          <span class="lang-en">{item.textEn}</span>
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <!-- Sebi Schedule Summary -->
-            <div style="display: flex; flex-direction: column; gap: 2px; margin-top: 2px;">
-              {sebiDay.blocks.morning.map((s) => (
-                <div style={`font-size: 0.68rem; padding: 2px 5px; border-radius: 4px; display: flex; justify-content: space-between; gap: 4px; ${s.type === 'break' ? 'background: rgba(30, 41, 59, 0.4); border: 1px dashed rgba(255, 255, 255, 0.15); color: #94a3b8;' : 'background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(16, 185, 129, 0.3); color: #f1f5f9;'}`}>
-                  <span style="font-family: 'JetBrains Mono', monospace; color: #fef08a; font-weight: 700;">{s.time.split('–')[0].trim()}</span>
-                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">
-                    <span class="lang-it">{s.subjectIt}</span>
-                    <span class="lang-en">{s.subjectEn}</span>
-                  </span>
-                </div>
-              ))}
-              <!-- Lunch -->
-              <div style={`font-size: 0.68rem; padding: 3px 5px; border-radius: 4px; display: flex; justify-content: space-between; gap: 4px; font-weight: bold; ${sebiDay.blocks.lunch.isSpecial ? 'background: rgba(245, 158, 11, 0.25); border: 1px solid rgba(245, 158, 11, 0.6); color: #fef08a;' : 'background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #a7f3d0;'}`}>
-                <span style="font-family: 'JetBrains Mono', monospace;">{sebiDay.blocks.lunch.time}</span>
-                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                  <span class="lang-it">{sebiDay.blocks.lunch.subjectIt}</span>
-                  <span class="lang-en">{sebiDay.blocks.lunch.subjectEn}</span>
+            {aleDay.blocks.extra.hasActivity && (
+              <div class="ghost-row" style="color: #93c5fd; font-size: 0.65rem;">
+                <span>{aleDay.blocks.extra.icon}</span>
+                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+                  {aleDay.blocks.extra.titleIt}
                 </span>
               </div>
-              <!-- Afternoon -->
-              {sebiDay.blocks.afternoon.map((s) => (
-                <div style={`font-size: 0.68rem; padding: 2px 5px; border-radius: 4px; display: flex; justify-content: space-between; gap: 4px; ${s.type === 'afternoon_home' ? 'background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); color: #e9d5ff;' : 'background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(16, 185, 129, 0.3); color: #f1f5f9;'}`}>
-                  <span style="font-family: 'JetBrains Mono', monospace; color: #fef08a; font-weight: 700;">{s.time.split('–')[0].trim()}</span>
-                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">
-                    <span class="lang-it">{s.subjectIt}</span>
-                    <span class="lang-en">{s.subjectEn}</span>
-                  </span>
-                </div>
-              ))}
-            </div>
+            )}
+            {sebiDay.blocks.extra.hasActivity && (
+              <div class="ghost-row" style="color: #6ee7b7; font-size: 0.65rem;">
+                <span>{sebiDay.blocks.extra.icon}</span>
+                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+                  {sebiDay.blocks.extra.titleIt}
+                </span>
+              </div>
+            )}
           </div>
 
         </div>

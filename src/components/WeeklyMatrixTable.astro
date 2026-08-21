@@ -15,10 +15,10 @@ function isDoublePeriod(timeStr: string) {
   return timeStr.includes('10:05') || timeStr.includes('12:25') || timeStr.includes('15:35');
 }
 
-function getSlotClass(slot: any) {
-  if (slot.type === 'break') return 'slot-break';
-  if (slot.type === 'dismissal') return 'slot-dismissal';
-  if (slot.type === 'afternoon_home') return 'slot-afternoon-silvana';
+function getSubjectClass(slot: any) {
+  if (slot.type === 'break') return 'slot-break-dashed';
+  if (slot.type === 'dismissal') return 'slot-dismissal-solid';
+  if (slot.type === 'afternoon_home') return 'slot-silvana-home';
 
   const s = (slot.subjectIt || '').toLowerCase();
   if (s.includes('sport') || s.includes('pe') || s.includes('movement')) return 'subject-sport';
@@ -32,41 +32,22 @@ function getSlotClass(slot: any) {
   return 'subject-default';
 }
 
-function getTagClass(type: string) {
-  if (type === 'backpack') return 'tag-backpack';
-  if (type === 'homework') return 'tag-homework';
-  return 'tag-deadline';
+function getBackpackItems(checklist: ChecklistItem[]) {
+  return checklist.filter(c => c.type === 'backpack');
 }
 
-// Group checklist items by category / type
-function groupChecklist(items: ChecklistItem[]) {
-  const groups: { [key: string]: { type: string; categoryLabelIt: string; categoryLabelEn: string; items: ChecklistItem[]; urgent: boolean } } = {};
-  
-  for (const item of items) {
-    const key = item.type;
-    if (!groups[key]) {
-      groups[key] = {
-        type: item.type,
-        categoryLabelIt: item.categoryLabelIt,
-        categoryLabelEn: item.categoryLabelEn,
-        items: [],
-        urgent: false
-      };
-    }
-    groups[key].items.push(item);
-    if (item.urgent) groups[key].urgent = true;
-  }
-  return Object.values(groups);
+function getEveningHomeworkItems(checklist: ChecklistItem[]) {
+  return checklist.filter(c => c.type === 'homework' || c.type === 'deadline');
 }
 ---
 
 <div class="calendar-wrapper">
   <div class="calendar-container">
 
-    <!-- 0. Left Time Axis (Google Calendar Style) -->
+    <!-- Left Time Axis (Google Calendar Style) -->
     <div class="time-axis hidden md:flex">
       <!-- Morning Markers -->
-      <div style="height: 295px; display: flex; flex-direction: column; justify-content: space-between; padding: 22px 0 6px 0;">
+      <div style="height: 290px; display: flex; flex-direction: column; justify-content: space-between; padding: 20px 0 4px 0;">
         <span class="time-axis-label">08:30</span>
         <span class="time-axis-label" style="color: #94a3b8;">10:05 ☕</span>
         <span class="time-axis-label">10:50</span>
@@ -74,36 +55,35 @@ function groupChecklist(items: ChecklistItem[]) {
       </div>
 
       <!-- Lunch Marker -->
-      <div style="height: 72px; display: flex; flex-direction: column; justify-content: center;">
+      <div style="height: 48px; display: flex; flex-direction: column; justify-content: center;">
         <span class="time-axis-label" style="color: #f59e0b; font-weight: 900;">12:25 🍽️</span>
-        <span class="time-axis-label" style="color: #64748b; font-size: 0.58rem;">13:50</span>
       </div>
 
       <!-- Afternoon Markers -->
-      <div style="height: 185px; display: flex; flex-direction: column; justify-content: space-between; padding: 22px 0 6px 0;">
+      <div style="height: 180px; display: flex; flex-direction: column; justify-content: space-between; padding: 20px 0 4px 0;">
         <span class="time-axis-label">13:50</span>
         <span class="time-axis-label">15:35</span>
         <span class="time-axis-label" style="color: #38bdf8; font-weight: 900;">15:55 🔔</span>
       </div>
 
-      <!-- Extra-Curricular Marker -->
-      <div style="height: 82px; display: flex; flex-direction: column; justify-content: center;">
-        <span class="time-axis-label" style="color: #a5b4fc; font-weight: 900;">16:00+ 🎭</span>
-        <span class="time-axis-label" style="color: #64748b; font-size: 0.58rem;">18:30</span>
+      <!-- Evening Extra Marker -->
+      <div style="height: 52px; display: flex; flex-direction: column; justify-content: center;">
+        <span class="time-axis-label" style="color: #c084fc; font-weight: 900;">16:00+ 🌙</span>
       </div>
     </div>
 
-    <!-- 1-5. Mon to Fri 5 Columns -->
+    <!-- 5 Columns: Lunedì -> Venerdì -->
     {daysKeys.map((key) => {
       const d = child.days[key];
       const isToday = key === todayKey;
       const b = d.blocks;
-      const groupedChecklist = groupChecklist(d.checklist);
+      const backpackItems = getBackpackItems(d.checklist);
+      const eveningItems = getEveningHomeworkItems(d.checklist);
 
       return (
         <div class={`day-column ${isToday ? 'day-column-today' : ''}`}>
           
-          <!-- Column Day Header -->
+          <!-- Column Header -->
           <div class={`day-column-header ${isToday ? 'day-column-header-today' : ''}`}>
             <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 2px;">
               <span style="font-size: 1.25rem;">{d.emoji}</span>
@@ -155,50 +135,41 @@ function groupChecklist(items: ChecklistItem[]) {
             )}
           </div>
 
-          <!-- RIGA 1: ZAINO & COMPITI (Aggregated Single Card per Category) -->
-          <div class="row-checklist-box">
-            {groupedChecklist.map((group) => (
-              <div class={`checklist-group-card ${group.urgent ? 'checklist-group-urgent' : ''}`}>
-                <div class={`checklist-group-header ${getTagClass(group.type)}`}>
-                  <span>
-                    <span class="lang-it">{group.categoryLabelIt}</span>
-                    <span class="lang-en">{group.categoryLabelEn}</span>
-                  </span>
-                  {group.urgent && <span style="color: #f59e0b; font-size: 0.6rem;">⚠️</span>}
-                </div>
-                
-                <div class="checklist-group-items">
-                  {group.items.map((item) => (
-                    <div class="checklist-group-row">
-                      <span class="checklist-row-icon">{item.icon}</span>
-                      <span class="checklist-row-text">
-                        <span class="lang-it">{item.textIt}</span>
-                        <span class="lang-en">{item.textEn}</span>
-                      </span>
-                    </div>
-                  ))}
-                </div>
+          <!-- 1. GHOST / TRASPARENZA: ZAINO MATTINA (In Cima) -->
+          <div class="ghost-backpack-card">
+            <div class="ghost-header">
+              <span>🎒</span>
+              <span class="lang-it">ZAINO MATTINA</span>
+              <span class="lang-en">MORNING BAG</span>
+            </div>
+            {backpackItems.map((item) => (
+              <div class="ghost-row">
+                <span style="font-size: 0.75rem; flex-shrink: 0;">{item.icon}</span>
+                <span style="flex: 1;">
+                  <span class="lang-it">{item.textIt}</span>
+                  <span class="lang-en">{item.textEn}</span>
+                </span>
               </div>
             ))}
           </div>
 
-          <!-- RIGA 2: RETTANGOLONE MATTINA (08:30 - 12:25) -->
-          <div class="row-morning-container">
-            <div class="block-header block-header-morning">
+          <!-- 2. LOOK SOLIDO: MATTINO (08:30 – 12:25) -->
+          <div class="solid-morning-container">
+            <div class="solid-block-header solid-header-morning">
               <span>
                 <span class="lang-it">☀️ MATTINO</span>
                 <span class="lang-en">☀️ MORNING</span>
               </span>
-              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; opacity: 0.8;">08:30–12:25</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; opacity: 0.85;">08:30–12:25</span>
             </div>
             
-            <div class="slots-inner-morning">
+            <div class="solid-slots-inner">
               {b.morning.map((s) => (
-                <div class={`slot-card ${getSlotClass(s)} ${isDoublePeriod(s.time) ? 'slot-double-period' : 'slot-single-period'}`}>
+                <div class={`slot-solid-card ${getSubjectClass(s)} ${s.type === 'break' ? '' : (isDoublePeriod(s.time) ? 'slot-double-height' : 'slot-single-height')}`}>
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
                     <span class="slot-time">{s.time}</span>
                     {s.location && (
-                      <span style="font-size: 0.62rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      <span style="font-size: 0.62rem; opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                         {s.location}
                       </span>
                     )}
@@ -224,60 +195,53 @@ function groupChecklist(items: ChecklistItem[]) {
             </div>
           </div>
 
-          <!-- RIGA 3: RETTANGOLINO PAUSA PRANZO (12:25 - 13:50) TRASPARENZA vs PAPÀ -->
-          <div class={`row-lunch-ribbon ${b.lunch.isSpecial ? 'lunch-home-dad' : 'lunch-school-transparent'}`}>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
-              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 800; color: #fef08a;">
-                {b.lunch.time}
-              </span>
-              <span style="font-size: 0.62rem; font-weight: 800; text-transform: uppercase; opacity: 0.85; color: #cbd5e1;">
-                <span class="lang-it">PRANZO</span>
-                <span class="lang-en">LUNCH</span>
-              </span>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 6px;">
-              {b.lunch.avatarImg ? (
-                <img 
-                  src={`${baseUrl}${b.lunch.avatarImg}`} 
-                  alt="Papino" 
-                  class="w-7 h-7 rounded-full object-cover ring-2 ring-amber-400 shadow shrink-0 bg-slate-950"
-                />
-              ) : (
-                <span style="font-size: 1.1rem;">🍽️</span>
-              )}
-              <div>
-                <div style="font-size: 0.74rem; font-weight: 900; line-height: 1.2; color: #ffffff;">
-                  <span class="lang-it">{b.lunch.subjectIt}</span>
-                  <span class="lang-en">{b.lunch.subjectEn}</span>
+          <!-- 3. PAUSA PRANZO (12:25 – 13:50) TRASPARENZA vs PAPINO SOLIDO -->
+          {b.lunch.isSpecial ? (
+            <div class="solid-lunch-papino">
+              <img 
+                src={`${baseUrl}/avatars/avatar_riccardo.png`} 
+                alt="Papino" 
+                class="w-8 h-8 rounded-full object-cover ring-2 ring-amber-300 shadow shrink-0 bg-slate-950"
+              />
+              <div style="overflow: hidden;">
+                <div style="font-size: 0.76rem; font-weight: 900; line-height: 1.15; color: #ffffff;">
+                  <span class="lang-it">🏠 12:30 PRANZO CON PAPINO!</span>
+                  <span class="lang-en">🏠 12:30 LUNCH WITH DAD!</span>
                 </div>
-                {(b.lunch.notesIt || b.lunch.notesEn) && (
-                  <div style="font-size: 0.62rem; opacity: 0.85; margin-top: 1px; color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px;">
-                    <span class="lang-it">{b.lunch.notesIt}</span>
-                    <span class="lang-en">{b.lunch.notesEn}</span>
-                  </div>
-                )}
+                <div style="font-size: 0.62rem; opacity: 0.95; color: #fef08a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <span class="lang-it">Uscita 12:30 · Pranzo insieme a casa</span>
+                  <span class="lang-en">Early finish 12:30 · Home lunch</span>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div class="ghost-lunch-strip">
+              <span style="font-size: 0.65rem; color: #94a3b8; display: flex; items-center; gap: 4px;">
+                <span>🍽️</span>
+                <span class="lang-it">12:25–13:50 Mensa a Scuola</span>
+                <span class="lang-en">12:25–13:50 School Lunch</span>
+              </span>
+              <span style="font-size: 0.58rem; color: #64748b; font-family: 'JetBrains Mono', monospace;">85m</span>
+            </div>
+          )}
 
-          <!-- RIGA 4: RETTANGOLONE POMERIGGIO (13:50 - 15:55) -->
-          <div class="row-afternoon-container">
-            <div class="block-header block-header-afternoon">
+          <!-- 4. LOOK SOLIDO: POMERIGGIO (13:50 – 15:55) -->
+          <div class="solid-afternoon-container">
+            <div class="solid-block-header solid-header-afternoon">
               <span>
                 <span class="lang-it">🌤️ POMERIGGIO</span>
                 <span class="lang-en">🌤️ AFTERNOON</span>
               </span>
-              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; opacity: 0.8;">13:50–15:55</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; opacity: 0.85;">13:50–15:55</span>
             </div>
             
-            <div class="slots-inner-afternoon">
+            <div class="solid-slots-inner">
               {b.afternoon.map((s) => (
-                <div class={`slot-card ${getSlotClass(s)} ${s.type === 'afternoon_home' ? '' : (isDoublePeriod(s.time) ? 'slot-double-period' : 'slot-single-period')}`}>
+                <div class={`slot-solid-card ${getSubjectClass(s)} ${s.type === 'afternoon_home' ? '' : (isDoublePeriod(s.time) ? 'slot-double-height' : 'slot-single-height')}`}>
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
                     <span class="slot-time">{s.time}</span>
                     {s.location && (
-                      <span style="font-size: 0.62rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      <span style="font-size: 0.62rem; opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                         {s.location}
                       </span>
                     )}
@@ -288,7 +252,7 @@ function groupChecklist(items: ChecklistItem[]) {
                       <img 
                         src={`${baseUrl}${s.avatarImg}`} 
                         alt="Silvana" 
-                        class="w-6 h-6 rounded-full object-cover ring-1 ring-purple-400 shadow shrink-0 bg-slate-950"
+                        class="w-6 h-6 rounded-full object-cover ring-1 ring-purple-300 shadow shrink-0 bg-slate-950"
                       />
                     )}
                     <div class="slot-title">
@@ -314,39 +278,33 @@ function groupChecklist(items: ChecklistItem[]) {
             </div>
           </div>
 
-          <!-- RIGA 5: EXTRA-CURRICULARI & DOPO SCUOLA (16:00+) -->
-          <div class="row-extra-container">
-            <div class="block-header block-header-extra">
-              <span>
-                <span class="lang-it">⭐ DOPO SCUOLA & EXTRA</span>
-                <span class="lang-en">⭐ AFTER SCHOOL & EXTRA</span>
-              </span>
-              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; opacity: 0.8;">{b.extra.time}</span>
+          <!-- 5. GHOST / TRASPARENZA: COMPITI SERA & EXTRA (In Fondo) -->
+          <div class="ghost-evening-card">
+            <div class="ghost-evening-header">
+              <span>🌙</span>
+              <span class="lang-it">COMPITI & EXTRA ({b.extra.time})</span>
+              <span class="lang-en">HOMEWORK & EXTRA ({b.extra.time})</span>
             </div>
 
-            <div class="extra-card-content">
-              <div class={b.extra.hasActivity ? 'extra-has-activity' : 'extra-relax'}>
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
-                  <span style="font-size: 0.76rem; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 5px;">
-                    <span>{b.extra.icon}</span>
-                    <span>
-                      <span class="lang-it">{b.extra.titleIt}</span>
-                      <span class="lang-en">{b.extra.titleEn}</span>
-                    </span>
-                  </span>
-                </div>
-                
-                <div style="font-size: 0.65rem; color: #cbd5e1; opacity: 0.9; margin-top: 2px;">
-                  <span class="lang-it">{b.extra.notesIt}</span>
-                  <span class="lang-en">{b.extra.notesEn}</span>
-                </div>
-
-                <div style="font-size: 0.6rem; color: #a5b4fc; font-weight: 700; margin-top: 1px;">
-                  <span class="lang-it">Gestione: {b.extra.managedByIt}</span>
-                  <span class="lang-en">Manager: {b.extra.managedByEn}</span>
-                </div>
+            {eveningItems.map((item) => (
+              <div class="ghost-row">
+                <span style="font-size: 0.75rem; flex-shrink: 0;">{item.icon}</span>
+                <span style={`flex: 1; ${item.urgent ? 'color: #fef08a; font-weight: 700;' : ''}`}>
+                  <span class="lang-it">{item.textIt}</span>
+                  <span class="lang-en">{item.textEn}</span>
+                </span>
               </div>
-            </div>
+            ))}
+
+            {b.extra.hasActivity && (
+              <div class="ghost-row" style="color: #a5b4fc; font-weight: 700; border-top: 1px dashed rgba(255, 255, 255, 0.08); padding-top: 2px; margin-top: 1px;">
+                <span style="font-size: 0.75rem; flex-shrink: 0;">{b.extra.icon}</span>
+                <span style="flex: 1;">
+                  <span class="lang-it">{b.extra.titleIt}</span>
+                  <span class="lang-en">{b.extra.titleEn}</span>
+                </span>
+              </div>
+            )}
           </div>
 
         </div>
