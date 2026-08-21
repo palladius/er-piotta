@@ -9,34 +9,34 @@ interface Props {
 const { day, isToday = false } = Astro.props;
 ---
 
-<div class={`glass-panel p-6 md:p-7 space-y-5 transition duration-200 ${isToday ? 'border-amber-400/80 ring-2 ring-amber-400/30' : ''}`}>
+<div class={`glass-panel p-6 md:p-8 space-y-6 ${isToday ? 'ring-2 ring-amber-400/60 shadow-amber-500/20' : ''}`}>
 
   <!-- Header: Day Name + Times + Parent Duty -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 pb-4 border-b border-slate-800/80">
-    <div class="flex items-center space-x-3.5">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800/90">
+    <div class="flex items-center space-x-4">
       <span class="text-4xl filter drop-shadow-md">{day.emoji}</span>
       <div>
-        <div class="flex items-center gap-2.5">
-          <h3 class="text-2xl font-extrabold text-white tracking-tight">{day.dayName}</h3>
+        <div class="flex items-center gap-3">
+          <h3 class="text-2xl md:text-3xl font-black text-white tracking-tight">{day.dayName}</h3>
           {isToday && (
-            <span class="text-[10px] uppercase font-black tracking-widest bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full shadow-md shadow-amber-400/20">
+            <span class="text-[10px] uppercase font-black tracking-widest bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full shadow-md shadow-amber-400/30">
               Oggi
             </span>
           )}
         </div>
-        <p class="text-xs text-slate-400 font-mono mt-0.5">
-          Entrata: <span class="text-slate-200 font-semibold">{day.dropOff}</span> · Uscita: <span class="text-slate-200 font-semibold">{day.pickUp}</span>
+        <p class="text-xs text-slate-400 font-mono mt-1">
+          Portare a scuola: <strong class="text-slate-200">{day.dropOff}</strong> · Uscita: <strong class="text-slate-200">{day.pickUp}</strong>
         </p>
       </div>
     </div>
 
     <!-- Parent Duty Badge -->
-    <div class="flex flex-col sm:items-end gap-1.5">
-      <span class={`badge ${day.duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'} text-xs shadow-md`}>
+    <div class="flex flex-col sm:items-end gap-1.5 shrink-0">
+      <span class={`badge ${day.duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'}`}>
         {day.duty.parentName}
       </span>
       {day.duty.afternoonCare && (
-        <span class="badge badge-emerald text-xs shadow-md">
+        <span class="badge badge-emerald">
           {day.duty.afternoonCare}
         </span>
       )}
@@ -44,18 +44,18 @@ const { day, isToday = false } = Astro.props;
   </div>
 
   <!-- SECTION IN CIMA: Cose da Portare & Scadenze Necessarie -->
-  <div class="bg-slate-950/80 border border-slate-800/90 rounded-2xl p-4 md:p-5 space-y-2.5 shadow-inner">
+  <div class="bg-slate-950/80 border border-slate-800/90 rounded-2xl p-4 md:p-5 space-y-3 shadow-inner">
     <div class="flex items-center justify-between">
       <span class="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-2">
         <i class="fa-solid fa-backpack text-amber-400"></i> Cose da Portare & Scadenze del Giorno
       </span>
-      <span class="text-[10px] text-slate-500 font-mono uppercase font-bold tracking-wider">Check Zaino</span>
+      <span class="text-[10px] text-slate-500 font-mono uppercase font-bold tracking-wider">Check Prima di Uscire</span>
     </div>
 
     <div class="grid grid-cols-1 gap-2">
       {day.gearAndDeadlines.map((item) => (
-        <div class={`flex items-start space-x-3 p-3 rounded-xl text-xs md:text-sm font-semibold transition ${item.urgent ? 'bg-amber-500/15 border border-amber-500/40 text-amber-200 shadow-sm shadow-amber-500/10' : 'bg-slate-900/90 border border-slate-800/80 text-slate-200'}`}>
-          <span class="text-lg leading-none shrink-0 mt-0.5">{item.icon}</span>
+        <div class={`gear-item ${item.urgent ? 'gear-item-urgent' : ''}`}>
+          <span class="text-xl leading-none shrink-0 mt-0.5">{item.icon}</span>
           <span class="flex-1 leading-snug">{item.text}</span>
         </div>
       ))}
@@ -63,21 +63,21 @@ const { day, isToday = false } = Astro.props;
   </div>
 
   <!-- Lezioni Pulite (Senza Pause né Fuffa) -->
-  <div class="space-y-2.5 pt-1">
+  <div class="space-y-3 pt-1">
     <span class="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
       <i class="fa-solid fa-graduation-cap text-indigo-400"></i> Materie & Orario Lezioni
     </span>
 
     <div class="space-y-2">
       {day.schedule.map((slot) => (
-        <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:bg-slate-800/80 hover:border-slate-700 transition">
+        <div class="lesson-row">
           <div class="flex items-start sm:items-center space-x-3.5">
             <span class="time-pill">
               {slot.time}
             </span>
             <div>
-              <div class="font-bold text-white text-sm md:text-base flex items-center gap-2">
-                <span>{slot.subject}</span>
+              <div class="font-bold text-white text-sm md:text-base">
+                {slot.subject}
               </div>
               {slot.teacher && (
                 <p class="text-xs text-slate-400 mt-0.5">
@@ -88,7 +88,7 @@ const { day, isToday = false } = Astro.props;
           </div>
 
           {slot.notes && (
-            <div class="text-xs text-slate-300 bg-slate-950/80 px-3 py-1.5 rounded-lg border border-slate-800 sm:text-right font-medium shrink-0">
+            <div class="text-xs text-slate-300 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 sm:text-right font-medium shrink-0">
               {slot.notes}
             </div>
           )}

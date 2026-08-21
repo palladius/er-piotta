@@ -14,21 +14,22 @@ const currentDayKey = dayIndex >= 1 && dayIndex <= 5 ? daysOrder[dayIndex - 1] :
   <ChildHero child={ALESSANDRO_DATA} />
 
   <!-- Quick Day Selector Pills -->
-  <div class="flex items-center justify-between gap-2 overflow-x-auto pb-4 mb-2">
+  <div class="grid grid-cols-5 gap-2.5 sm:gap-3.5 mb-8">
     {daysOrder.map((key) => {
       const d = ALESSANDRO_DATA.days[key];
+      const isToday = key === currentDayKey;
       return (
-        <a href={`#${key}`} class="flex-1 min-w-[100px] p-2.5 bg-slate-900 border border-slate-800 hover:border-blue-500 rounded-2xl text-center transition flex flex-col items-center justify-center group">
-          <span class="text-xl group-hover:scale-110 transition">{d.emoji}</span>
-          <span class="text-xs font-bold text-slate-300 mt-1">{d.dayName.split(' ')[0]}</span>
-          <span class="text-[10px] text-slate-500 font-mono">{d.dropOff.split('–')[0].trim()}</span>
+        <a href={`#${key}`} class={`day-pill ${isToday ? 'day-pill-active' : ''}`}>
+          <span class="text-2xl mb-1">{d.emoji}</span>
+          <span class="text-xs sm:text-sm font-extrabold text-white">{d.dayName.split(' ')[0]}</span>
+          <span class="text-[11px] text-amber-300 font-mono font-bold mt-0.5">{d.dropOff.split('–')[0].trim()}</span>
         </a>
       );
     })}
   </div>
 
   <!-- Weekly Matrix Cards -->
-  <div class="space-y-6">
+  <div class="space-y-8">
     {daysOrder.map((key) => {
       const d = ALESSANDRO_DATA.days[key];
       return (
