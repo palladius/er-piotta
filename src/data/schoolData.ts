@@ -34,6 +34,12 @@ export interface ChecklistItem {
   urgent?: boolean;
 }
 
+export interface DayScheduleBlocks {
+  morning: TimeSlot[];
+  lunch: TimeSlot;
+  afternoon: TimeSlot[];
+}
+
 export interface DaySchedule {
   dayKey: string;
   dayNameIt: string;
@@ -44,7 +50,7 @@ export interface DaySchedule {
   pickUpEn: string;
   duty: DutyInfo;
   checklist: ChecklistItem[];
-  schedule: TimeSlot[];
+  blocks: DayScheduleBlocks;
 }
 
 export interface ChildData {
@@ -160,15 +166,26 @@ export const ALESSANDRO_DATA: ChildData = {
           textEn: 'Plan week math worksheets (Wochenplan)'
         }
       ],
-      schedule: [
-        { time: '08:30 – 10:05', type: 'lesson', subjectIt: 'Deutsch (Doppia ora)', subjectEn: 'German (Double period)', teacher: 'M. Biehl', location: 'Classroom P3', notesIt: 'Lehrplan 21 Hören & Schreiben', notesEn: 'Lehrplan 21 Listening & Writing' },
-        { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa nel cortile della scuola', notesEn: 'Playground snack & fresh air' },
-        { time: '10:50 – 11:35', type: 'lesson', subjectIt: 'Mathematik', subjectEn: 'Maths', teacher: 'M. Biehl', location: 'Classroom P3', notesIt: 'Number & Algebra', notesEn: 'Number & Algebra' },
-        { time: '11:40 – 12:25', type: 'lesson', subjectIt: 'Art History', subjectEn: 'Art History', teacher: 'Mrs Schmid', location: 'Art Studio', notesIt: 'Studio colori e forme', notesEn: 'Colors & shapes study' },
-        { time: '12:25 – 13:50', type: 'lunch', subjectIt: '🍽️ Pranzo & Mensa a Scuola', subjectEn: '🍽️ School Lunch & Play', notesIt: 'Mensa scolastica sorvegliata', notesEn: 'Supervised lunch & recess' },
-        { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'French (Doppia ora)', subjectEn: 'French (Double period)', teacher: 'Mme Conde', location: 'Lang Lab', notesIt: 'Les Loustics', notesEn: 'Les Loustics program' },
-        { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Homework Period & Uscita (15:55)', subjectEn: 'Homework Period & Dismissal (15:55)', teacher: 'M. Biehl', notesIt: 'Compiti del giorno in tedesco', notesEn: 'Daily homework in German' }
-      ]
+      blocks: {
+        morning: [
+          { time: '08:30 – 10:05', type: 'lesson', subjectIt: 'Deutsch (Doppia ora)', subjectEn: 'German (Double period)', teacher: 'M. Biehl', location: 'Classroom P3', notesIt: 'Lehrplan 21 Hören & Schreiben', notesEn: 'Lehrplan 21 Listening & Writing' },
+          { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa nel cortile', notesEn: 'Playground snack & fresh air' },
+          { time: '10:50 – 11:35', type: 'lesson', subjectIt: 'Mathematik', subjectEn: 'Maths', teacher: 'M. Biehl', location: 'Classroom P3', notesIt: 'Number & Algebra', notesEn: 'Number & Algebra' },
+          { time: '11:40 – 12:25', type: 'lesson', subjectIt: 'Art History', subjectEn: 'Art History', teacher: 'Mrs Schmid', location: 'Art Studio', notesIt: 'Studio colori e forme', notesEn: 'Colors & shapes study' }
+        ],
+        lunch: {
+          time: '12:25 – 13:50',
+          type: 'lunch',
+          subjectIt: '🍽️ Pranzo & Mensa a Scuola',
+          subjectEn: '🍽️ School Lunch & Play',
+          notesIt: 'Mensa scolastica e ricreazione sorvegliata',
+          notesEn: 'Supervised school lunch & recess'
+        },
+        afternoon: [
+          { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'French (Doppia ora)', subjectEn: 'French (Double period)', teacher: 'Mme Conde', location: 'Lang Lab', notesIt: 'Les Loustics', notesEn: 'Les Loustics program' },
+          { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Homework Period & Uscita (15:55)', subjectEn: 'Homework Period & Dismissal (15:55)', teacher: 'M. Biehl', notesIt: 'Compiti del giorno in tedesco', notesEn: 'Daily homework in German' }
+        ]
+      }
     },
     tuesday: {
       dayKey: 'tuesday',
@@ -201,14 +218,25 @@ export const ALESSANDRO_DATA: ChildData = {
           textEn: 'Work 15-20 mins on Maths Wochenplan sheets'
         }
       ],
-      schedule: [
-        { time: '08:30 – 10:05', type: 'lesson', subjectIt: 'Mathematik (Doppia ora)', subjectEn: 'Maths (Double period)', teacher: 'M. Biehl', location: 'Classroom P3', notesIt: 'Geometria & Calcolo', notesEn: 'Geometry & Calculation' },
-        { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
-        { time: '10:50 – 12:25', type: 'lesson', subjectIt: 'Deutsch (Doppia ora)', subjectEn: 'German (Double period)', teacher: 'M. Biehl', location: 'Classroom P3', notesIt: 'Grammatica e ortografia', notesEn: 'Grammar and spelling' },
-        { time: '12:25 – 13:50', type: 'lunch', subjectIt: '🍽️ Pranzo & Mensa a Scuola', subjectEn: '🍽️ School Lunch & Play', notesIt: 'Sorvegliata da Dannie', notesEn: 'Supervised by Dannie' },
-        { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'Enquiry (DE/EN)', subjectEn: 'Enquiry (DE/EN)', teacher: 'Biehl / Keates', location: 'Classroom P3', notesIt: 'Scienze, Energy & Zurich City', notesEn: 'Science, Energy & Zurich City' },
-        { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Homework Period & Uscita (15:55)', subjectEn: 'Homework Period & Dismissal (15:55)', teacher: 'M. Biehl', notesIt: 'Studio guidato', notesEn: 'Guided study' }
-      ]
+      blocks: {
+        morning: [
+          { time: '08:30 – 10:05', type: 'lesson', subjectIt: 'Mathematik (Doppia ora)', subjectEn: 'Maths (Double period)', teacher: 'M. Biehl', location: 'Classroom P3', notesIt: 'Geometria & Calcolo', notesEn: 'Geometry & Calculation' },
+          { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
+          { time: '10:50 – 12:25', type: 'lesson', subjectIt: 'Deutsch (Doppia ora)', subjectEn: 'German (Double period)', teacher: 'M. Biehl', location: 'Classroom P3', notesIt: 'Grammatica e ortografia', notesEn: 'Grammar and spelling' }
+        ],
+        lunch: {
+          time: '12:25 – 13:50',
+          type: 'lunch',
+          subjectIt: '🍽️ Pranzo & Mensa a Scuola',
+          subjectEn: '🍽️ School Lunch & Play',
+          notesIt: 'Sorvegliata da Mr Dannie',
+          notesEn: 'Supervised by Mr Dannie'
+        },
+        afternoon: [
+          { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'Enquiry (DE/EN)', subjectEn: 'Enquiry (DE/EN)', teacher: 'Biehl / Keates', location: 'Classroom P3', notesIt: 'Scienze, Energy & Zurich City', notesEn: 'Science, Energy & Zurich City' },
+          { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Homework Period & Uscita (15:55)', subjectEn: 'Homework Period & Dismissal (15:55)', teacher: 'M. Biehl', notesIt: 'Studio guidato', notesEn: 'Guided study' }
+        ]
+      }
     },
     wednesday: {
       dayKey: 'wednesday',
@@ -253,15 +281,37 @@ export const ALESSANDRO_DATA: ChildData = {
           textEn: '15 mins English reading & check Wochenplan progress'
         }
       ],
-      schedule: [
-        { time: '08:30 – 09:15', type: 'lesson', subjectIt: 'Deutsch', subjectEn: 'German', teacher: 'M. Biehl', location: 'Classroom P3', notesIt: 'Lettura e dialogo', notesEn: 'Reading and dialogue' },
-        { time: '09:20 – 10:05', type: 'lesson', subjectIt: 'Mathematik', subjectEn: 'Maths', teacher: 'M. Biehl', location: 'Classroom P3', notesIt: 'Wochenplan check', notesEn: 'Wochenplan progress check' },
-        { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
-        { time: '10:50 – 11:35', type: 'lesson', subjectIt: 'Enquiry', subjectEn: 'Enquiry', teacher: 'D. Keates', location: 'Classroom P3', notesIt: 'Roman Times & Ecosystems', notesEn: 'Roman Times & Ecosystems' },
-        { time: '11:40 – 12:25', type: 'lesson', subjectIt: 'Music (Tedesco)', subjectEn: 'Music (German)', teacher: 'Music Staff', location: 'Music Room', notesIt: 'Canto ed espressione musicale', notesEn: 'Singing & musical expression' },
-        { time: '12:30', type: 'lunch', isSpecial: true, avatarImg: '/avatars/avatar_riccardo.png', subjectIt: '🏠 12:30 USCITA ANTICIPATA & PRANZO CON PAPINO (Riccardo)! 👨‍👦‍👦', subjectEn: '🏠 12:30 EARLY FINISH & LUNCH WITH DAD (Riccardo)! 👨‍👦‍👦', notesIt: 'Nessuna mensa a scuola. Si torna a casa e si mangia con Papino!', notesEn: 'No school lunch. Head home and eat with Dad!' },
-        { time: '13:50 – 15:55', type: 'afternoon_home', isSpecial: true, avatarImg: '/avatars/avatar_silvana.png', subjectIt: '🏠 Pomeriggio con Silvana (e 16:10 Drama Club)', subjectEn: '🏠 Afternoon with Silvana (and 16:10 Drama Club)', notesIt: '16:10–17:25: Ale Drama Club (Simply Theatre Studios Zurigo)', notesEn: '16:10–17:25: Ale Drama Club (Simply Theatre Studios Zurich)' }
-      ]
+      blocks: {
+        morning: [
+          { time: '08:30 – 09:15', type: 'lesson', subjectIt: 'Deutsch', subjectEn: 'German', teacher: 'M. Biehl', location: 'Classroom P3', notesIt: 'Lettura e dialogo', notesEn: 'Reading and dialogue' },
+          { time: '09:20 – 10:05', type: 'lesson', subjectIt: 'Mathematik', subjectEn: 'Maths', teacher: 'M. Biehl', location: 'Classroom P3', notesIt: 'Wochenplan check', notesEn: 'Wochenplan progress check' },
+          { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
+          { time: '10:50 – 11:35', type: 'lesson', subjectIt: 'Enquiry', subjectEn: 'Enquiry', teacher: 'D. Keates', location: 'Classroom P3', notesIt: 'Roman Times & Ecosystems', notesEn: 'Roman Times & Ecosystems' },
+          { time: '11:40 – 12:25', type: 'lesson', subjectIt: 'Music (Tedesco)', subjectEn: 'Music (German)', teacher: 'Music Staff', location: 'Music Room', notesIt: 'Canto ed espressione musicale', notesEn: 'Singing & musical expression' }
+        ],
+        lunch: {
+          time: '12:30',
+          type: 'lunch',
+          isSpecial: true,
+          avatarImg: '/avatars/avatar_riccardo.png',
+          subjectIt: '🏠 12:30 PRANZO A CASA CON PAPINO! 👨‍👦‍👦',
+          subjectEn: '🏠 12:30 LUNCH AT HOME WITH DAD! 👨‍👦‍👦',
+          notesIt: 'Uscita anticipata ore 12:30. Si pranza tutti insieme a casa!',
+          notesEn: 'Early finish 12:30. Family lunch at home with Dad!'
+        },
+        afternoon: [
+          {
+            time: '13:50 – 15:55',
+            type: 'afternoon_home',
+            isSpecial: true,
+            avatarImg: '/avatars/avatar_silvana.png',
+            subjectIt: '🏠 Pomeriggio con Silvana',
+            subjectEn: '🏠 Afternoon with Silvana',
+            notesIt: '16:10–17:25: Ale Drama Club (Simply Theatre Studios Zurigo)',
+            notesEn: '16:10–17:25: Ale Drama Club (Simply Theatre Studios Zurich)'
+          }
+        ]
+      }
     },
     thursday: {
       dayKey: 'thursday',
@@ -306,15 +356,26 @@ export const ALESSANDRO_DATA: ChildData = {
           textEn: 'Reading Fantastic Mr Fox book (Roald Dahl)'
         }
       ],
-      schedule: [
-        { time: '08:30 – 09:15', type: 'lesson', subjectIt: 'French', subjectEn: 'French', teacher: 'Mme Conde', location: 'Lang Lab', notesIt: 'Conversazione & vocaboli', notesEn: 'Conversation & vocabulary' },
-        { time: '09:20 – 10:05', type: 'lesson', subjectIt: 'Maths / Mathematik', subjectEn: 'Maths / Mathematik', teacher: 'Keates / Biehl', location: 'Classroom P3', notesIt: 'Gruppi bilingue', notesEn: 'Bilingual ability groups' },
-        { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
-        { time: '10:50 – 12:25', type: 'lesson', subjectIt: 'English / Deutsch', subjectEn: 'English / German', teacher: 'Keates / Biehl', location: 'Classroom P3', notesIt: 'UK Curriculum English', notesEn: 'UK Curriculum English' },
-        { time: '12:25 – 13:50', type: 'lunch', subjectIt: '🍽️ Pranzo & Mensa a Scuola', subjectEn: '🍽️ School Lunch & Play', notesIt: 'Mensa e ricreazione', notesEn: 'Supervised lunch & recess' },
-        { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'Enquiry & Music (EN)', subjectEn: 'Enquiry & Music (EN)', teacher: 'D. Keates', location: 'Classroom P3', notesIt: 'Progetti pratici in inglese', notesEn: 'Hands-on projects in English' },
-        { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Homework Period (EN) & Uscita (15:55)', subjectEn: 'Homework Period (EN) & Dismissal (15:55)', teacher: 'D. Keates', notesIt: 'Grammar & spelling check', notesEn: 'Grammar & spelling check' }
-      ]
+      blocks: {
+        morning: [
+          { time: '08:30 – 09:15', type: 'lesson', subjectIt: 'French', subjectEn: 'French', teacher: 'Mme Conde', location: 'Lang Lab', notesIt: 'Conversazione & vocaboli', notesEn: 'Conversation & vocabulary' },
+          { time: '09:20 – 10:05', type: 'lesson', subjectIt: 'Maths / Mathematik', subjectEn: 'Maths / Mathematik', teacher: 'Keates / Biehl', location: 'Classroom P3', notesIt: 'Gruppi bilingue', notesEn: 'Bilingual ability groups' },
+          { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
+          { time: '10:50 – 12:25', type: 'lesson', subjectIt: 'English / Deutsch', subjectEn: 'English / German', teacher: 'Keates / Biehl', location: 'Classroom P3', notesIt: 'UK Curriculum English', notesEn: 'UK Curriculum English' }
+        ],
+        lunch: {
+          time: '12:25 – 13:50',
+          type: 'lunch',
+          subjectIt: '🍽️ Pranzo & Mensa a Scuola',
+          subjectEn: '🍽️ School Lunch & Play',
+          notesIt: 'Mensa e ricreazione sorvegliata',
+          notesEn: 'Supervised lunch & recess'
+        },
+        afternoon: [
+          { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'Enquiry & Music (EN)', subjectEn: 'Enquiry & Music (EN)', teacher: 'D. Keates', location: 'Classroom P3', notesIt: 'Progetti pratici in inglese', notesEn: 'Hands-on projects in English' },
+          { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Homework Period (EN) & Uscita (15:55)', subjectEn: 'Homework Period (EN) & Dismissal (15:55)', teacher: 'D. Keates', notesIt: 'Grammar & spelling check', notesEn: 'Grammar & spelling check' }
+        ]
+      }
     },
     friday: {
       dayKey: 'friday',
@@ -360,14 +421,25 @@ export const ALESSANDRO_DATA: ChildData = {
           textEn: 'HAND IN MATHS WOCHENPLAN to Mr Marvin!'
         }
       ],
-      schedule: [
-        { time: '08:30 – 10:05', type: 'lesson', subjectIt: 'English (Doppia ora)', subjectEn: 'English (Double period)', teacher: 'D. Keates', location: 'Classroom P3', notesIt: 'Writing samples & reading', notesEn: 'Writing samples & reading' },
-        { time: '10:10 – 11:35', type: 'lesson', subjectIt: 'SPORT / PE (Turnhalle Kartaus)', subjectEn: 'SPORT / PE (Turnhalle Kartaus)', teacher: 'Coach', location: 'Turnhalle Kartaus', notesIt: '👟 Kit ginnastica e scarpe pulite', notesEn: '👟 PE kit and clean gym shoes' },
-        { time: '11:40 – 12:25', type: 'lesson', subjectIt: 'English', subjectEn: 'English', teacher: 'D. Keates', location: 'Classroom P3', notesIt: 'Comprehension & Collins book', notesEn: 'Comprehension & Collins book' },
-        { time: '12:25 – 13:50', type: 'lunch', subjectIt: '🍽️ Pranzo & Mensa a Scuola', subjectEn: '🍽️ School Lunch & Play', notesIt: 'Mensa e ricreazione', notesEn: 'Supervised lunch & recess' },
-        { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'ART (Tessile & Cucito)', subjectEn: 'ART (Textile & Sewing)', teacher: 'Mrs Schmid', location: 'Art Studio', notesIt: '🎨 Paint shirt obbligatoria', notesEn: '🎨 Paint shirt required' },
-        { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Consegna Wochenplan & Uscita (15:55)', subjectEn: 'Hand in Wochenplan & Dismissal (15:55)', teacher: 'M. Biehl', notesIt: '⏰ Verifica finale schede di matematica', notesEn: '⏰ Final check and submission of math sheets' }
-      ]
+      blocks: {
+        morning: [
+          { time: '08:30 – 10:05', type: 'lesson', subjectIt: 'English (Doppia ora)', subjectEn: 'English (Double period)', teacher: 'D. Keates', location: 'Classroom P3', notesIt: 'Writing samples & reading', notesEn: 'Writing samples & reading' },
+          { time: '10:10 – 11:35', type: 'lesson', subjectIt: 'SPORT / PE (Turnhalle Kartaus)', subjectEn: 'SPORT / PE (Turnhalle Kartaus)', teacher: 'Coach', location: 'Turnhalle Kartaus', notesIt: '👟 Kit ginnastica e scarpe pulite', notesEn: '👟 PE kit and clean gym shoes' },
+          { time: '11:40 – 12:25', type: 'lesson', subjectIt: 'English', subjectEn: 'English', teacher: 'D. Keates', location: 'Classroom P3', notesIt: 'Comprehension & Collins book', notesEn: 'Comprehension & Collins book' }
+        ],
+        lunch: {
+          time: '12:25 – 13:50',
+          type: 'lunch',
+          subjectIt: '🍽️ Pranzo & Mensa a Scuola',
+          subjectEn: '🍽️ School Lunch & Play',
+          notesIt: 'Mensa e ricreazione',
+          notesEn: 'Supervised lunch & recess'
+        },
+        afternoon: [
+          { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'ART (Tessile & Cucito)', subjectEn: 'ART (Textile & Sewing)', teacher: 'Mrs Schmid', location: 'Art Studio', notesIt: '🎨 Paint shirt obbligatoria', notesEn: '🎨 Paint shirt required' },
+          { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Consegna Wochenplan & Uscita (15:55)', subjectEn: 'Hand in Wochenplan & Dismissal (15:55)', teacher: 'M. Biehl', notesIt: '⏰ Verifica finale schede di matematica', notesEn: '⏰ Final check and submission of math sheets' }
+        ]
+      }
     }
   }
 };
@@ -427,15 +499,26 @@ export const SEBASTIAN_DATA: ChildData = {
           textEn: '17:30 Strong + Piano Lesson (finishes 18:30 with Kate)'
         }
       ],
-      schedule: [
-        { time: '08:30 – 10:05', type: 'lesson', subjectIt: 'Phonics & Early English', subjectEn: 'Phonics & Early English', teacher: 'Ms Rayment', location: 'Classroom P1', notesIt: 'Letters, sounds & vocabulary', notesEn: 'Letters, sounds & vocabulary' },
-        { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa nel cortile', notesEn: 'Playground snack & fresh air' },
-        { time: '10:50 – 11:35', type: 'lesson', subjectIt: 'Deutsch Frühförderung', subjectEn: 'Early German Immersion', teacher: 'Ms Faux', location: 'Classroom P1', notesIt: 'Spielen & Sprechen', notesEn: 'Play & Speak' },
-        { time: '11:40 – 12:25', type: 'lesson', subjectIt: 'Early Maths & Numbers', subjectEn: 'Early Maths & Numbers', teacher: 'Ms Rayment', location: 'Classroom P1', notesIt: 'Counting & basic shapes', notesEn: 'Counting & basic shapes' },
-        { time: '12:25 – 13:50', type: 'lunch', subjectIt: '🍽️ Pranzo & Mensa a Scuola', subjectEn: '🍽️ School Lunch & Play', notesIt: 'Mensa e gioco all aperto', notesEn: 'Supervised lunch & outdoor play' },
-        { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'Topic & Storytime', subjectEn: 'Topic & Storytime', teacher: 'Team P1', location: 'Classroom P1', notesIt: 'Racconti illustrati & scoperta', notesEn: 'Picture books & discovery' },
-        { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Wrap-up & Uscita (15:55)', subjectEn: 'Wrap-up & Dismissal (15:55)', teacher: 'Team P1', notesIt: '17:30 Strong & 18:30 Piano con Kate', notesEn: '17:30 Strong & 18:30 Piano with Kate' }
-      ]
+      blocks: {
+        morning: [
+          { time: '08:30 – 10:05', type: 'lesson', subjectIt: 'Phonics & Early English', subjectEn: 'Phonics & Early English', teacher: 'Ms Rayment', location: 'Classroom P1', notesIt: 'Letters, sounds & vocabulary', notesEn: 'Letters, sounds & vocabulary' },
+          { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa nel cortile', notesEn: 'Playground snack & fresh air' },
+          { time: '10:50 – 11:35', type: 'lesson', subjectIt: 'Deutsch Frühförderung', subjectEn: 'Early German Immersion', teacher: 'Ms Faux', location: 'Classroom P1', notesIt: 'Spielen & Sprechen', notesEn: 'Play & Speak' },
+          { time: '11:40 – 12:25', type: 'lesson', subjectIt: 'Early Maths & Numbers', subjectEn: 'Early Maths & Numbers', teacher: 'Ms Rayment', location: 'Classroom P1', notesIt: 'Counting & basic shapes', notesEn: 'Counting & basic shapes' }
+        ],
+        lunch: {
+          time: '12:25 – 13:50',
+          type: 'lunch',
+          subjectIt: '🍽️ Pranzo & Mensa a Scuola',
+          subjectEn: '🍽️ School Lunch & Play',
+          notesIt: 'Mensa e gioco all aperto',
+          notesEn: 'Supervised lunch & outdoor play'
+        },
+        afternoon: [
+          { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'Topic & Storytime', subjectEn: 'Topic & Storytime', teacher: 'Team P1', location: 'Classroom P1', notesIt: 'Racconti illustrati & scoperta', notesEn: 'Picture books & discovery' },
+          { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Wrap-up & Uscita (15:55)', subjectEn: 'Wrap-up & Dismissal (15:55)', teacher: 'Team P1', notesIt: '17:30 Strong & 18:30 Piano con Kate', notesEn: '17:30 Strong & 18:30 Piano with Kate' }
+        ]
+      }
     },
     tuesday: {
       dayKey: 'tuesday',
@@ -468,14 +551,25 @@ export const SEBASTIAN_DATA: ChildData = {
           textEn: 'Playful review of shapes & numbers with mum/dad'
         }
       ],
-      schedule: [
-        { time: '08:30 – 10:05', type: 'lesson', subjectIt: 'Early Maths & Logic', subjectEn: 'Early Maths & Logic', teacher: 'Ms Rayment', location: 'Classroom P1', notesIt: 'Giochi di logica e numeri', notesEn: 'Logic games & number bonds' },
-        { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
-        { time: '10:50 – 12:25', type: 'lesson', subjectIt: 'Deutsch & Singen', subjectEn: 'German & Singing', teacher: 'Ms Faux', location: 'Classroom P1', notesIt: 'Canzoni e parole in tedesco', notesEn: 'German songs and vocabulary' },
-        { time: '12:25 – 13:50', type: 'lunch', subjectIt: '🍽️ Pranzo & Mensa a Scuola', subjectEn: '🍽️ School Lunch & Play', notesIt: 'Mensa e gioco all aperto', notesEn: 'Supervised lunch & outdoor play' },
-        { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'Discovery & Nature', subjectEn: 'Discovery & Nature', teacher: 'Team P1', location: 'Classroom / Garden', notesIt: 'Esplorazione all aperto', notesEn: 'Outdoor nature exploration' },
-        { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Story Listening & Uscita (15:55)', subjectEn: 'Story Listening & Dismissal (15:55)', teacher: 'Ms Rayment', notesIt: 'Rientro a casa', notesEn: 'Going home' }
-      ]
+      blocks: {
+        morning: [
+          { time: '08:30 – 10:05', type: 'lesson', subjectIt: 'Early Maths & Logic', subjectEn: 'Early Maths & Logic', teacher: 'Ms Rayment', location: 'Classroom P1', notesIt: 'Giochi di logica e numeri', notesEn: 'Logic games & number bonds' },
+          { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
+          { time: '10:50 – 12:25', type: 'lesson', subjectIt: 'Deutsch & Singen', subjectEn: 'German & Singing', teacher: 'Ms Faux', location: 'Classroom P1', notesIt: 'Canzoni e parole in tedesco', notesEn: 'German songs and vocabulary' }
+        ],
+        lunch: {
+          time: '12:25 – 13:50',
+          type: 'lunch',
+          subjectIt: '🍽️ Pranzo & Mensa a Scuola',
+          subjectEn: '🍽️ School Lunch & Play',
+          notesIt: 'Mensa e gioco all aperto',
+          notesEn: 'Supervised lunch & outdoor play'
+        },
+        afternoon: [
+          { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'Discovery & Nature', subjectEn: 'Discovery & Nature', teacher: 'Team P1', location: 'Classroom / Garden', notesIt: 'Esplorazione all aperto', notesEn: 'Outdoor nature exploration' },
+          { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Story Listening & Uscita (15:55)', subjectEn: 'Story Listening & Dismissal (15:55)', teacher: 'Ms Rayment', notesIt: 'Rientro a casa', notesEn: 'Going home' }
+        ]
+      }
     },
     wednesday: {
       dayKey: 'wednesday',
@@ -510,15 +604,37 @@ export const SEBASTIAN_DATA: ChildData = {
           textEn: 'Pick-up at 12:30: Special lunch at home with Dad (Riccardo)!'
         }
       ],
-      schedule: [
-        { time: '08:30 – 09:15', type: 'lesson', subjectIt: 'Deutsch & Geschichten', subjectEn: 'German & Stories', teacher: 'Ms Faux', location: 'Classroom P1', notesIt: 'Storie in tedesco', notesEn: 'German stories' },
-        { time: '09:20 – 10:05', type: 'lesson', subjectIt: 'English Phonics', subjectEn: 'English Phonics', teacher: 'Ms Rayment', location: 'Classroom P1', notesIt: 'Suoni e lettere', notesEn: 'Sounds & blending letters' },
-        { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
-        { time: '10:50 – 11:35', type: 'lesson', subjectIt: 'Movement & Rhythm', subjectEn: 'Movement & Rhythm', teacher: 'Team P1', location: 'Gym', notesIt: 'Movimento e coordinazione', notesEn: 'Movement & coordination' },
-        { time: '11:40 – 12:25', type: 'lesson', subjectIt: 'Singing & Music', subjectEn: 'Singing & Music', teacher: 'Music Staff', location: 'Music Room', notesIt: 'Musica per i più piccoli', notesEn: 'Music and nursery rhymes' },
-        { time: '12:30', type: 'lunch', isSpecial: true, avatarImg: '/avatars/avatar_riccardo.png', subjectIt: '🏠 12:30 USCITA ANTICIPATA & PRANZO CON PAPINO (Riccardo)! 👨‍👦‍👦', subjectEn: '🏠 12:30 EARLY FINISH & LUNCH WITH DAD (Riccardo)! 👨‍👦‍👦', notesIt: 'Nessuna mensa a scuola. Si torna a casa e si mangia con Papino!', notesEn: 'No school lunch. Head home and eat with Dad!' },
-        { time: '13:50 – 15:55', type: 'afternoon_home', isSpecial: true, avatarImg: '/avatars/avatar_silvana.png', subjectIt: '🏠 Pomeriggio a Casa con Silvana & Giochi', subjectEn: '🏠 Afternoon at Home with Silvana', notesIt: 'Pomeriggio tranquillo e giochi educativi', notesEn: 'Afternoon play & activities with Silvana' }
-      ]
+      blocks: {
+        morning: [
+          { time: '08:30 – 09:15', type: 'lesson', subjectIt: 'Deutsch & Geschichten', subjectEn: 'German & Stories', teacher: 'Ms Faux', location: 'Classroom P1', notesIt: 'Storie in tedesco', notesEn: 'German stories' },
+          { time: '09:20 – 10:05', type: 'lesson', subjectIt: 'English Phonics', subjectEn: 'English Phonics', teacher: 'Ms Rayment', location: 'Classroom P1', notesIt: 'Suoni e lettere', notesEn: 'Sounds & blending letters' },
+          { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
+          { time: '10:50 – 11:35', type: 'lesson', subjectIt: 'Movement & Rhythm', subjectEn: 'Movement & Rhythm', teacher: 'Team P1', location: 'Gym', notesIt: 'Movimento e coordinazione', notesEn: 'Movement & coordination' },
+          { time: '11:40 – 12:25', type: 'lesson', subjectIt: 'Singing & Music', subjectEn: 'Singing & Music', teacher: 'Music Staff', location: 'Music Room', notesIt: 'Musica per i più piccoli', notesEn: 'Music and nursery rhymes' }
+        ],
+        lunch: {
+          time: '12:30',
+          type: 'lunch',
+          isSpecial: true,
+          avatarImg: '/avatars/avatar_riccardo.png',
+          subjectIt: '🏠 12:30 PRANZO A CASA CON PAPINO! 👨‍👦‍👦',
+          subjectEn: '🏠 12:30 LUNCH AT HOME WITH DAD! 👨‍👦‍👦',
+          notesIt: 'Uscita anticipata ore 12:30. Si pranza tutti insieme a casa!',
+          notesEn: 'Early finish 12:30. Family lunch at home with Dad!'
+        },
+        afternoon: [
+          {
+            time: '13:50 – 15:55',
+            type: 'afternoon_home',
+            isSpecial: true,
+            avatarImg: '/avatars/avatar_silvana.png',
+            subjectIt: '🏠 Pomeriggio a Casa con Silvana',
+            subjectEn: '🏠 Afternoon at Home with Silvana',
+            notesIt: 'Pomeriggio tranquillo e giochi educativi a casa',
+            notesEn: 'Afternoon play & activities with Silvana'
+          }
+        ]
+      }
     },
     thursday: {
       dayKey: 'thursday',
@@ -552,15 +668,26 @@ export const SEBASTIAN_DATA: ChildData = {
           textEn: 'Check paint apron is in the cubby'
         }
       ],
-      schedule: [
-        { time: '08:30 – 09:15', type: 'lesson', subjectIt: 'SPORT & Movement P1', subjectEn: 'SPORT & Movement P1', teacher: 'Coach', location: 'Turnhalle', notesIt: '👟 Scarpe da ginnastica', notesEn: '👟 Gym shoes required' },
-        { time: '09:20 – 10:05', type: 'lesson', subjectIt: 'English Phonics', subjectEn: 'English Phonics', teacher: 'Ms Rayment', location: 'Classroom P1', notesIt: 'Lettura guidata', notesEn: 'Guided reading' },
-        { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
-        { time: '10:50 – 12:25', type: 'lesson', subjectIt: 'Deutsch Spiele', subjectEn: 'German Games', teacher: 'Ms Faux', location: 'Classroom P1', notesIt: 'Attività bilingue', notesEn: 'Bilingual games & vocabulary' },
-        { time: '12:25 – 13:50', type: 'lunch', subjectIt: '🍽️ Pranzo & Mensa a Scuola', subjectEn: '🍽️ School Lunch & Play', notesIt: 'Mensa e ricreazione', notesEn: 'Supervised lunch & recess' },
-        { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'Arts & Craft', subjectEn: 'Arts & Crafts', teacher: 'Team P1', location: 'Art Corner', notesIt: 'Disegno e manipolazione', notesEn: 'Drawing & tactile crafts' },
-        { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Daily Review & Uscita (15:55)', subjectEn: 'Daily Review & Dismissal (15:55)', teacher: 'Team P1', notesIt: 'Chiusura giornata', notesEn: 'End of day reflection' }
-      ]
+      blocks: {
+        morning: [
+          { time: '08:30 – 09:15', type: 'lesson', subjectIt: 'SPORT & Movement P1', subjectEn: 'SPORT & Movement P1', teacher: 'Coach', location: 'Turnhalle', notesIt: '👟 Scarpe da ginnastica', notesEn: '👟 Gym shoes required' },
+          { time: '09:20 – 10:05', type: 'lesson', subjectIt: 'English Phonics', subjectEn: 'English Phonics', teacher: 'Ms Rayment', location: 'Classroom P1', notesIt: 'Lettura guidata', notesEn: 'Guided reading' },
+          { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
+          { time: '10:50 – 12:25', type: 'lesson', subjectIt: 'Deutsch Spiele', subjectEn: 'German Games', teacher: 'Ms Faux', location: 'Classroom P1', notesIt: 'Attività bilingue', notesEn: 'Bilingual games & vocabulary' }
+        ],
+        lunch: {
+          time: '12:25 – 13:50',
+          type: 'lunch',
+          subjectIt: '🍽️ Pranzo & Mensa a Scuola',
+          subjectEn: '🍽️ School Lunch & Play',
+          notesIt: 'Mensa e ricreazione',
+          notesEn: 'Supervised lunch & recess'
+        },
+        afternoon: [
+          { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'Arts & Craft', subjectEn: 'Arts & Crafts', teacher: 'Team P1', location: 'Art Corner', notesIt: 'Disegno e manipolazione', notesEn: 'Drawing & tactile crafts' },
+          { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Daily Review & Uscita (15:55)', subjectEn: 'Daily Review & Dismissal (15:55)', teacher: 'Team P1', notesIt: 'Chiusura giornata', notesEn: 'End of day reflection' }
+        ]
+      }
     },
     friday: {
       dayKey: 'friday',
@@ -604,15 +731,26 @@ export const SEBASTIAN_DATA: ChildData = {
           textEn: 'Empty backpack for weekend! (Saturday Horse Riding!)'
         }
       ],
-      schedule: [
-        { time: '08:30 – 10:05', type: 'lesson', subjectIt: 'Deutsch & Kreatives', subjectEn: 'German & Creative Play', teacher: 'Ms Faux', location: 'Classroom P1', notesIt: 'Attività creative in tedesco', notesEn: 'Creative activities in German' },
-        { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
-        { time: '10:50 – 11:35', type: 'lesson', subjectIt: 'English Storytelling', subjectEn: 'English Storytelling', teacher: 'Ms Rayment', location: 'Cozy Corner', notesIt: 'Storie & filastrocche', notesEn: 'Stories & rhymes' },
-        { time: '11:40 – 12:25', type: 'lesson', subjectIt: 'Early Math Games', subjectEn: 'Early Math Games', teacher: 'Ms Rayment', location: 'Classroom P1', notesIt: 'Giochi di gruppo con numeri', notesEn: 'Math group games' },
-        { time: '12:25 – 13:50', type: 'lunch', subjectIt: '🍽️ Pranzo & Mensa a Scuola', subjectEn: '🍽️ School Lunch & Play', notesIt: 'Mensa e ricreazione', notesEn: 'Supervised lunch & recess' },
-        { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'Free Play & Construction', subjectEn: 'Free Play & Construction', teacher: 'Team P1', location: 'Play Area', notesIt: 'Costruzioni e creatività', notesEn: 'Building blocks & creativity' },
-        { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Weekend Circle & Uscita (15:55)', subjectEn: 'Weekend Circle & Dismissal (15:55)', teacher: 'Team P1', notesIt: 'Sabato pomeriggio: 🐴 Cavallo / Horse riding!', notesEn: 'Saturday afternoon: 🐴 Horse riding!' }
-      ]
+      blocks: {
+        morning: [
+          { time: '08:30 – 10:05', type: 'lesson', subjectIt: 'Deutsch & Kreatives', subjectEn: 'German & Creative Play', teacher: 'Ms Faux', location: 'Classroom P1', notesIt: 'Attività creative in tedesco', notesEn: 'Creative activities in German' },
+          { time: '10:05 – 10:50', type: 'break', subjectIt: '☕ Ricreazione Mattino & Snack', subjectEn: '☕ Morning Break & Snack', notesIt: 'Pausa ricreazione', notesEn: 'Recess & snack' },
+          { time: '10:50 – 11:35', type: 'lesson', subjectIt: 'English Storytelling', subjectEn: 'English Storytelling', teacher: 'Ms Rayment', location: 'Cozy Corner', notesIt: 'Storie & filastrocche', notesEn: 'Stories & rhymes' },
+          { time: '11:40 – 12:25', type: 'lesson', subjectIt: 'Early Math Games', subjectEn: 'Early Math Games', teacher: 'Ms Rayment', location: 'Classroom P1', notesIt: 'Giochi di gruppo con numeri', notesEn: 'Math group games' }
+        ],
+        lunch: {
+          time: '12:25 – 13:50',
+          type: 'lunch',
+          subjectIt: '🍽️ Pranzo & Mensa a Scuola',
+          subjectEn: '🍽️ School Lunch & Play',
+          notesIt: 'Mensa e ricreazione',
+          notesEn: 'Supervised lunch & recess'
+        },
+        afternoon: [
+          { time: '13:50 – 15:35', type: 'lesson', subjectIt: 'Free Play & Construction', subjectEn: 'Free Play & Construction', teacher: 'Team P1', location: 'Play Area', notesIt: 'Costruzioni e creatività', notesEn: 'Building blocks & creativity' },
+          { time: '15:35 – 15:55', type: 'dismissal', subjectIt: 'Weekend Circle & Uscita (15:55)', subjectEn: 'Weekend Circle & Dismissal (15:55)', teacher: 'Team P1', notesIt: 'Sabato pomeriggio: 🐴 Cavallo / Horse riding!', notesEn: 'Saturday afternoon: 🐴 Horse riding!' }
+        ]
+      }
     }
   }
 };

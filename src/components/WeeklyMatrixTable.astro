@@ -13,9 +13,8 @@ const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'mond
 
 function getSlotClass(slot: any) {
   if (slot.type === 'break') return 'slot-break';
-  if (slot.type === 'lunch') return slot.isSpecial ? 'slot-lunch-home' : 'slot-lunch';
-  if (slot.type === 'afternoon_home') return 'slot-afternoon-home';
   if (slot.type === 'dismissal') return 'slot-dismissal';
+  if (slot.type === 'afternoon_home') return 'slot-afternoon-home';
 
   const s = (slot.subjectIt || '').toLowerCase();
   if (s.includes('sport') || s.includes('pe') || s.includes('movement')) return 'subject-sport';
@@ -41,11 +40,12 @@ function getTagClass(type: string) {
     {daysKeys.map((key) => {
       const d = child.days[key];
       const isToday = key === todayKey;
+      const b = d.blocks;
 
       return (
         <div class={`day-column ${isToday ? 'day-column-today' : ''}`}>
           
-          <!-- Column Header -->
+          <!-- 1. Column Day Header -->
           <div class={`day-column-header ${isToday ? 'day-column-header-today' : ''}`}>
             <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 2px;">
               <span style="font-size: 1.25rem;">{d.emoji}</span>
@@ -67,7 +67,7 @@ function getTagClass(type: string) {
             </div>
           </div>
 
-          <!-- Duty Strip -->
+          <!-- 2. Duty Strip -->
           <div class="duty-bar">
             <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
               {d.duty.avatarImg && (
@@ -97,7 +97,7 @@ function getTagClass(type: string) {
             )}
           </div>
 
-          <!-- Cose da Fare & Portare (Checklist) -->
+          <!-- 3. Checklist (Zaino / Compiti / Consegne) -->
           <div class="checklist-box">
             {d.checklist.map((c) => (
               <div class={`checklist-chip ${c.urgent ? 'checklist-chip-urgent' : ''}`}>
@@ -119,45 +119,134 @@ function getTagClass(type: string) {
             ))}
           </div>
 
-          <!-- Time Slots Grid (Lezioni + Break + Pranzo Costante + Dismissal) -->
-          <div class="lessons-container">
-            {d.schedule.map((s) => (
-              <div class={`slot-card ${getSlotClass(s)}`}>
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
-                  <span class="slot-time">{s.time}</span>
-                  {s.location && (
-                    <span style="font-size: 0.65rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                      {s.location}
-                    </span>
-                  )}
-                </div>
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  {s.avatarImg && (
-                    <img 
-                      src={`${baseUrl}${s.avatarImg}`} 
-                      alt="Avatar" 
-                      class="w-6 h-6 rounded-full object-cover ring-1 ring-amber-400 shadow shrink-0 bg-slate-950"
-                    />
-                  )}
+          <!-- 4. RETTANGOLONE MATTINA (08:30 - 12:25) -->
+          <div class="macro-block macro-block-morning">
+            <div class="macro-block-header macro-header-morning">
+              <span>
+                <span class="lang-it">☀️ Mattina</span>
+                <span class="lang-en">☀️ Morning</span>
+              </span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; opacity: 0.8;">08:30–12:25</span>
+            </div>
+            
+            <div class="macro-slots-container">
+              {b.morning.map((s) => (
+                <div class={`slot-card ${getSlotClass(s)}`}>
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                    <span class="slot-time">{s.time}</span>
+                    {s.location && (
+                      <span style="font-size: 0.65rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {s.location}
+                      </span>
+                    )}
+                  </div>
                   <div class="slot-title">
                     <span class="lang-it">{s.subjectIt}</span>
                     <span class="lang-en">{s.subjectEn}</span>
                   </div>
+                  {s.teacher && (
+                    <div class="slot-meta">
+                      <span class="lang-it">Prof: {s.teacher}</span>
+                      <span class="lang-en">Teacher: {s.teacher}</span>
+                    </div>
+                  )}
+                  {(s.notesIt || s.notesEn) && (
+                    <div class="slot-meta" style="font-style: italic; opacity: 0.85;">
+                      <span class="lang-it">{s.notesIt}</span>
+                      <span class="lang-en">{s.notesEn}</span>
+                    </div>
+                  )}
                 </div>
-                {s.teacher && (
-                  <div class="slot-meta">
-                    <span class="lang-it">Prof: {s.teacher}</span>
-                    <span class="lang-en">Teacher: {s.teacher}</span>
-                  </div>
-                )}
-                {(s.notesIt || s.notesEn) && (
-                  <div class="slot-meta" style="font-style: italic; opacity: 0.85;">
-                    <span class="lang-it">{s.notesIt}</span>
-                    <span class="lang-en">{s.notesEn}</span>
+              ))}
+            </div>
+          </div>
+
+          <!-- 5. RETTANGOLINO PAUSA PRANZO COSTANTE (12:25 - 13:50) -->
+          <div class={`lunch-ribbon-container ${b.lunch.isSpecial ? 'lunch-home-dad' : 'lunch-school'}`}>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 800; color: #fef08a;">
+                {b.lunch.time}
+              </span>
+              <span style="font-size: 0.62rem; font-weight: 800; text-transform: uppercase; opacity: 0.85; color: #cbd5e1;">
+                <span class="lang-it">Pausa Pranzo</span>
+                <span class="lang-en">Lunch Break</span>
+              </span>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 6px;">
+              {b.lunch.avatarImg && (
+                <img 
+                  src={`${baseUrl}${b.lunch.avatarImg}`} 
+                  alt="Papino" 
+                  class="w-7 h-7 rounded-full object-cover ring-2 ring-amber-400 shadow shrink-0 bg-slate-950"
+                />
+              )}
+              <div>
+                <div style="font-size: 0.76rem; font-weight: 900; line-height: 1.2; color: #ffffff;">
+                  <span class="lang-it">{b.lunch.subjectIt}</span>
+                  <span class="lang-en">{b.lunch.subjectEn}</span>
+                </div>
+                {(b.lunch.notesIt || b.lunch.notesEn) && (
+                  <div style="font-size: 0.65rem; opacity: 0.85; margin-top: 1px; color: #cbd5e1;">
+                    <span class="lang-it">{b.lunch.notesIt}</span>
+                    <span class="lang-en">{b.lunch.notesEn}</span>
                   </div>
                 )}
               </div>
-            ))}
+            </div>
+          </div>
+
+          <!-- 6. RETTANGOLONE POMERIGGIO (13:50 - 15:55) -->
+          <div class="macro-block macro-block-afternoon">
+            <div class="macro-block-header macro-header-afternoon">
+              <span>
+                <span class="lang-it">🌤️ Pomeriggio</span>
+                <span class="lang-en">🌤️ Afternoon</span>
+              </span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; opacity: 0.8;">13:50–15:55</span>
+            </div>
+            
+            <div class="macro-slots-container">
+              {b.afternoon.map((s) => (
+                <div class={`slot-card ${getSlotClass(s)}`}>
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                    <span class="slot-time">{s.time}</span>
+                    {s.location && (
+                      <span style="font-size: 0.65rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {s.location}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    {s.avatarImg && (
+                      <img 
+                        src={`${baseUrl}${s.avatarImg}`} 
+                        alt="Silvana" 
+                        class="w-6 h-6 rounded-full object-cover ring-1 ring-purple-400 shadow shrink-0 bg-slate-950"
+                      />
+                    )}
+                    <div class="slot-title">
+                      <span class="lang-it">{s.subjectIt}</span>
+                      <span class="lang-en">{s.subjectEn}</span>
+                    </div>
+                  </div>
+
+                  {s.teacher && (
+                    <div class="slot-meta">
+                      <span class="lang-it">Prof: {s.teacher}</span>
+                      <span class="lang-en">Teacher: {s.teacher}</span>
+                    </div>
+                  )}
+                  {(s.notesIt || s.notesEn) && (
+                    <div class="slot-meta" style="font-style: italic; opacity: 0.85;">
+                      <span class="lang-it">{s.notesIt}</span>
+                      <span class="lang-en">{s.notesEn}</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
         </div>
