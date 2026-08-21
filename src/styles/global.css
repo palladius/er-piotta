@@ -167,7 +167,7 @@ html[data-lang="en"] .lang-en-flex {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  min-height: 90px;
+  min-height: 85px;
   justify-content: center;
 }
 
@@ -189,7 +189,7 @@ html[data-lang="en"] .lang-en-flex {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 310px; /* Exact uniform height across all 5 columns */
+  height: 255px; /* Clean minimalist height */
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
@@ -221,19 +221,19 @@ html[data-lang="en"] .lang-en-flex {
 }
 
 .solid-slots-container {
-  padding: 5px;
+  padding: 6px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   flex: 1;
-  justify-content: space-between;
+  justify-content: space-around;
 }
 
 /* ROW 5: 🍽️ Lunch Ribbon Cells (Uniform Laser Aligned Row Across Mon–Fri) */
 .row-lunch-ribbon {
   border-radius: 12px;
   padding: 6px 8px;
-  height: 72px; /* Exact uniform height */
+  height: 68px; /* Exact uniform height */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -265,7 +265,7 @@ html[data-lang="en"] .lang-en-flex {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 185px; /* Exact uniform height across all 5 columns */
+  height: 155px; /* Clean minimalist height */
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
@@ -275,7 +275,7 @@ html[data-lang="en"] .lang-en-flex {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 82px;
+  height: 75px;
   background: rgba(15, 23, 42, 0.9);
   border: 1px solid rgba(99, 102, 241, 0.35);
 }
@@ -302,78 +302,65 @@ html[data-lang="en"] .lang-en-flex {
   padding: 4px 6px;
 }
 
-/* Individual Slot Cards */
+/* ============================================================
+   MINIMALIST SLOT CARD (08:30 🇩🇪 Tedesco)
+   ============================================================ */
 .slot-card {
-  padding: 4px 6px;
-  border-radius: 7px;
+  padding: 6px 8px;
+  border-radius: 8px;
   border: 1px solid var(--border-subtle);
   display: flex;
-  flex-direction: column;
-  gap: 1px;
-  transition: transform 0.15s ease, filter 0.15s ease;
+  align-items: center;
+  transition: transform 0.15s ease, filter 0.15s ease, border-color 0.15s ease;
+  cursor: pointer;
 }
 
 .slot-card:hover {
   transform: translateY(-1px);
-  filter: brightness(1.15);
+  filter: brightness(1.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.minimal-slot-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.slot-time-bold {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #fef08a;
+  white-space: nowrap;
+}
+
+.slot-icon {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.slot-subject-title {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .slot-double-period {
-  min-height: 70px;
-  justify-content: center;
+  min-height: 52px;
 }
 
 .slot-single-period {
-  min-height: 42px;
-}
-
-.slot-time {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
-  font-weight: 800;
-  opacity: 0.85;
-}
-
-.slot-title {
-  font-size: 0.74rem;
-  font-weight: 800;
-  color: #ffffff;
-  line-height: 1.15;
-}
-
-.slot-meta {
-  font-size: 0.62rem;
-  opacity: 0.75;
-  line-height: 1.15;
-}
-
-/* Break & Dismissal Slots */
-.slot-break {
-  background: repeating-linear-gradient(
-    -45deg,
-    rgba(30, 41, 59, 0.4),
-    rgba(30, 41, 59, 0.4) 6px,
-    rgba(51, 65, 85, 0.3) 6px,
-    rgba(51, 65, 85, 0.3) 12px
-  ) !important;
-  border: 1px dashed rgba(255, 255, 255, 0.15) !important;
-  padding: 3px 5px !important;
-  min-height: 26px !important;
-}
-.slot-break .slot-title {
-  font-size: 0.68rem !important;
-  color: #94a3b8 !important;
+  min-height: 38px;
 }
 
 .slot-dismissal {
   background: rgba(15, 23, 42, 0.85) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  padding: 3px 5px !important;
-  min-height: 32px !important;
-}
-.slot-dismissal .slot-title {
-  font-size: 0.68rem !important;
-  color: #cbd5e1 !important;
 }
 
 .slot-afternoon-silvana {

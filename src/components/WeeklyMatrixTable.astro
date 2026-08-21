@@ -94,9 +94,11 @@ function getEveningItems(checklist: ChecklistItem[]) {
             </span>
           </div>
           {d.duty.afternoonCareIt && (
-            <div style="display: flex; align-items: center; gap: 4px;">
-              <img src={`${baseUrl}/avatars/avatar_silvana.png`} alt="Silvana" class="w-3.5 h-3.5 rounded-full object-cover ring-1 ring-emerald-400/50" />
-              <span class="badge badge-emerald" style="font-size: 0.64rem; padding: 1px 6px;">
+            <div style="display: flex; align-items: center; gap: 5px; margin-top: 1px;">
+              {d.duty.afternoonCareAvatar && (
+                <img src={`${baseUrl}${d.duty.afternoonCareAvatar}`} alt="Silvana" class="w-5 h-5 rounded-full object-cover ring-1.5 ring-purple-400/80 shadow bg-slate-950" />
+              )}
+              <span class="badge badge-emerald" style="font-size: 0.65rem; padding: 1px 6px; font-weight: 800;">
                 <span class="lang-it">{d.duty.afternoonCareIt}</span>
                 <span class="lang-en">{d.duty.afternoonCareEn}</span>
               </span>
@@ -137,12 +139,11 @@ function getEveningItems(checklist: ChecklistItem[]) {
     })}
 
     <!-- ========================================================
-         ROW 4: ☀️ SOLID MATTINO (08:30 – 12:25) -> EXACT SAME Y!
+         ROW 4: ☀️ SOLID MATTINO (Ultra-Minimalist: 08:30 🇩🇪 Tedesco)
          ======================================================== -->
     <div class="axis-cell">
       <span style="color: #93c5fd; font-weight: 900; font-size: 0.72rem;">08:30</span>
-      <span style="color: #64748b; font-size: 0.62rem; margin: 40px 0;">10:50</span>
-      <span style="color: #93c5fd; font-weight: 900; font-size: 0.72rem;">12:25</span>
+      <span style="color: #93c5fd; font-weight: 900; font-size: 0.72rem; margin-top: 140px;">12:25</span>
     </div>
     {daysKeys.map((key) => {
       const d = child.days[key];
@@ -160,31 +161,16 @@ function getEveningItems(checklist: ChecklistItem[]) {
             {b.morning.map((s) => (
               <div 
                 class={`slot-card ${getSlotClass(s)} ${isDoublePeriod(s.time) ? 'slot-double-period' : 'slot-single-period'}`}
-                title={`${s.time} · ${s.location ? s.location + ' · ' : ''}${s.teacher ? 'Prof: ' + s.teacher : ''}`}
+                title={`${s.time} · ${s.location ? s.location + ' · ' : ''}${s.teacher ? 'Prof: ' + s.teacher + ' · ' : ''}${s.notesIt || ''}`}
               >
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
-                  <!-- Start Time in Bold (full time & classroom in tooltip) -->
-                  <span class="slot-time font-black" style="font-size: 0.72rem; color: #fef08a;">
-                    {s.startTime}
+                <div class="minimal-slot-line">
+                  <span class="slot-time-bold">{s.startTime}</span>
+                  <span class="slot-icon">{s.icon}</span>
+                  <span class="slot-subject-title">
+                    <span class="lang-it">{s.subjectIt}</span>
+                    <span class="lang-en">{s.subjectEn}</span>
                   </span>
-                  <span style="font-size: 0.8rem;">{s.icon}</span>
                 </div>
-                <div class="slot-title">
-                  <span class="lang-it">{s.subjectIt}</span>
-                  <span class="lang-en">{s.subjectEn}</span>
-                </div>
-                {s.teacher && (
-                  <div class="slot-meta">
-                    <span class="lang-it">Prof: {s.teacher}</span>
-                    <span class="lang-en">Teacher: {s.teacher}</span>
-                  </div>
-                )}
-                {(s.notesIt || s.notesEn) && (
-                  <div class="slot-meta" style="font-style: italic; opacity: 0.85;">
-                    <span class="lang-it">{s.notesIt}</span>
-                    <span class="lang-en">{s.notesEn}</span>
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -193,12 +179,11 @@ function getEveningItems(checklist: ChecklistItem[]) {
     })}
 
     <!-- ========================================================
-         ROW 5: 🍽️ PAUSA PRANZO (12:25 – 13:50) -> EXACT SAME Y!
+         ROW 5: 🍽️ PAUSA PRANZO (12:25 – 13:50)
          ======================================================== -->
     <div class="axis-cell">
       <span style="color: #f59e0b; font-weight: 900; font-size: 0.72rem;">12:25</span>
       <span style="font-size: 0.75rem;">🍽️</span>
-      <span style="color: #64748b; font-size: 0.58rem;">13:50</span>
     </div>
     {daysKeys.map((key) => {
       const d = child.days[key];
@@ -221,16 +206,10 @@ function getEveningItems(checklist: ChecklistItem[]) {
               <span style="font-size: 1rem;">🍽️</span>
             )}
             <div style="overflow: hidden;">
-              <div style="font-size: 0.72rem; font-weight: 900; line-height: 1.2; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              <div style="font-size: 0.74rem; font-weight: 900; line-height: 1.2; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 <span class="lang-it">{b.lunch.subjectIt}</span>
                 <span class="lang-en">{b.lunch.subjectEn}</span>
               </div>
-              {(b.lunch.notesIt || b.lunch.notesEn) && (
-                <div style="font-size: 0.6rem; opacity: 0.85; margin-top: 1px; color: #fef08a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                  <span class="lang-it">{b.lunch.notesIt}</span>
-                  <span class="lang-en">{b.lunch.notesEn}</span>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -238,12 +217,11 @@ function getEveningItems(checklist: ChecklistItem[]) {
     })}
 
     <!-- ========================================================
-         ROW 6: 🌤️ SOLID POMERIGGIO (13:50 – 15:55) -> EXACT SAME Y!
+         ROW 6: 🌤️ SOLID POMERIGGIO (Ultra-Minimalist)
          ======================================================== -->
     <div class="axis-cell">
       <span style="color: #d8b4fe; font-weight: 900; font-size: 0.72rem;">13:50</span>
-      <span style="color: #64748b; font-size: 0.62rem; margin: 30px 0;">15:35</span>
-      <span style="color: #38bdf8; font-weight: 900; font-size: 0.72rem;">15:55 🔔</span>
+      <span style="color: #38bdf8; font-weight: 900; font-size: 0.72rem; margin-top: 80px;">15:55 🔔</span>
     </div>
     {daysKeys.map((key) => {
       const d = child.days[key];
@@ -261,38 +239,20 @@ function getEveningItems(checklist: ChecklistItem[]) {
             {b.afternoon.map((s) => (
               <div 
                 class={`slot-card ${getSlotClass(s)} ${s.type === 'afternoon_home' ? '' : (isDoublePeriod(s.time) ? 'slot-double-period' : 'slot-single-period')}`}
-                title={`${s.time} · ${s.location ? s.location + ' · ' : ''}${s.teacher ? 'Prof: ' + s.teacher : ''}`}
+                title={`${s.time} · ${s.location ? s.location + ' · ' : ''}${s.teacher ? 'Prof: ' + s.teacher + ' · ' : ''}${s.notesIt || ''}`}
               >
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
-                  <!-- Start time in bold -->
-                  <span class="slot-time font-black" style="font-size: 0.72rem; color: #fef08a;">
-                    {s.startTime}
-                  </span>
-                  <span style="font-size: 0.8rem;">{s.icon}</span>
-                </div>
-                
-                <div style="display: flex; align-items: center; gap: 5px;">
-                  {s.avatarImg && (
-                    <img src={`${baseUrl}${s.avatarImg}`} alt="Silvana" class="w-5 h-5 rounded-full object-cover ring-1 ring-purple-400 shadow shrink-0 bg-slate-950" />
+                <div class="minimal-slot-line">
+                  <span class="slot-time-bold">{s.startTime}</span>
+                  {s.avatarImg ? (
+                    <img src={`${baseUrl}${s.avatarImg}`} alt="Silvana" class="w-5 h-5 rounded-full object-cover ring-1.5 ring-purple-300 shadow shrink-0 bg-slate-950" />
+                  ) : (
+                    <span class="slot-icon">{s.icon}</span>
                   )}
-                  <div class="slot-title">
+                  <span class="slot-subject-title">
                     <span class="lang-it">{s.subjectIt}</span>
                     <span class="lang-en">{s.subjectEn}</span>
-                  </div>
+                  </span>
                 </div>
-
-                {s.teacher && (
-                  <div class="slot-meta">
-                    <span class="lang-it">Prof: {s.teacher}</span>
-                    <span class="lang-en">Teacher: {s.teacher}</span>
-                  </div>
-                )}
-                {(s.notesIt || s.notesEn) && (
-                  <div class="slot-meta" style="font-style: italic; opacity: 0.85;">
-                    <span class="lang-it">{s.notesIt}</span>
-                    <span class="lang-en">{s.notesEn}</span>
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -301,12 +261,11 @@ function getEveningItems(checklist: ChecklistItem[]) {
     })}
 
     <!-- ========================================================
-         ROW 7: ⭐ EXTRA-CURRICULARI & DOPO SCUOLA (16:00+) -> EXACT SAME Y!
+         ROW 7: ⭐ EXTRA-CURRICULARI & DOPO SCUOLA
          ======================================================== -->
     <div class="axis-cell">
       <span style="color: #a5b4fc; font-weight: 900; font-size: 0.72rem;">16:00+</span>
       <span style="font-size: 0.75rem;">🎭</span>
-      <span style="color: #64748b; font-size: 0.58rem;">18:30</span>
     </div>
     {daysKeys.map((key) => {
       const d = child.days[key];
@@ -322,17 +281,13 @@ function getEveningItems(checklist: ChecklistItem[]) {
             <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; opacity: 0.85;">{b.extra.time}</span>
           </div>
           <div class="extra-inner-content">
-            <div class={b.extra.hasActivity ? 'extra-active-card' : 'extra-relax-card'}>
+            <div class={b.extra.hasActivity ? 'extra-active-card' : 'extra-relax-card'} title={`${b.extra.time} · Gestione: ${b.extra.managedByIt} · ${b.extra.notesIt || ''}`}>
               <div style="font-size: 0.72rem; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 4px;">
                 <span>{b.extra.icon}</span>
                 <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                   <span class="lang-it">{b.extra.titleIt}</span>
                   <span class="lang-en">{b.extra.titleEn}</span>
                 </span>
-              </div>
-              <div style="font-size: 0.6rem; color: #cbd5e1; opacity: 0.9; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                <span class="lang-it">{b.extra.notesIt}</span>
-                <span class="lang-en">{b.extra.notesEn}</span>
               </div>
               {eveningHomework.length > 0 && (
                 <div style="font-size: 0.58rem; color: #fef08a; margin-top: 2px; display: flex; align-items: center; gap: 3px;">

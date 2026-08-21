@@ -7,6 +7,7 @@ export interface DutyInfo {
   notesEn: string;
   afternoonCareIt?: string;
   afternoonCareEn?: string;
+  afternoonCareAvatar?: string;
 }
 
 export interface TimeSlot {
@@ -108,8 +109,9 @@ export const PARENT_DUTIES: Record<string, DutyInfo> = {
     avatarImg: '/avatars/avatar_riccardo.png',
     notesIt: 'Il Papà porta al mattino. Uscita ore 12:30!',
     notesEn: 'Dad handles morning drop-off. Early dismissal at 12:30!',
-    afternoonCareIt: '🏠 Pomeriggio con Silvana!',
-    afternoonCareEn: '🏠 Afternoon with Silvana!'
+    afternoonCareIt: '🏠 Silvana: 13:30–19:00',
+    afternoonCareEn: '🏠 Silvana: 13:30–19:00',
+    afternoonCareAvatar: '/avatars/avatar_silvana.png'
   },
   thursday: {
     parent: 'papa',
@@ -334,7 +336,7 @@ export const ALESSANDRO_DATA: ChildData = {
         lunch: {
           time: '12:30',
           startTime: '12:30',
-          endTime: '13:50',
+          endTime: '13:30',
           type: 'lunch',
           isSpecial: true,
           icon: '👨‍👦',
@@ -346,17 +348,17 @@ export const ALESSANDRO_DATA: ChildData = {
         },
         afternoon: [
           {
-            time: '13:50 – 15:55',
-            startTime: '13:50',
-            endTime: '15:55',
+            time: '13:30 – 19:00',
+            startTime: '13:30',
+            endTime: '19:00',
             type: 'afternoon_home',
             isSpecial: true,
             icon: '🏠',
             avatarImg: '/avatars/avatar_silvana.png',
-            subjectIt: 'Pomeriggio a Casa con Silvana',
-            subjectEn: 'Afternoon at Home with Silvana',
-            notesIt: 'Pomeriggio tranquillo e compiti con Tata Silvana',
-            notesEn: 'Afternoon homework & play with Silvana'
+            subjectIt: 'Silvana a Casa (13:30–19:00)',
+            subjectEn: 'Silvana at Home (13:30–19:00)',
+            notesIt: 'Tata Silvana gestisce il pomeriggio a casa e compiti dalle 13:30 alle 19:00',
+            notesEn: 'Silvana manages afternoon at home & homework from 13:30 to 19:00'
           }
         ],
         extra: {
@@ -717,7 +719,7 @@ export const SEBASTIAN_DATA: ChildData = {
         lunch: {
           time: '12:30',
           startTime: '12:30',
-          endTime: '13:50',
+          endTime: '13:30',
           type: 'lunch',
           isSpecial: true,
           icon: '👨‍👦',
@@ -729,17 +731,17 @@ export const SEBASTIAN_DATA: ChildData = {
         },
         afternoon: [
           {
-            time: '13:50 – 15:55',
-            startTime: '13:50',
-            endTime: '15:55',
+            time: '13:30 – 19:00',
+            startTime: '13:30',
+            endTime: '19:00',
             type: 'afternoon_home',
             isSpecial: true,
             icon: '🏠',
             avatarImg: '/avatars/avatar_silvana.png',
-            subjectIt: 'Pomeriggio a Casa con Silvana',
-            subjectEn: 'Afternoon at Home with Silvana',
-            notesIt: 'Pomeriggio tranquillo e giochi educativi a casa',
-            notesEn: 'Afternoon play & activities with Silvana'
+            subjectIt: 'Silvana a Casa (13:30–19:00)',
+            subjectEn: 'Silvana at Home (13:30–19:00)',
+            notesIt: 'Tata Silvana gestisce il pomeriggio a casa e giochi dalle 13:30 alle 19:00',
+            notesEn: 'Silvana manages afternoon at home & play from 13:30 to 19:00'
           }
         ],
         extra: {

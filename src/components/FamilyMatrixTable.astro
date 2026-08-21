@@ -16,176 +16,199 @@ function getEveningItems(checklist: ChecklistItem[]) {
 }
 ---
 
-<div class="timetable-wrapper">
-  <div class="timetable-grid">
+<div class="table-scroll-wrapper">
+  <div class="table-2d-matrix">
+
+    <!-- ROW 1: HEADERS -->
+    <div class="axis-cell"><span style="font-size: 0.6rem; color: #475569;">Giorno</span></div>
+    {daysKeys.map((key) => {
+      const aleDay = ALESSANDRO_DATA.days[key];
+      const isToday = key === todayKey;
+      return (
+        <div class={`row-header-cell ${isToday ? 'row-header-today' : ''}`}>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 2px;">
+            <span style="font-size: 1.2rem;">{aleDay.emoji}</span>
+            <strong style="font-size: 0.95rem; color: #ffffff; text-transform: capitalize;">
+              <span class="lang-it">{aleDay.dayNameIt.split(' ')[0]}</span>
+              <span class="lang-en">{aleDay.dayNameEn.split(' ')[0]}</span>
+            </strong>
+          </div>
+          {isToday && (
+            <span style="display: inline-block; font-size: 0.6rem; font-weight: 900; text-transform: uppercase; background: #f59e0b; color: #000000; padding: 1px 7px; border-radius: 9999px; margin-bottom: 2px;">
+              <span class="lang-it">Oggi</span>
+              <span class="lang-en">Today</span>
+            </span>
+          )}
+        </div>
+      );
+    })}
+
+    <!-- ROW 2: DUTY -->
+    <div class="axis-cell"><span style="font-size: 0.58rem; color: #475569;">Turno</span></div>
+    {daysKeys.map((key) => {
+      const duty = PARENT_DUTIES[key];
+      return (
+        <div class="row-duty-cell">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+            {duty.avatarImg && (
+              <img src={`${baseUrl}${duty.avatarImg}`} alt="Duty" class="w-4 h-4 rounded-full object-cover ring-1 ring-amber-400/50" />
+            )}
+            <span class={`badge ${duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'}`} style="font-size: 0.68rem; padding: 2px 7px;">
+              <span class="lang-it">{duty.parentNameIt.split(' ')[1]} ({duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
+              <span class="lang-en">{duty.parentNameEn.split(' ')[1]} ({duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
+            </span>
+          </div>
+          {duty.afternoonCareIt && (
+            <div style="display: flex; align-items: center; gap: 5px; margin-top: 1px;">
+              {duty.afternoonCareAvatar && (
+                <img src={`${baseUrl}${duty.afternoonCareAvatar}`} alt="Silvana" class="w-5 h-5 rounded-full object-cover ring-1.5 ring-purple-400/80 shadow bg-slate-950" />
+              )}
+              <span class="badge badge-emerald" style="font-size: 0.65rem; padding: 1px 6px; font-weight: 800;">
+                <span class="lang-it">{duty.afternoonCareIt}</span>
+                <span class="lang-en">{duty.afternoonCareEn}</span>
+              </span>
+            </div>
+          )}
+        </div>
+      );
+    })}
+
+    <!-- ROW 3: ZAINI MATTINO -->
+    <div class="axis-cell"><span style="font-size: 0.75rem;">🎒</span></div>
     {daysKeys.map((key) => {
       const aleDay = ALESSANDRO_DATA.days[key];
       const sebiDay = SEBASTIAN_DATA.days[key];
-      const duty = PARENT_DUTIES[key];
-      const isToday = key === todayKey;
-
       const aleBackpack = getBackpackItems(aleDay.checklist);
       const sebiBackpack = getBackpackItems(sebiDay.checklist);
-      const aleEvening = getEveningItems(aleDay.checklist);
-      const sebiEvening = getEveningItems(sebiDay.checklist);
-
       return (
-        <div class={`day-column ${isToday ? 'day-column-today' : ''}`}>
-          
-          <!-- Column Header -->
-          <div class={`day-column-header ${isToday ? 'day-column-header-today' : ''}`}>
-            <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 2px;">
-              <span style="font-size: 1.25rem;">{aleDay.emoji}</span>
-              <strong style="font-size: 1rem; color: #ffffff; text-transform: capitalize;">
-                <span class="lang-it">{aleDay.dayNameIt.split(' ')[0]}</span>
-                <span class="lang-en">{aleDay.dayNameEn.split(' ')[0]}</span>
-              </strong>
-            </div>
-            
-            {isToday && (
-              <span style="display: inline-block; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; background: #f59e0b; color: #000000; padding: 1px 8px; border-radius: 9999px; margin-bottom: 2px;">
-                <span class="lang-it">Oggi</span>
-                <span class="lang-en">Today</span>
-              </span>
-            )}
+        <div class="row-ghost-checklist">
+          <div class="ghost-checklist-row" style="font-size: 0.65rem;">
+            <span style="color: #93c5fd; font-weight: 800;">Ale:</span>
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+              {aleBackpack.map(i => i.textIt).join(', ')}
+            </span>
           </div>
-
-          <!-- Duty Strip -->
-          <div class="duty-bar">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-              {duty.avatarImg && (
-                <img 
-                  src={`${baseUrl}${duty.avatarImg}`} 
-                  alt="Duty" 
-                  class="w-5 h-5 rounded-full object-cover ring-1 ring-amber-400/50"
-                />
-              )}
-              <span class={`badge ${duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'}`} style="font-size: 0.7rem; padding: 2px 8px;">
-                <span class="lang-it">{duty.parentNameIt.split(' ')[1]} ({duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
-                <span class="lang-en">{duty.parentNameEn.split(' ')[1]} ({duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
-              </span>
-            </div>
-            {duty.afternoonCareIt && (
-              <div style="display: flex; align-items: center; gap: 4px;">
-                <img 
-                  src={`${baseUrl}/avatars/avatar_silvana.png`} 
-                  alt="Silvana" 
-                  class="w-4 h-4 rounded-full object-cover ring-1 ring-emerald-400/50"
-                />
-                <span class="badge badge-emerald" style="font-size: 0.68rem; padding: 2px 8px;">
-                  <span class="lang-it">{duty.afternoonCareIt}</span>
-                  <span class="lang-en">{duty.afternoonCareEn}</span>
-                </span>
-              </div>
-            )}
+          <div class="ghost-checklist-row" style="font-size: 0.65rem;">
+            <span style="color: #6ee7b7; font-weight: 800;">Sebi:</span>
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+              {sebiBackpack.map(i => i.textIt).join(', ')}
+            </span>
           </div>
+        </div>
+      );
+    })}
 
-          <!-- 1. GHOST: ZAINO MATTINA FAMIGLIA -->
-          <div class="ghost-backpack-card">
-            <div class="ghost-header">
-              <span>🎒</span>
-              <span class="lang-it">ZAINI MATTINO</span>
-              <span class="lang-en">MORNING BAGS</span>
-            </div>
+    <!-- ROW 4: SOLID MATTINO CONFRONTO -->
+    <div class="axis-cell"><span style="color: #93c5fd; font-weight: 900; font-size: 0.7rem;">08:30<br>12:25</span></div>
+    {daysKeys.map((key) => {
+      const aleDay = ALESSANDRO_DATA.days[key];
+      const sebiDay = SEBASTIAN_DATA.days[key];
+      return (
+        <div class="row-solid-morning" style="height: 275px;">
+          <div class="solid-header solid-header-morning">
+            <span>☀️ MATTINO</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;">08:30–12:25</span>
+          </div>
+          <div class="solid-slots-container">
             <!-- Ale -->
-            <div class="ghost-row" style="font-size: 0.65rem;">
-              <span style="color: #93c5fd; font-weight: 800;">Ale:</span>
-              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
-                {aleBackpack.map(i => i.textIt).join(', ')}
-              </span>
+            <div style="background: rgba(30, 58, 138, 0.35); border: 1px solid #3b82f6; border-radius: 6px; padding: 4px 6px;">
+              <div style="font-size: 0.68rem; font-weight: 900; color: #93c5fd; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
+                <img src={`${baseUrl}/avatars/avatar_ale.png`} class="w-3.5 h-3.5 rounded-full" alt="Ale" />
+                <span>Ale (P3)</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                {aleDay.blocks.morning.map(s => (
+                  <div style="font-size: 0.64rem; display: flex; align-items: center; gap: 4px; color: #f1f5f9;" title={`${s.time} · ${s.location || ''} · ${s.notesIt || ''}`}>
+                    <span style="color: #fef08a; font-family: 'JetBrains Mono', monospace; font-weight: 800;">{s.startTime}</span>
+                    <span>{s.icon}</span>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{s.subjectIt}</span>
+                  </div>
+                ))}
+              </div>
             </div>
             <!-- Sebi -->
-            <div class="ghost-row" style="font-size: 0.65rem;">
-              <span style="color: #6ee7b7; font-weight: 800;">Sebi:</span>
-              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
-                {sebiBackpack.map(i => i.textIt).join(', ')}
-              </span>
-            </div>
-          </div>
-
-          <!-- 2. SOLIDO: MATTINO CONFRONTO -->
-          <div class="solid-morning-container">
-            <div class="solid-block-header solid-header-morning">
-              <span>☀️ MATTINO</span>
-              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;">08:30–12:25</span>
-            </div>
-
-            <div class="solid-slots-inner">
-              <!-- Ale morning -->
-              <div style="background: rgba(30, 58, 138, 0.4); border: 1px solid #3b82f6; border-radius: 6px; padding: 4px 6px;">
-                <div style="font-size: 0.72rem; font-weight: 900; color: #93c5fd; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
-                  <img src={`${baseUrl}/avatars/avatar_ale.png`} class="w-4 h-4 rounded-full" alt="Ale" />
-                  <span>Ale (P3)</span>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 2px;">
-                  {aleDay.blocks.morning.map(s => (
-                    <div style="font-size: 0.65rem; display: flex; justify-content: space-between; color: #f1f5f9;">
-                      <span style="color: #fef08a; font-family: 'JetBrains Mono', monospace;">{s.time.split('–')[0].trim()}</span>
-                      <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{s.subjectIt}</span>
-                    </div>
-                  ))}
-                </div>
+            <div style="background: rgba(6, 78, 59, 0.35); border: 1px solid #10b981; border-radius: 6px; padding: 4px 6px;">
+              <div style="font-size: 0.68rem; font-weight: 900; color: #6ee7b7; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
+                <img src={`${baseUrl}/avatars/avatar_sebi.png`} class="w-3.5 h-3.5 rounded-full" alt="Sebi" />
+                <span>Sebi (P1)</span>
               </div>
-
-              <!-- Sebi morning -->
-              <div style="background: rgba(6, 78, 59, 0.4); border: 1px solid #10b981; border-radius: 6px; padding: 4px 6px;">
-                <div style="font-size: 0.72rem; font-weight: 900; color: #6ee7b7; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
-                  <img src={`${baseUrl}/avatars/avatar_sebi.png`} class="w-4 h-4 rounded-full" alt="Sebi" />
-                  <span>Sebi (P1)</span>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 2px;">
-                  {sebiDay.blocks.morning.map(s => (
-                    <div style="font-size: 0.65rem; display: flex; justify-content: space-between; color: #f1f5f9;">
-                      <span style="color: #fef08a; font-family: 'JetBrains Mono', monospace;">{s.time.split('–')[0].trim()}</span>
-                      <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{s.subjectIt}</span>
-                    </div>
-                  ))}
-                </div>
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                {sebiDay.blocks.morning.map(s => (
+                  <div style="font-size: 0.64rem; display: flex; align-items: center; gap: 4px; color: #f1f5f9;" title={`${s.time} · ${s.location || ''} · ${s.notesIt || ''}`}>
+                    <span style="color: #fef08a; font-family: 'JetBrains Mono', monospace; font-weight: 800;">{s.startTime}</span>
+                    <span>{s.icon}</span>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{s.subjectIt}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
+        </div>
+      );
+    })}
 
-          <!-- 3. PAUSA PRANZO (12:25 – 13:50) -->
-          {aleDay.blocks.lunch.isSpecial ? (
-            <div class="solid-lunch-papino">
-              <img src={`${baseUrl}/avatars/avatar_riccardo.png`} class="w-8 h-8 rounded-full ring-2 ring-amber-300 bg-slate-950" alt="Papino" />
-              <div style="overflow: hidden;">
-                <div style="font-size: 0.74rem; font-weight: 900; color: #ffffff;">🏠 12:30 PRANZO CON PAPINO!</div>
-                <div style="font-size: 0.62rem; color: #fef08a;">Uscita anticipata per entrambi</div>
-              </div>
-            </div>
-          ) : (
-            <div class="ghost-lunch-strip">
-              <span style="font-size: 0.65rem; color: #94a3b8;">🍽️ 12:25–13:50 Mensa a Scuola (Entrambi)</span>
-              <span style="font-size: 0.58rem; color: #64748b;">85m</span>
-            </div>
-          )}
-
-          <!-- 4. SOLIDO: POMERIGGIO CONFRONTO -->
-          <div class="solid-afternoon-container">
-            <div class="solid-block-header solid-header-afternoon">
-              <span>🌤️ POMERIGGIO</span>
-              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;">13:50–15:55</span>
-            </div>
-
-            <div class="solid-slots-inner">
-              {aleDay.blocks.afternoon.map(s => (
-                <div style={`font-size: 0.68rem; padding: 4px 6px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; ${s.type === 'afternoon_home' ? 'background: #581c87; border: 1px solid #c084fc; color: #ffffff;' : 'background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.15); color: #f1f5f9;'}`}>
-                  <span style="font-family: 'JetBrains Mono', monospace; color: #fef08a;">{s.time.split('–')[0].trim()}</span>
-                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700;">{s.subjectIt}</span>
-                </div>
-              ))}
+    <!-- ROW 5: PRANZO -->
+    <div class="axis-cell"><span style="color: #f59e0b; font-weight: 900; font-size: 0.7rem;">12:25</span></div>
+    {daysKeys.map((key) => {
+      const aleDay = ALESSANDRO_DATA.days[key];
+      return aleDay.blocks.lunch.isSpecial ? (
+        <div class="row-lunch-ribbon lunch-home-papino">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <img src={`${baseUrl}/avatars/avatar_riccardo.png`} class="w-7 h-7 rounded-full ring-2 ring-amber-300 bg-slate-950" alt="Papino" />
+            <div style="overflow: hidden;">
+              <div style="font-size: 0.72rem; font-weight: 900; color: #ffffff;">🏠 12:30 PRANZO CON PAPINO!</div>
+              <div style="font-size: 0.6rem; color: #fef08a;">Uscita anticipata per entrambi</div>
             </div>
           </div>
+        </div>
+      ) : (
+        <div class="row-lunch-ribbon lunch-school-transparent">
+          <span style="font-size: 0.66rem; color: #94a3b8; font-weight: 600;">🍽️ 12:25 Mensa a Scuola (Entrambi)</span>
+        </div>
+      );
+    })}
 
-          <!-- 5. GHOST: COMPITI SERA & EXTRA -->
-          <div class="ghost-evening-card">
-            <div class="ghost-evening-header">
-              <span>🌙</span>
-              <span>EXTRA & COMPITI</span>
-            </div>
+    <!-- ROW 6: SOLID POMERIGGIO CONFRONTO -->
+    <div class="axis-cell"><span style="color: #d8b4fe; font-weight: 900; font-size: 0.7rem;">13:50<br>15:55</span></div>
+    {daysKeys.map((key) => {
+      const aleDay = ALESSANDRO_DATA.days[key];
+      const sebiDay = SEBASTIAN_DATA.days[key];
+      return (
+        <div class="row-solid-afternoon" style="height: 165px;">
+          <div class="solid-header solid-header-afternoon">
+            <span>🌤️ POMERIGGIO</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;">13:50–15:55</span>
+          </div>
+          <div class="solid-slots-container">
+            {aleDay.blocks.afternoon.map(s => (
+              <div class="minimal-slot-line" style={`font-size: 0.68rem; padding: 4px 6px; border-radius: 6px; ${s.type === 'afternoon_home' ? 'background: #581c87; border: 1px solid #c084fc; color: #ffffff;' : 'background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.15); color: #f1f5f9;'}`} title={`${s.time} · ${s.notesIt || ''}`}>
+                <span style="font-family: 'JetBrains Mono', monospace; color: #fef08a; font-weight: 800;">{s.startTime}</span>
+                {s.avatarImg ? (
+                  <img src={`${baseUrl}${s.avatarImg}`} class="w-4 h-4 rounded-full" alt="Silvana" />
+                ) : (
+                  <span>{s.icon}</span>
+                )}
+                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700;">{s.subjectIt}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    })}
+
+    <!-- ROW 7: EXTRA & DOPO SCUOLA -->
+    <div class="axis-cell"><span style="color: #a5b4fc; font-weight: 900; font-size: 0.7rem;">16:00+</span></div>
+    {daysKeys.map((key) => {
+      const aleDay = ALESSANDRO_DATA.days[key];
+      const sebiDay = SEBASTIAN_DATA.days[key];
+      return (
+        <div class="row-ghost-extra">
+          <div class="solid-header solid-header-extra">
+            <span>⭐ DOPO SCUOLA</span>
+          </div>
+          <div class="extra-inner-content">
             {aleDay.blocks.extra.hasActivity && (
-              <div class="ghost-row" style="color: #93c5fd; font-size: 0.65rem;">
+              <div class="ghost-checklist-row" style="color: #93c5fd; font-size: 0.64rem;">
                 <span>{aleDay.blocks.extra.icon}</span>
                 <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
                   {aleDay.blocks.extra.titleIt}
@@ -193,7 +216,7 @@ function getEveningItems(checklist: ChecklistItem[]) {
               </div>
             )}
             {sebiDay.blocks.extra.hasActivity && (
-              <div class="ghost-row" style="color: #6ee7b7; font-size: 0.65rem;">
+              <div class="ghost-checklist-row" style="color: #6ee7b7; font-size: 0.64rem;">
                 <span>{sebiDay.blocks.extra.icon}</span>
                 <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
                   {sebiDay.blocks.extra.titleIt}
@@ -201,9 +224,9 @@ function getEveningItems(checklist: ChecklistItem[]) {
               </div>
             )}
           </div>
-
         </div>
       );
     })}
+
   </div>
 </div>
