@@ -17,7 +17,7 @@ function isDoublePeriod(timeStr: string) {
 
 function getSlotClass(slot: any) {
   if (slot.type === 'dismissal') return 'slot-dismissal';
-  if (slot.type === 'afternoon_home') return 'slot-afternoon-silvana';
+  if (slot.type === 'afternoon_home') return 'slot-afternoon-silvana-large';
 
   const s = (slot.subjectIt || '').toLowerCase();
   if (s.includes('sport') || s.includes('movimento')) return 'subject-sport';
@@ -75,7 +75,7 @@ function getEveningItems(checklist: ChecklistItem[]) {
     })}
 
     <!-- ========================================================
-         ROW 2: PARENT DUTY STRIPS
+         ROW 2: PARENT DUTY STRIPS (With Large Avatars)
          ======================================================== -->
     <div class="axis-cell">
       <span style="font-size: 0.58rem; text-transform: uppercase; color: #475569;">Turno</span>
@@ -84,21 +84,21 @@ function getEveningItems(checklist: ChecklistItem[]) {
       const d = child.days[key];
       return (
         <div class="row-duty-cell">
-          <div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
             {d.duty.avatarImg && (
-              <img src={`${baseUrl}${d.duty.avatarImg}`} alt="Duty" class="w-4 h-4 rounded-full object-cover ring-1 ring-amber-400/50" />
+              <img src={`${baseUrl}${d.duty.avatarImg}`} alt="Duty" class="w-5 h-5 rounded-full object-cover ring-1.5 ring-amber-400/70" />
             )}
-            <span class={`badge ${d.duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'}`} style="font-size: 0.68rem; padding: 2px 7px;">
+            <span class={`badge ${d.duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'}`} style="font-size: 0.7rem; padding: 2px 8px;">
               <span class="lang-it">{d.duty.parentNameIt.split(' ')[1]} ({d.duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
               <span class="lang-en">{d.duty.parentNameEn.split(' ')[1]} ({d.duty.parent === 'mamma' ? 'Kate' : 'Ricc'})</span>
             </span>
           </div>
           {d.duty.afternoonCareIt && (
-            <div style="display: flex; align-items: center; gap: 5px; margin-top: 1px;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-top: 1px;">
               {d.duty.afternoonCareAvatar && (
-                <img src={`${baseUrl}${d.duty.afternoonCareAvatar}`} alt="Silvana" class="w-5 h-5 rounded-full object-cover ring-1.5 ring-purple-400/80 shadow bg-slate-950" />
+                <img src={`${baseUrl}${d.duty.afternoonCareAvatar}`} alt="Silvana" class="w-8 h-8 rounded-full object-cover ring-2 ring-purple-400 shadow-md bg-slate-950" />
               )}
-              <span class="badge badge-emerald" style="font-size: 0.65rem; padding: 1px 6px; font-weight: 800;">
+              <span class="badge badge-emerald" style="font-size: 0.68rem; padding: 2px 8px; font-weight: 800;">
                 <span class="lang-it">{d.duty.afternoonCareIt}</span>
                 <span class="lang-en">{d.duty.afternoonCareEn}</span>
               </span>
@@ -139,7 +139,7 @@ function getEveningItems(checklist: ChecklistItem[]) {
     })}
 
     <!-- ========================================================
-         ROW 4: ☀️ SOLID MATTINO (Ultra-Minimalist: 08:30 🇩🇪 Tedesco)
+         ROW 4: ☀️ SOLID MATTINO (4-Row Fixed Period Subgrid)
          ======================================================== -->
     <div class="axis-cell">
       <span style="color: #93c5fd; font-weight: 900; font-size: 0.72rem;">08:30</span>
@@ -157,10 +157,12 @@ function getEveningItems(checklist: ChecklistItem[]) {
             </span>
             <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; opacity: 0.85;">08:30–12:25</span>
           </div>
-          <div class="solid-slots-container">
+          
+          <!-- Exact 4-Period Grid Subgrid: Double periods span 2 rows, single periods span 1 row -->
+          <div class="morning-grid-slots">
             {b.morning.map((s) => (
               <div 
-                class={`slot-card ${getSlotClass(s)} ${isDoublePeriod(s.time) ? 'slot-double-period' : 'slot-single-period'}`}
+                class={`slot-card ${getSlotClass(s)} ${isDoublePeriod(s.time) ? 'slot-span-2' : 'slot-span-1'}`}
                 title={`${s.time} · ${s.location ? s.location + ' · ' : ''}${s.teacher ? 'Prof: ' + s.teacher + ' · ' : ''}${s.notesIt || ''}`}
               >
                 <div class="minimal-slot-line">
@@ -201,7 +203,7 @@ function getEveningItems(checklist: ChecklistItem[]) {
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             {b.lunch.avatarImg ? (
-              <img src={`${baseUrl}${b.lunch.avatarImg}`} alt="Papino" class="w-7 h-7 rounded-full object-cover ring-2 ring-amber-300 shadow shrink-0 bg-slate-950" />
+              <img src={`${baseUrl}${b.lunch.avatarImg}`} alt="Papino" class="w-8 h-8 rounded-full object-cover ring-2 ring-amber-300 shadow shrink-0 bg-slate-950" />
             ) : (
               <span style="font-size: 1rem;">🍽️</span>
             )}
@@ -217,7 +219,7 @@ function getEveningItems(checklist: ChecklistItem[]) {
     })}
 
     <!-- ========================================================
-         ROW 6: 🌤️ SOLID POMERIGGIO (Ultra-Minimalist)
+         ROW 6: 🌤️ SOLID POMERIGGIO (With 3x Silvana Avatar)
          ======================================================== -->
     <div class="axis-cell">
       <span style="color: #d8b4fe; font-weight: 900; font-size: 0.72rem;">13:50</span>
@@ -235,25 +237,41 @@ function getEveningItems(checklist: ChecklistItem[]) {
             </span>
             <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; opacity: 0.85;">13:50–15:55</span>
           </div>
-          <div class="solid-slots-container">
+          
+          <div class="afternoon-grid-slots">
             {b.afternoon.map((s) => (
-              <div 
-                class={`slot-card ${getSlotClass(s)} ${s.type === 'afternoon_home' ? '' : (isDoublePeriod(s.time) ? 'slot-double-period' : 'slot-single-period')}`}
-                title={`${s.time} · ${s.location ? s.location + ' · ' : ''}${s.teacher ? 'Prof: ' + s.teacher + ' · ' : ''}${s.notesIt || ''}`}
-              >
-                <div class="minimal-slot-line">
-                  <span class="slot-time-bold">{s.startTime}</span>
-                  {s.avatarImg ? (
-                    <img src={`${baseUrl}${s.avatarImg}`} alt="Silvana" class="w-5 h-5 rounded-full object-cover ring-1.5 ring-purple-300 shadow shrink-0 bg-slate-950" />
-                  ) : (
-                    <span class="slot-icon">{s.icon}</span>
+              s.type === 'afternoon_home' ? (
+                <!-- Wednesday Silvana Large 3x Avatar Highlight -->
+                <div class="slot-afternoon-silvana-large" title={`${s.time} · ${s.notesIt || ''}`}>
+                  {s.avatarImg && (
+                    <img src={`${baseUrl}${s.avatarImg}`} alt="Silvana" class="w-12 h-12 rounded-full object-cover ring-2 ring-purple-300 shadow-xl shrink-0 bg-slate-950" />
                   )}
-                  <span class="slot-subject-title">
-                    <span class="lang-it">{s.subjectIt}</span>
-                    <span class="lang-en">{s.subjectEn}</span>
-                  </span>
+                  <div style="overflow: hidden;">
+                    <div style="font-size: 0.82rem; font-weight: 900; color: #ffffff; line-height: 1.2;">
+                      <span class="lang-it">{s.subjectIt}</span>
+                      <span class="lang-en">{s.subjectEn}</span>
+                    </div>
+                    <div style="font-size: 0.65rem; color: #e9d5ff; opacity: 0.9; margin-top: 2px;">
+                      <span class="lang-it">Tata Silvana a casa</span>
+                      <span class="lang-en">Nanny Silvana at home</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div 
+                  class={`slot-card ${getSlotClass(s)}`}
+                  title={`${s.time} · ${s.location ? s.location + ' · ' : ''}${s.teacher ? 'Prof: ' + s.teacher + ' · ' : ''}${s.notesIt || ''}`}
+                >
+                  <div class="minimal-slot-line">
+                    <span class="slot-time-bold">{s.startTime}</span>
+                    <span class="slot-icon">{s.icon}</span>
+                    <span class="slot-subject-title">
+                      <span class="lang-it">{s.subjectIt}</span>
+                      <span class="lang-en">{s.subjectEn}</span>
+                    </span>
+                  </div>
+                </div>
+              )
             ))}
           </div>
         </div>
