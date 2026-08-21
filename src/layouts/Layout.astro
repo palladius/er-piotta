@@ -111,9 +111,11 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     <slot />
   </main>
 
-  <!-- Sticky Emergency & Contacts Footer -->
-  <footer class="bg-slate-950/90 border-t border-slate-800/80 mt-auto py-3 text-xs text-slate-400">
-    <div class="max-w-[1440px] mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2.5 text-center md:text-left">
+  <!-- Sticky Emergency, Door Code & Contacts Footer -->
+  <footer class="bg-slate-950/95 border-t border-slate-800/80 mt-auto py-3 text-xs text-slate-400 shadow-2xl">
+    <div class="max-w-[1440px] mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-3 text-center md:text-left">
+      
+      <!-- Creator Signature -->
       <div class="flex items-center space-x-2">
         <span class="text-amber-400 text-base">🚛</span>
         <span>
@@ -122,16 +124,32 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
           <span class="lang-en">for Riccardo, Kate, Ale & Sebi · Crafted by <strong>Ermete Bottazzi</strong></span>
         </span>
       </div>
+
+      <!-- Essential Quick Access Badges (Door Code & Phones) -->
       <div class="flex flex-wrap items-center justify-center gap-3">
-        <a href="tel:0435001030" class="text-slate-300 hover:text-amber-400 flex items-center gap-1.5 no-underline transition">
+        
+        <!-- Door Keypad Code -->
+        <div class="bg-amber-500/15 border border-amber-500/40 text-amber-300 px-3 py-1 rounded-lg flex items-center gap-1.5 font-bold shadow-sm">
+          <span>🚪</span>
+          <span class="lang-it">Codice Porta:</span>
+          <span class="lang-en">Door Code:</span>
+          <code class="bg-slate-950 text-white px-2 py-0.5 rounded border border-amber-400/50 font-mono tracking-wider font-extrabold text-xs">157412 + OK</code>
+        </div>
+
+        <!-- School Office Phone -->
+        <a href="tel:0435001030" class="text-slate-300 hover:text-amber-400 flex items-center gap-1.5 no-underline transition bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-800">
           <i class="fa-solid fa-phone text-amber-500"></i>
           <span class="lang-it">Segreteria: 043 500 10 30</span>
-          <span class="lang-en">School Office: 043 500 10 30</span>
+          <span class="lang-en">Office: 043 500 10 30</span>
         </a>
-        <span class="text-slate-700">|</span>
-        <a href="tel:0435001099" class="text-slate-300 hover:text-amber-400 flex items-center gap-1.5 no-underline transition">
-          <i class="fa-solid fa-bus text-amber-500"></i> Bus Hotline: 043 500 10 99
+
+        <!-- Bus Hotline -->
+        <a href="tel:0435001099" class="text-slate-300 hover:text-amber-400 flex items-center gap-1.5 no-underline transition bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-800">
+          <i class="fa-solid fa-bus text-amber-500"></i>
+          <span class="lang-it">Bus Hotline: 043 500 10 99</span>
+          <span class="lang-en">Bus Hotline: 043 500 10 99</span>
         </a>
+
       </div>
     </div>
   </footer>

@@ -1,4 +1,4 @@
-/* Er Piotta - Calendar Timetable Grid System */
+/* Er Piotta - 5-Row Complete Calendar Timetable Matrix */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
 
 :root {
@@ -181,8 +181,12 @@ html[data-lang="en"] .lang-en-flex {
   justify-content: center;
 }
 
-/* Aggregated Checklist Container */
-.checklist-box {
+/* ============================================================
+   5 EXPLICIT HORIZONTAL ROWS
+   ============================================================ */
+
+/* RIGA 1: ZAINO & COMPITI (Aggregated Single Card) */
+.row-checklist-box {
   padding: 6px 8px;
   margin: 0 6px;
   background: rgba(15, 23, 42, 0.85);
@@ -190,11 +194,10 @@ html[data-lang="en"] .lang-en-flex {
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   min-height: 95px;
 }
 
-/* Grouped Checklist Card */
 .checklist-group-card {
   display: flex;
   flex-direction: column;
@@ -258,12 +261,8 @@ html[data-lang="en"] .lang-en-flex {
   font-weight: 700 !important;
 }
 
-/* ============================================================
-   3 SECTIONS (MATTINO, PRANZO TRASPARENZA, POMERIGGIO)
-   ============================================================ */
-
-/* 1. RETTANGOLONE MATTINA */
-.block-morning-container {
+/* RIGA 2: RETTANGOLONE MATTINA (08:30 - 12:25) */
+.row-morning-container {
   margin: 0 6px;
   border-radius: 12px;
   border: 1px solid rgba(59, 130, 246, 0.35);
@@ -296,6 +295,11 @@ html[data-lang="en"] .lang-en-flex {
   color: #d8b4fe;
 }
 
+.block-header-extra {
+  background: linear-gradient(135deg, rgba(67, 56, 202, 0.5), rgba(15, 23, 42, 0.8));
+  color: #c7d2fe;
+}
+
 .slots-inner-morning {
   padding: 5px;
   display: flex;
@@ -305,8 +309,8 @@ html[data-lang="en"] .lang-en-flex {
   justify-content: space-between;
 }
 
-/* 2. RETTANGOLINO PAUSA PRANZO COSTANTE (CON TRASPARENZA / STRIPES) */
-.block-lunch-ribbon {
+/* RIGA 3: RETTANGOLINO PAUSA PRANZO COSTANTE (12:25 - 13:50) */
+.row-lunch-ribbon {
   margin: 0 6px;
   border-radius: 12px;
   padding: 6px 8px;
@@ -317,7 +321,6 @@ html[data-lang="en"] .lang-en-flex {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* School Lunch with Transparency / Diagonal Hatching */
 .lunch-school-transparent {
   background: repeating-linear-gradient(
     45deg,
@@ -330,15 +333,14 @@ html[data-lang="en"] .lang-en-flex {
   backdrop-filter: blur(8px);
 }
 
-/* Wednesday Home Lunch with Dad */
 .lunch-home-dad {
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.45));
   border: 1.5px solid rgba(245, 158, 11, 0.85);
   box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
 }
 
-/* 3. RETTANGOLONE POMERIGGIO */
-.block-afternoon-container {
+/* RIGA 4: RETTANGOLONE POMERIGGIO (13:50 - 15:55) */
+.row-afternoon-container {
   margin: 0 6px;
   border-radius: 12px;
   border: 1px solid rgba(168, 85, 247, 0.35);
@@ -356,6 +358,42 @@ html[data-lang="en"] .lang-en-flex {
   gap: 4px;
   flex: 1;
   justify-content: space-between;
+}
+
+/* RIGA 5: RETTANGOLO EXTRA-CURRICULARI & DOPO SCUOLA (16:00+) */
+.row-extra-container {
+  margin: 0 6px;
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  background: rgba(15, 23, 42, 0.92);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 82px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.extra-card-content {
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  justify-content: center;
+}
+
+.extra-has-activity {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.25));
+  border: 1px dashed rgba(129, 140, 248, 0.6);
+  border-radius: 8px;
+  padding: 5px 7px;
+}
+
+.extra-relax {
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 5px 7px;
 }
 
 /* Slot Card with Proportional Heights */
