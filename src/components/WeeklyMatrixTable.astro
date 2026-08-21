@@ -1,5 +1,5 @@
 ---
-import type { ChildData } from '../data/schoolData';
+import type { ChildData, ChecklistItem } from '../data/schoolData';
 
 interface Props {
   child: ChildData;
@@ -37,6 +37,27 @@ function getTagClass(type: string) {
   if (type === 'homework') return 'tag-homework';
   return 'tag-deadline';
 }
+
+// Group checklist items by category / type
+function groupChecklist(items: ChecklistItem[]) {
+  const groups: { [key: string]: { type: string; categoryLabelIt: string; categoryLabelEn: string; items: ChecklistItem[]; urgent: boolean } } = {};
+  
+  for (const item of items) {
+    const key = item.type;
+    if (!groups[key]) {
+      groups[key] = {
+        type: item.type,
+        categoryLabelIt: item.categoryLabelIt,
+        categoryLabelEn: item.categoryLabelEn,
+        items: [],
+        urgent: false
+      };
+    }
+    groups[key].items.push(item);
+    if (item.urgent) groups[key].urgent = true;
+  }
+  return Object.values(groups);
+}
 ---
 
 <div class="calendar-wrapper">
@@ -71,6 +92,7 @@ function getTagClass(type: string) {
       const d = child.days[key];
       const isToday = key === todayKey;
       const b = d.blocks;
+      const groupedChecklist = groupChecklist(d.checklist);
 
       return (
         <div class={`day-column ${isToday ? 'day-column-today' : ''}`}>
@@ -127,23 +149,28 @@ function getTagClass(type: string) {
             )}
           </div>
 
-          <!-- Checklist (Zaino / Compiti / Consegne) -->
+          <!-- Aggregated Checklist: 1 Single Card per Category with multiple lines -->
           <div class="checklist-box">
-            {d.checklist.map((c) => (
-              <div class={`checklist-chip ${c.urgent ? 'checklist-chip-urgent' : ''}`}>
-                <div class={`checklist-chip-header ${getTagClass(c.type)}`}>
+            {groupedChecklist.map((group) => (
+              <div class={`checklist-group-card ${group.urgent ? 'checklist-group-urgent' : ''}`}>
+                <div class={`checklist-group-header ${getTagClass(group.type)}`}>
                   <span>
-                    <span class="lang-it">{c.categoryLabelIt}</span>
-                    <span class="lang-en">{c.categoryLabelEn}</span>
+                    <span class="lang-it">{group.categoryLabelIt}</span>
+                    <span class="lang-en">{group.categoryLabelEn}</span>
                   </span>
-                  {c.urgent && <span style="color: #f59e0b; font-size: 0.6rem;">⚠️</span>}
+                  {group.urgent && <span style="color: #f59e0b; font-size: 0.6rem;">⚠️</span>}
                 </div>
-                <div class="checklist-chip-content">
-                  <span style="font-size: 0.85rem; flex-shrink: 0;">{c.icon}</span>
-                  <span>
-                    <span class="lang-it">{c.textIt}</span>
-                    <span class="lang-en">{c.textEn}</span>
-                  </span>
+                
+                <div class="checklist-group-items">
+                  {group.items.map((item) => (
+                    <div class="checklist-group-row">
+                      <span class="checklist-row-icon">{item.icon}</span>
+                      <span class="checklist-row-text">
+                        <span class="lang-it">{item.textIt}</span>
+                        <span class="lang-en">{item.textEn}</span>
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}

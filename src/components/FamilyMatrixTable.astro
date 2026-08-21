@@ -1,10 +1,31 @@
 ---
 import { ALESSANDRO_DATA, SEBASTIAN_DATA, PARENT_DUTIES } from '../data/schoolData';
+import type { ChecklistItem } from '../data/schoolData';
 
 const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
 const daysKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 const dayIndex = new Date().getDay();
 const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'monday';
+
+function groupChecklist(items: ChecklistItem[]) {
+  const groups: { [key: string]: { type: string; categoryLabelIt: string; categoryLabelEn: string; items: ChecklistItem[]; urgent: boolean } } = {};
+  
+  for (const item of items) {
+    const key = item.type;
+    if (!groups[key]) {
+      groups[key] = {
+        type: item.type,
+        categoryLabelIt: item.categoryLabelIt,
+        categoryLabelEn: item.categoryLabelEn,
+        items: [],
+        urgent: false
+      };
+    }
+    groups[key].items.push(item);
+    if (item.urgent) groups[key].urgent = true;
+  }
+  return Object.values(groups);
+}
 ---
 
 <div class="timetable-wrapper">
@@ -14,6 +35,8 @@ const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'mond
       const sebiDay = SEBASTIAN_DATA.days[key];
       const duty = PARENT_DUTIES[key];
       const isToday = key === todayKey;
+      const aleGrouped = groupChecklist(aleDay.checklist);
+      const sebiGrouped = groupChecklist(sebiDay.checklist);
 
       return (
         <div class={`day-column ${isToday ? 'day-column-today' : ''}`}>
@@ -67,7 +90,7 @@ const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'mond
           </div>
 
           <!-- Alessandro Block -->
-          <div style="padding: 8px; background: rgba(30, 58, 138, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; gap: 5px; margin: 0 8px; border-radius: 10px;">
+          <div style="padding: 8px; background: rgba(30, 58, 138, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; gap: 5px; margin: 0 6px; border-radius: 10px;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <div style="display: flex; align-items: center; gap: 5px;">
                 <img 
@@ -80,16 +103,20 @@ const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'mond
               <span style="font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: #cbd5e1;">{aleDay.dropOff.split('–')[0].trim()}➔{aleDay.pickUpIt.split(' ')[0]}</span>
             </div>
             
-            <!-- Ale Checklist -->
+            <!-- Ale Aggregated Checklist -->
             <div style="display: flex; flex-direction: column; gap: 3px;">
-              {aleDay.checklist.map((g) => (
-                <div class={`checklist-chip ${g.urgent ? 'checklist-chip-urgent' : ''}`} style="padding: 3px 5px;">
-                  <div class="checklist-chip-content" style="font-size: 0.68rem;">
-                    <span>{g.icon}</span>
-                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                      <span class="lang-it">{g.textIt}</span>
-                      <span class="lang-en">{g.textEn}</span>
-                    </span>
+              {aleGrouped.map((group) => (
+                <div class={`checklist-group-card ${group.urgent ? 'checklist-group-urgent' : ''}`} style="padding: 3px 5px;">
+                  <div class="checklist-group-items">
+                    {group.items.map((item) => (
+                      <div class="checklist-group-row" style="font-size: 0.65rem;">
+                        <span class="checklist-row-icon">{item.icon}</span>
+                        <span class="checklist-row-text">
+                          <span class="lang-it">{item.textIt}</span>
+                          <span class="lang-en">{item.textEn}</span>
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}
@@ -128,7 +155,7 @@ const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'mond
           </div>
 
           <!-- Sebastian Block -->
-          <div style="padding: 8px; background: rgba(6, 78, 59, 0.2); display: flex; flex-direction: column; gap: 5px; margin: 0 8px; border-radius: 10px; flex-grow: 1;">
+          <div style="padding: 8px; background: rgba(6, 78, 59, 0.2); display: flex; flex-direction: column; gap: 5px; margin: 0 6px; border-radius: 10px; flex-grow: 1;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <div style="display: flex; align-items: center; gap: 5px;">
                 <img 
@@ -141,16 +168,20 @@ const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'mond
               <span style="font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: #cbd5e1;">{sebiDay.dropOff.split('–')[0].trim()}➔{sebiDay.pickUpIt.split(' ')[0]}</span>
             </div>
             
-            <!-- Sebi Checklist -->
+            <!-- Sebi Aggregated Checklist -->
             <div style="display: flex; flex-direction: column; gap: 3px;">
-              {sebiDay.checklist.map((g) => (
-                <div class={`checklist-chip ${g.urgent ? 'checklist-chip-urgent' : ''}`} style="padding: 3px 5px;">
-                  <div class="checklist-chip-content" style="font-size: 0.68rem;">
-                    <span>{g.icon}</span>
-                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                      <span class="lang-it">{g.textIt}</span>
-                      <span class="lang-en">{g.textEn}</span>
-                    </span>
+              {sebiGrouped.map((group) => (
+                <div class={`checklist-group-card ${group.urgent ? 'checklist-group-urgent' : ''}`} style="padding: 3px 5px;">
+                  <div class="checklist-group-items">
+                    {group.items.map((item) => (
+                      <div class="checklist-group-row" style="font-size: 0.65rem;">
+                        <span class="checklist-row-icon">{item.icon}</span>
+                        <span class="checklist-row-text">
+                          <span class="lang-it">{item.textIt}</span>
+                          <span class="lang-en">{item.textEn}</span>
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}

@@ -120,7 +120,7 @@ html[data-lang="en"] .lang-en-flex {
 .time-axis {
   display: flex;
   flex-direction: column;
-  padding-top: 155px; /* Aligns with start of morning schedule below headers & checklist */
+  padding-top: 155px;
   gap: 6px;
 }
 
@@ -181,7 +181,7 @@ html[data-lang="en"] .lang-en-flex {
   justify-content: center;
 }
 
-/* Checklist Box (Zaino / Compiti / Consegne) */
+/* Aggregated Checklist Container */
 .checklist-box {
   padding: 6px 8px;
   margin: 0 6px;
@@ -190,50 +190,70 @@ html[data-lang="en"] .lang-en-flex {
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   min-height: 95px;
 }
 
-.checklist-chip {
+/* Grouped Checklist Card */
+.checklist-group-card {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 4px 6px;
-  border-radius: 6px;
+  gap: 3px;
+  padding: 5px 7px;
+  border-radius: 8px;
   background: rgba(2, 6, 23, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.checklist-chip-header {
+.checklist-group-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 4px;
-  font-size: 0.58rem;
-  font-weight: 800;
+  font-size: 0.62rem;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .tag-backpack { color: #38bdf8; }
 .tag-homework { color: #c084fc; }
 .tag-deadline { color: #f59e0b; }
 
-.checklist-chip-content {
+.checklist-group-items {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 2px;
+}
+
+.checklist-group-row {
   display: flex;
   align-items: flex-start;
-  gap: 5px;
+  gap: 6px;
   font-size: 0.68rem;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.25;
   color: #e2e8f0;
 }
 
-.checklist-chip-urgent {
-  background: rgba(245, 158, 11, 0.18) !important;
+.checklist-row-icon {
+  font-size: 0.82rem;
+  flex-shrink: 0;
+  margin-top: 0.5px;
+}
+
+.checklist-row-text {
+  flex: 1;
+}
+
+.checklist-group-urgent {
+  background: rgba(245, 158, 11, 0.16) !important;
   border-color: rgba(245, 158, 11, 0.5) !important;
 }
-.checklist-chip-urgent .checklist-chip-content {
+.checklist-group-urgent .checklist-group-row {
   color: #fef08a !important;
   font-weight: 700 !important;
 }
@@ -251,7 +271,7 @@ html[data-lang="en"] .lang-en-flex {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  height: 295px; /* Fixed height for exact horizontal alignment */
+  height: 295px;
 }
 
 .block-header {
@@ -290,7 +310,7 @@ html[data-lang="en"] .lang-en-flex {
   margin: 0 6px;
   border-radius: 12px;
   padding: 6px 8px;
-  height: 72px; /* Exact uniform height across all 5 columns */
+  height: 72px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -326,7 +346,7 @@ html[data-lang="en"] .lang-en-flex {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  height: 185px; /* Fixed height for exact horizontal alignment */
+  height: 185px;
 }
 
 .slots-inner-afternoon {
@@ -354,7 +374,6 @@ html[data-lang="en"] .lang-en-flex {
   filter: brightness(1.15);
 }
 
-/* Double Period is twice as tall */
 .slot-double-period {
   min-height: 72px;
   justify-content: center;
