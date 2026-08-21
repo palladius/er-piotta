@@ -1,0 +1,108 @@
+---
+import type { ChildData } from '../data/schoolData';
+
+interface Props {
+  child: ChildData;
+}
+
+const { child } = Astro.props;
+const daysKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+const dayIndex = new Date().getDay();
+const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'monday';
+
+function getSubjectClass(subject: string) {
+  const s = subject.toLowerCase();
+  if (s.includes('sport') || s.includes('pe') || s.includes('movement')) return 'subject-sport';
+  if (s.includes('deutsch') || s.includes('german')) return 'subject-deutsch';
+  if (s.includes('math') || s.includes('mathe') || s.includes('wochenplan')) return 'subject-math';
+  if (s.includes('english') || s.includes('phonic')) return 'subject-english';
+  if (s.includes('french') || s.includes('français')) return 'subject-french';
+  if (s.includes('art') || s.includes('tessile') || s.includes('craft')) return 'subject-art';
+  if (s.includes('music') || s.includes('singing')) return 'subject-music';
+  if (s.includes('enquiry')) return 'subject-enquiry';
+  return 'subject-default';
+}
+---
+
+<div class="timetable-wrapper">
+  <div class="timetable-grid">
+    {daysKeys.map((key) => {
+      const d = child.days[key];
+      const isToday = key === todayKey;
+
+      return (
+        <div class={`day-column ${isToday ? 'day-column-today' : ''}`}>
+          
+          <!-- Column Header -->
+          <div class={`day-column-header ${isToday ? 'day-column-header-today' : ''}`}>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 2px;">
+              <span style="font-size: 1.25rem;">{d.emoji}</span>
+              <strong style="font-size: 1rem; color: #ffffff; text-transform: capitalize;">
+                {d.dayName.split(' ')[0]}
+              </strong>
+            </div>
+            
+            {isToday && (
+              <span style="display: inline-block; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; background: #f59e0b; color: #000000; padding: 1px 8px; border-radius: 9999px; margin-bottom: 2px;">
+                Oggi
+              </span>
+            )}
+
+            <div style="font-size: 0.72rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace;">
+              {d.dropOff.split('–')[0].trim()} ➔ {d.pickUp.split(' ')[0]}
+            </div>
+          </div>
+
+          <!-- Duty Strip -->
+          <div class="duty-bar">
+            <span class={`badge ${d.duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'}`} style="font-size: 0.7rem; padding: 2px 8px;">
+              {d.duty.parentName.split(' ')[1]} ({d.duty.parent === 'mamma' ? 'Kate' : 'Ricc'})
+            </span>
+            {d.duty.afternoonCare && (
+              <span class="badge badge-emerald" style="font-size: 0.68rem; padding: 2px 8px;">
+                {d.duty.afternoonCare}
+              </span>
+            )}
+          </div>
+
+          <!-- Cose da Portare (CHECK IN CIMA) -->
+          <div class="gear-box">
+            <div style="font-size: 0.65rem; font-weight: 900; text-transform: uppercase; color: #f59e0b; letter-spacing: 0.05em; display: flex; align-items: center; gap: 4px;">
+              <i class="fa-solid fa-backpack"></i> Check Zaino:
+            </div>
+            {d.gearAndDeadlines.map((g) => (
+              <div class={`gear-chip ${g.urgent ? 'gear-chip-urgent' : ''}`}>
+                <span style="font-size: 0.9rem; flex-shrink: 0;">{g.icon}</span>
+                <span>{g.text}</span>
+              </div>
+            ))}
+          </div>
+
+          <!-- Lessons Grid Slots -->
+          <div class="lessons-container">
+            {d.schedule.map((s) => (
+              <div class={`lesson-chip ${getSubjectClass(s.subject)}`}>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                  <span class="lesson-time">{s.time}</span>
+                  {s.location && (
+                    <span style="font-size: 0.65rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      {s.location}
+                    </span>
+                  )}
+                </div>
+                <div class="lesson-title">{s.subject}</div>
+                {s.teacher && (
+                  <div class="lesson-meta">Prof: {s.teacher}</div>
+                )}
+                {s.notes && (
+                  <div class="lesson-meta" style="font-style: italic; opacity: 0.85;">{s.notes}</div>
+                )}
+              </div>
+            ))}
+          </div>
+
+        </div>
+      );
+    })}
+  </div>
+</div>

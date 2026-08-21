@@ -1,0 +1,108 @@
+---
+import { ALESSANDRO_DATA, SEBASTIAN_DATA, PARENT_DUTIES } from '../data/schoolData';
+
+const daysKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+const dayIndex = new Date().getDay();
+const todayKey = dayIndex >= 1 && dayIndex <= 5 ? daysKeys[dayIndex - 1] : 'monday';
+---
+
+<div class="timetable-wrapper">
+  <div class="timetable-grid">
+    {daysKeys.map((key) => {
+      const aleDay = ALESSANDRO_DATA.days[key];
+      const sebiDay = SEBASTIAN_DATA.days[key];
+      const duty = PARENT_DUTIES[key];
+      const isToday = key === todayKey;
+
+      return (
+        <div class={`day-column ${isToday ? 'day-column-today' : ''}`}>
+          
+          <!-- Column Header -->
+          <div class={`day-column-header ${isToday ? 'day-column-header-today' : ''}`}>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 2px;">
+              <span style="font-size: 1.25rem;">{aleDay.emoji}</span>
+              <strong style="font-size: 1rem; color: #ffffff; text-transform: capitalize;">
+                {aleDay.dayName.split(' ')[0]}
+              </strong>
+            </div>
+            
+            {isToday && (
+              <span style="display: inline-block; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; background: #f59e0b; color: #000000; padding: 1px 8px; border-radius: 9999px; margin-bottom: 2px;">
+                Oggi
+              </span>
+            )}
+          </div>
+
+          <!-- Duty Strip -->
+          <div class="duty-bar">
+            <span class={`badge ${duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'}`} style="font-size: 0.7rem; padding: 2px 8px;">
+              {duty.parentName.split(' ')[1]} ({duty.parent === 'mamma' ? 'Kate' : 'Ricc'})
+            </span>
+            {duty.afternoonCare && (
+              <span class="badge badge-emerald" style="font-size: 0.68rem; padding: 2px 8px;">
+                {duty.afternoonCare}
+              </span>
+            )}
+          </div>
+
+          <!-- Alessandro Block -->
+          <div style="padding: 10px; background: rgba(30, 58, 138, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 0.8rem; font-weight: 900; color: #93c5fd;">👦 Ale (P3)</span>
+              <span style="font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: #cbd5e1;">{aleDay.dropOff.split('–')[0].trim()}➔{aleDay.pickUp.split(' ')[0]}</span>
+            </div>
+            
+            <!-- Ale Gear -->
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              {aleDay.gearAndDeadlines.map((g) => (
+                <div class={`gear-chip ${g.urgent ? 'gear-chip-urgent' : ''}`} style="padding: 4px 6px; font-size: 0.72rem;">
+                  <span>{g.icon}</span>
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{g.text}</span>
+                </div>
+              ))}
+            </div>
+
+            <!-- Ale Schedule -->
+            <div style="display: flex; flex-direction: column; gap: 3px; margin-top: 2px;">
+              {aleDay.schedule.map((s) => (
+                <div style="font-size: 0.7rem; background: rgba(15, 23, 42, 0.9); padding: 3px 6px; border-radius: 6px; border: 1px solid rgba(59, 130, 246, 0.3); display: flex; justify-content: space-between; gap: 4px; color: #f1f5f9;">
+                  <span style="font-family: 'JetBrains Mono', monospace; color: #fef08a; font-weight: 700;">{s.time.split('–')[0].trim()}</span>
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">{s.subject}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <!-- Sebastian Block -->
+          <div style="padding: 10px; background: rgba(6, 78, 59, 0.2); display: flex; flex-direction: column; gap: 6px; flex-grow: 1;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 0.8rem; font-weight: 900; color: #6ee7b7;">🧒 Sebi (P1)</span>
+              <span style="font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: #cbd5e1;">{sebiDay.dropOff.split('–')[0].trim()}➔{sebiDay.pickUp.split(' ')[0]}</span>
+            </div>
+            
+            <!-- Sebi Gear -->
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              {sebiDay.gearAndDeadlines.map((g) => (
+                <div class={`gear-chip ${g.urgent ? 'gear-chip-urgent' : ''}`} style="padding: 4px 6px; font-size: 0.72rem;">
+                  <span>{g.icon}</span>
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{g.text}</span>
+                </div>
+              ))}
+            </div>
+
+            <!-- Sebi Schedule -->
+            <div style="display: flex; flex-direction: column; gap: 3px; margin-top: 2px;">
+              {sebiDay.schedule.map((s) => (
+                <div style="font-size: 0.7rem; background: rgba(15, 23, 42, 0.9); padding: 3px 6px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); display: flex; justify-content: space-between; gap: 4px; color: #f1f5f9;">
+                  <span style="font-family: 'JetBrains Mono', monospace; color: #fef08a; font-weight: 700;">{s.time.split('–')[0].trim()}</span>
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">{s.subject}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      );
+    })}
+  </div>
+</div>

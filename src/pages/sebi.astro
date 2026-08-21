@@ -1,42 +1,14 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ChildHero from '../components/ChildHero.astro';
-import DayScheduleCard from '../components/DayScheduleCard.astro';
+import WeeklyMatrixTable from '../components/WeeklyMatrixTable.astro';
 import { SEBASTIAN_DATA } from '../data/schoolData';
-
-const daysOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-const dayIndex = new Date().getDay();
-const currentDayKey = dayIndex >= 1 && dayIndex <= 5 ? daysOrder[dayIndex - 1] : 'monday';
 ---
 
 <Layout title="Sebastian (Primary 1)" activeTab="sebi">
-  <!-- Child Hero Header -->
+  <!-- Child Hero Header (Compact) -->
   <ChildHero child={SEBASTIAN_DATA} />
 
-  <!-- Quick Day Selector Pills -->
-  <div class="grid grid-cols-5 gap-2.5 sm:gap-3.5 mb-8">
-    {daysOrder.map((key) => {
-      const d = SEBASTIAN_DATA.days[key];
-      const isToday = key === currentDayKey;
-      return (
-        <a href={`#${key}`} class={`day-pill ${isToday ? 'day-pill-active' : ''}`}>
-          <span class="text-2xl mb-1">{d.emoji}</span>
-          <span class="text-xs sm:text-sm font-extrabold text-white">{d.dayName.split(' ')[0]}</span>
-          <span class="text-[11px] text-emerald-300 font-mono font-bold mt-0.5">{d.dropOff.split('–')[0].trim()}</span>
-        </a>
-      );
-    })}
-  </div>
-
-  <!-- Weekly Matrix Cards -->
-  <div class="space-y-8">
-    {daysOrder.map((key) => {
-      const d = SEBASTIAN_DATA.days[key];
-      return (
-        <div id={key} class="scroll-mt-24">
-          <DayScheduleCard day={d} isToday={key === currentDayKey} />
-        </div>
-      );
-    })}
-  </div>
+  <!-- LA TABELLA A COLPO D'OCCHIO (5 Colonne Settimanali) -->
+  <WeeklyMatrixTable child={SEBASTIAN_DATA} />
 </Layout>

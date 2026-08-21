@@ -1,18 +1,18 @@
-/* Er Piotta Core Design System - Premium Apple / Raycast / Linear aesthetic */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+/* Er Piotta Core Design System - Premium High-Density Schedule Matrix */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
 
 :root {
   --bg-main: #060911;
-  --bg-card: rgba(18, 26, 43, 0.92);
-  --bg-card-inner: rgba(11, 17, 30, 0.85);
-  --bg-card-hover: rgba(28, 38, 62, 0.95);
+  --bg-card: rgba(15, 23, 42, 0.95);
+  --bg-card-inner: rgba(11, 17, 32, 0.9);
+  --bg-header: rgba(10, 15, 29, 0.96);
   
-  --border-subtle: rgba(255, 255, 255, 0.12);
-  --border-highlight: rgba(255, 255, 255, 0.22);
-  --border-amber: rgba(245, 158, 11, 0.5);
-  --border-purple: rgba(168, 85, 247, 0.5);
-  --border-blue: rgba(59, 130, 246, 0.5);
-  --border-emerald: rgba(16, 185, 129, 0.5);
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --border-highlight: rgba(255, 255, 255, 0.25);
+  --border-amber: rgba(245, 158, 11, 0.6);
+  --border-purple: rgba(168, 85, 247, 0.6);
+  --border-blue: rgba(59, 130, 246, 0.6);
+  --border-emerald: rgba(16, 185, 129, 0.6);
   
   --text-primary: #ffffff;
   --text-secondary: #cbd5e1;
@@ -24,11 +24,9 @@
   --color-emerald: #10b981;
   --color-rose: #f43f5e;
   
-  --shadow-card: 0 16px 40px -8px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.08) inset;
-  
-  --radius-lg: 24px;
-  --radius-md: 16px;
-  --radius-sm: 10px;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 8px;
 }
 
 * {
@@ -41,178 +39,270 @@ body {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-main);
   background-image: 
-    radial-gradient(circle at 15% 5%, rgba(99, 102, 241, 0.18) 0%, transparent 40%),
-    radial-gradient(circle at 85% 15%, rgba(245, 158, 11, 0.12) 0%, transparent 35%),
-    radial-gradient(circle at 50% 75%, rgba(168, 85, 247, 0.12) 0%, transparent 45%);
+    radial-gradient(circle at 10% 5%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 90% 10%, rgba(245, 158, 11, 0.12) 0%, transparent 35%),
+    radial-gradient(circle at 50% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 45%);
   background-attachment: fixed;
   color: var(--text-primary);
-  line-height: 1.5;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
 
-/* Glass Card */
+/* Layout Utilities */
+.app-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Glass Panels */
 .glass-panel {
   background: var(--bg-card) !important;
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
   border: 1px solid var(--border-subtle) !important;
   border-radius: var(--radius-lg) !important;
-  box-shadow: var(--shadow-card) !important;
+  box-shadow: 0 12px 36px -6px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.08) inset !important;
 }
 
-.glass-panel-inner {
-  background: var(--bg-card-inner);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* 5-Column Timetable Grid */
+.timetable-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(220px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 1180px) {
+  .timetable-wrapper {
+    overflow-x: auto;
+    padding-bottom: 12px;
+  }
+  .timetable-grid {
+    min-width: 1100px;
+  }
+}
+
+/* Day Column Card */
+.day-column {
+  display: flex;
+  flex-direction: column;
+  background: rgba(13, 19, 36, 0.92);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Day Pills Navigation */
-.day-pill {
+.day-column-today {
+  border-color: rgba(245, 158, 11, 0.8) !important;
+  background: rgba(18, 26, 48, 0.98) !important;
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.25), 0 0 0 2px rgba(245, 158, 11, 0.5) !important;
+}
+
+/* Column Header */
+.day-column-header {
+  padding: 10px 12px;
+  background: rgba(22, 31, 56, 0.95);
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: center;
+}
+
+.day-column-header-today {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.35)) !important;
+  border-bottom-color: rgba(245, 158, 11, 0.5) !important;
+}
+
+/* Duty Bar */
+.duty-bar {
+  padding: 6px 10px;
+  background: rgba(8, 12, 24, 0.85);
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 10px 14px;
-  background: rgba(22, 31, 51, 0.9);
+  gap: 4px;
+}
+
+/* Gear Checklist Box */
+.gear-box {
+  padding: 8px 10px;
+  background: rgba(15, 23, 42, 0.75);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.gear-chip {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+  background: rgba(2, 6, 23, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+}
+
+.gear-chip-urgent {
+  background: rgba(245, 158, 11, 0.18) !important;
+  border-color: rgba(245, 158, 11, 0.5) !important;
+  color: #fef08a !important;
+  font-weight: 700 !important;
+}
+
+/* Lesson Cards in Column */
+.lessons-container {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 1;
+}
+
+.lesson-chip {
+  padding: 8px 10px;
+  border-radius: 10px;
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: transform 0.15s ease, filter 0.15s ease;
 }
 
-.day-pill:hover {
-  background: rgba(35, 48, 77, 1);
-  border-color: var(--border-highlight);
-  transform: translateY(-2px);
+.lesson-chip:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.15);
 }
 
-.day-pill-active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(99, 102, 241, 0.35));
-  border-color: rgba(99, 102, 241, 0.6);
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+.lesson-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  opacity: 0.85;
+}
+
+.lesson-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.lesson-meta {
+  font-size: 0.7rem;
+  opacity: 0.75;
+  line-height: 1.2;
+}
+
+/* Subject Colors */
+.subject-deutsch {
+  background: rgba(225, 29, 72, 0.22);
+  border-color: rgba(244, 63, 94, 0.5);
+  color: #fecdd3;
+}
+.subject-math {
+  background: rgba(217, 119, 6, 0.22);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fef08a;
+}
+.subject-english {
+  background: rgba(14, 165, 233, 0.22);
+  border-color: rgba(56, 189, 248, 0.5);
+  color: #bae6fd;
+}
+.subject-french {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: rgba(52, 211, 153, 0.5);
+  color: #a7f3d0;
+}
+.subject-sport {
+  background: rgba(59, 130, 246, 0.28);
+  border-color: rgba(96, 165, 250, 0.6);
+  color: #dbeafe;
+}
+.subject-art {
+  background: rgba(168, 85, 247, 0.22);
+  border-color: rgba(192, 132, 252, 0.5);
+  color: #f3e8ff;
+}
+.subject-music {
+  background: rgba(236, 72, 153, 0.22);
+  border-color: rgba(244, 114, 182, 0.5);
+  color: #fbcfe8;
+}
+.subject-enquiry {
+  background: rgba(99, 102, 241, 0.22);
+  border-color: rgba(129, 140, 248, 0.5);
+  color: #e0e7ff;
+}
+.subject-default {
+  background: rgba(30, 41, 59, 0.7);
+  border-color: rgba(71, 85, 105, 0.6);
+  color: #e2e8f0;
 }
 
 /* Badges */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: 5px;
+  padding: 4px 10px;
   border-radius: 9999px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .badge-purple {
   background: rgba(168, 85, 247, 0.22) !important;
   color: #e9d5ff !important;
   border: 1px solid rgba(168, 85, 247, 0.5) !important;
-  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.2);
 }
 
 .badge-amber {
   background: rgba(245, 158, 11, 0.22) !important;
   color: #fef08a !important;
   border: 1px solid rgba(245, 158, 11, 0.5) !important;
-  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.2);
 }
 
 .badge-blue {
   background: rgba(59, 130, 246, 0.22) !important;
   color: #bfdbfe !important;
   border: 1px solid rgba(59, 130, 246, 0.5) !important;
-  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.2);
 }
 
 .badge-emerald {
   background: rgba(16, 185, 129, 0.22) !important;
   color: #a7f3d0 !important;
   border: 1px solid rgba(16, 185, 129, 0.5) !important;
-  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);
 }
 
 /* Download Button */
 .btn-download {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  gap: 6px;
+  padding: 6px 14px;
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: #020617 !important;
   font-weight: 800;
-  font-size: 0.85rem;
-  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  border-radius: 10px;
   text-decoration: none;
-  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.35);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
   transition: all 0.2s ease;
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .btn-download:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
   color: #000 !important;
-}
-
-/* Time Pill */
-.time-pill {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: #fef08a;
-  background: #020617;
-  padding: 5px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  white-space: nowrap;
-  letter-spacing: -0.02em;
-}
-
-/* Checklist Item */
-.gear-item {
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 10px 14px;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #f1f5f9;
-}
-
-.gear-item-urgent {
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.45);
-  color: #fef08a;
-  box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
-}
-
-/* Lesson Row */
-.lesson-row {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-@media (min-width: 640px) {
-  .lesson-row {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-}
-
-.lesson-row:hover {
-  background: rgba(24, 34, 58, 0.9);
-  border-color: rgba(255, 255, 255, 0.16);
 }

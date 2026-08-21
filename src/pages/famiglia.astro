@@ -1,189 +1,39 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { ALESSANDRO_DATA, SEBASTIAN_DATA, PARENT_DUTIES } from '../data/schoolData';
+import FamilyMatrixTable from '../components/FamilyMatrixTable.astro';
+import { ALESSANDRO_DATA, SEBASTIAN_DATA } from '../data/schoolData';
 
-const daysOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-const dayIndex = new Date().getDay();
-const currentDayKey = dayIndex >= 1 && dayIndex <= 5 ? daysOrder[dayIndex - 1] : 'monday';
 const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
-<Layout title="Vista Aggregata Famiglia (Ale & Sebi)" activeTab="famiglia">
-
-  <!-- Overview Banner -->
-  <div class="glass-panel p-6 md:p-8 mb-8 space-y-5 relative overflow-hidden">
-    <div class="absolute top-0 right-0 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
-
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
+<Layout title="Vista Famiglia (Ale & Sebi)" activeTab="famiglia">
+  <!-- Family Header Bar -->
+  <div class="glass-panel p-3.5 md:p-4 mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center space-x-3">
+      <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-700 flex items-center justify-center text-2xl shadow-md ring-2 ring-purple-500/40">
+        👥
+      </div>
       <div>
-        <div class="flex items-center gap-3 mb-1.5">
-          <span class="text-3xl">👥</span>
-          <h2 class="text-2xl md:text-3xl font-black text-white tracking-tight">Vista Aggregata Famiglia</h2>
-        </div>
-        <p class="text-sm text-slate-300 font-medium leading-relaxed">
-          Orari combinati, turni genitori e check oggetti per <strong class="text-blue-400">Alessandro (P3)</strong> e <strong class="text-emerald-400">Sebastian (P1)</strong>.
+        <h2 class="text-lg md:text-xl font-black text-white">Carlesso Family Weekly Matrix</h2>
+        <p class="text-xs text-slate-300">
+          Confronto parallelo di Alessandro (P3) e Sebastian (P1) per tutta la settimana
         </p>
       </div>
-
-      <div class="flex flex-wrap gap-2.5 text-xs font-bold shrink-0">
-        <div class="badge badge-purple px-3.5 py-1.5 shadow-md">
-          <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span> Mamma: Lun, Mar, Ven
-        </div>
-        <div class="badge badge-amber px-3.5 py-1.5 shadow-md">
-          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Papà: Mer, Gio
-        </div>
-      </div>
     </div>
 
-    <!-- Official PDFs Download Row -->
-    <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-800/80 text-xs relative z-10">
-      <span class="text-slate-400 font-bold flex items-center gap-1.5">
-        <i class="fa-solid fa-file-arrow-down text-amber-400"></i> Documenti Ufficiali Tandem:
-      </span>
-      <a href={`${baseUrl}${ALESSANDRO_DATA.pdfUrl}`} download target="_blank" class="badge badge-blue px-3 py-1.5 hover:scale-105 transition no-underline font-bold">
-        <i class="fa-solid fa-file-pdf text-blue-400"></i> PDF Primary 3 (Ale - Info Evening)
+    <!-- Direct PDF Downloads -->
+    <div class="flex flex-wrap items-center gap-2">
+      <a href={`${baseUrl}${ALESSANDRO_DATA.pdfUrl}`} download target="_blank" class="btn-download">
+        <i class="fa-solid fa-file-pdf"></i>
+        <span>PDF Ale (P3)</span>
       </a>
-      <a href={`${baseUrl}${SEBASTIAN_DATA.pdfUrl}`} download target="_blank" class="badge badge-emerald px-3 py-1.5 hover:scale-105 transition no-underline font-bold">
-        <i class="fa-solid fa-file-pdf text-emerald-400"></i> PDF Primary 1 (Sebi - Attendance)
+      <a href={`${baseUrl}${SEBASTIAN_DATA.pdfUrl}`} download target="_blank" class="btn-download">
+        <i class="fa-solid fa-file-pdf"></i>
+        <span>PDF Sebi (P1)</span>
       </a>
     </div>
   </div>
 
-  <!-- Aggregated Day by Day Section -->
-  <div class="space-y-8">
-    {daysOrder.map((key) => {
-      const aleDay = ALESSANDRO_DATA.days[key];
-      const sebiDay = SEBASTIAN_DATA.days[key];
-      const duty = PARENT_DUTIES[key];
-      const isToday = key === currentDayKey;
-
-      return (
-        <div id={key} class={`glass-panel p-6 md:p-7 space-y-6 scroll-mt-24 ${isToday ? 'border-amber-400/80 ring-2 ring-amber-400/30' : ''}`}>
-
-          <!-- Day Top Header -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 pb-4 border-b border-slate-800/80">
-            <div class="flex items-center space-x-3.5">
-              <span class="text-4xl filter drop-shadow-md">{aleDay.emoji}</span>
-              <div>
-                <div class="flex items-center gap-2.5">
-                  <h3 class="text-2xl font-extrabold text-white tracking-tight">{aleDay.dayName}</h3>
-                  {isToday && (
-                    <span class="text-[10px] uppercase font-black tracking-widest bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full shadow-md shadow-amber-400/20">
-                      Oggi
-                    </span>
-                  )}
-                </div>
-                <p class="text-xs text-slate-400 font-mono mt-0.5">
-                  Entrata: <strong class="text-slate-200">08:15 – 08:30</strong> · Uscita: <strong class="text-slate-200">{aleDay.pickUp}</strong>
-                </p>
-              </div>
-            </div>
-
-            <!-- Duty Badge -->
-            <div class="flex flex-col sm:items-end gap-1.5">
-              <span class={`badge ${duty.parent === 'mamma' ? 'badge-purple' : 'badge-amber'} text-xs shadow-md`}>
-                {duty.parentName}
-              </span>
-              {duty.afternoonCare && (
-                <span class="badge badge-emerald text-xs shadow-md">
-                  {duty.afternoonCare}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <!-- Side by Side Kids Comparison Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            <!-- Alessandro Column -->
-            <div class="bg-slate-950/80 border border-blue-900/50 rounded-2xl p-5 space-y-4 shadow-inner">
-              <div class="flex items-center space-x-3 pb-3 border-b border-blue-900/50">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-700 flex items-center justify-center text-xl shadow-md">
-                  👦
-                </div>
-                <div>
-                  <h4 class="font-extrabold text-white text-base">Alessandro (Primary 3)</h4>
-                  <p class="text-xs text-blue-300">Marvin Biehl & Dannie Keates</p>
-                </div>
-              </div>
-
-              <!-- Ale Gear & Deadlines -->
-              <div class="space-y-2">
-                <span class="text-[11px] font-black uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
-                  <i class="fa-solid fa-backpack"></i> Cose da Portare (Ale)
-                </span>
-                {aleDay.gearAndDeadlines.map((g) => (
-                  <div class={`text-xs p-2.5 rounded-xl flex items-start gap-2.5 font-semibold ${g.urgent ? 'bg-amber-500/15 border border-amber-500/40 text-amber-200 shadow-sm' : 'bg-slate-900 border border-slate-800 text-slate-200'}`}>
-                    <span class="text-base leading-none shrink-0 mt-0.5">{g.icon}</span>
-                    <span class="flex-1 leading-snug">{g.text}</span>
-                  </div>
-                ))}
-              </div>
-
-              <!-- Ale Subjects -->
-              <div class="space-y-2 pt-2">
-                <span class="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <i class="fa-solid fa-book text-blue-400"></i> Lezioni del Giorno
-                </span>
-                {aleDay.schedule.map((s) => (
-                  <div class="bg-slate-900/90 border border-slate-800/80 p-2.5 rounded-xl flex items-center justify-between text-xs">
-                    <div class="flex items-center space-x-2.5 truncate">
-                      <span class="time-pill text-[11px]">{s.time.split('–')[0].trim()}</span>
-                      <span class="font-bold text-slate-200 truncate">{s.subject}</span>
-                    </div>
-                    {s.notes && <span class="text-[10px] text-slate-400 ml-2 shrink-0 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">{s.notes}</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <!-- Sebastian Column -->
-            <div class="bg-slate-950/80 border border-emerald-900/50 rounded-2xl p-5 space-y-4 shadow-inner">
-              <div class="flex items-center space-x-3 pb-3 border-b border-emerald-900/50">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-xl shadow-md">
-                  🧒
-                </div>
-                <div>
-                  <h4 class="font-extrabold text-white text-base">Sebastian (Primary 1)</h4>
-                  <p class="text-xs text-emerald-300">Ms Faux & Ms Rayment</p>
-                </div>
-              </div>
-
-              <!-- Sebi Gear & Deadlines -->
-              <div class="space-y-2">
-                <span class="text-[11px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                  <i class="fa-solid fa-backpack"></i> Cose da Portare (Sebi)
-                </span>
-                {sebiDay.gearAndDeadlines.map((g) => (
-                  <div class={`text-xs p-2.5 rounded-xl flex items-start gap-2.5 font-semibold ${g.urgent ? 'bg-amber-500/15 border border-amber-500/40 text-amber-200 shadow-sm' : 'bg-slate-900 border border-slate-800 text-slate-200'}`}>
-                    <span class="text-base leading-none shrink-0 mt-0.5">{g.icon}</span>
-                    <span class="flex-1 leading-snug">{g.text}</span>
-                  </div>
-                ))}
-              </div>
-
-              <!-- Sebi Subjects -->
-              <div class="space-y-2 pt-2">
-                <span class="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <i class="fa-solid fa-book text-emerald-400"></i> Lezioni del Giorno
-                </span>
-                {sebiDay.schedule.map((s) => (
-                  <div class="bg-slate-900/90 border border-slate-800/80 p-2.5 rounded-xl flex items-center justify-between text-xs">
-                    <div class="flex items-center space-x-2.5 truncate">
-                      <span class="time-pill text-[11px]">{s.time.split('–')[0].trim()}</span>
-                      <span class="font-bold text-slate-200 truncate">{s.subject}</span>
-                    </div>
-                    {s.notes && <span class="text-[10px] text-slate-400 ml-2 shrink-0 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">{s.notes}</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      );
-    })}
-  </div>
-
+  <!-- Full 5-Day Comparison Table -->
+  <FamilyMatrixTable />
 </Layout>
