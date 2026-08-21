@@ -42,6 +42,8 @@ export interface ChildData {
   borderColor: string;
   themeColor: string;
   quote: string;
+  pdfUrl: string;
+  pdfLabel: string;
   days: Record<string, DaySchedule>;
 }
 
@@ -95,6 +97,8 @@ export const ALESSANDRO_DATA: ChildData = {
   borderColor: 'border-blue-500',
   themeColor: 'indigo',
   quote: 'Matematica con Wochenplan & Sport al Kartaus!',
+  pdfUrl: '/docs/Primary-3-Info-Evening-Tandem.pdf',
+  pdfLabel: 'Scarica PDF Ufficiale Primary 3 (Info Evening & Orari)',
   days: {
     monday: {
       dayKey: 'monday',
@@ -206,6 +210,8 @@ export const SEBASTIAN_DATA: ChildData = {
   borderColor: 'border-emerald-500',
   themeColor: 'emerald',
   quote: 'Primi passi, fonetica inglese, movimento e scoperte!',
+  pdfUrl: '/docs/Primary-1-Attendance-Tandem.pdf',
+  pdfLabel: 'Scarica Documento Ufficiale Primary 1 (Attendance & Info)',
   days: {
     monday: {
       dayKey: 'monday',
@@ -303,12 +309,4 @@ export const SEBASTIAN_DATA: ChildData = {
       ]
     }
   }
-};
-
-export const SCHOOL_EMERGENCIES = {
-  officePhone: '043 500 10 30',
-  busHotline: '043 500 10 99',
-  email: 'zuerich@tandem-ims.ch',
-  app: 'Piota Schools App (Er-Piotta)',
-  location: 'Zürich Seefeld'
 };

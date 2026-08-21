@@ -6,6 +6,8 @@ interface Props {
 }
 
 const { child } = Astro.props;
+const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
+const fullPdfUrl = `${baseUrl}${child.pdfUrl}`;
 ---
 
 <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 md:p-6 shadow-2xl mb-8 relative overflow-hidden">
@@ -36,7 +38,7 @@ const { child } = Astro.props;
         👩‍🏫 Insegnanti: <span class="text-amber-300">{child.classTeacher}</span>
       </p>
 
-      <!-- Standard Times Pill Row -->
+      <!-- Standard Times & Download Button Row -->
       <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs">
         <div class="bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700 flex items-center gap-1.5 text-slate-200">
           <i class="fa-solid fa-bell text-amber-400"></i>
@@ -46,6 +48,12 @@ const { child } = Astro.props;
           <i class="fa-solid fa-clock text-amber-400"></i>
           <span>Uscita: <strong class="text-white">15:55</strong> (Mercoledì: <strong class="text-emerald-400">12:30</strong>)</span>
         </div>
+
+        <!-- Downloadable PDF Button -->
+        <a href={fullPdfUrl} download target="_blank" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 px-3.5 py-1.5 rounded-xl font-bold border border-amber-400 flex items-center gap-2 shadow-lg shadow-amber-500/20 hover:scale-105 transition">
+          <i class="fa-solid fa-file-pdf text-slate-950"></i>
+          <span>{child.pdfLabel}</span>
+        </a>
       </div>
     </div>
   </div>

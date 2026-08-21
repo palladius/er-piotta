@@ -5,12 +5,13 @@ import { ALESSANDRO_DATA, SEBASTIAN_DATA, PARENT_DUTIES } from '../data/schoolDa
 const daysOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 const dayIndex = new Date().getDay();
 const currentDayKey = dayIndex >= 1 && dayIndex <= 5 ? daysOrder[dayIndex - 1] : 'monday';
+const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <Layout title="Vista Aggregata Famiglia (Ale & Sebi)" activeTab="famiglia">
 
   <!-- Overview Banner -->
-  <div class="bg-gradient-to-r from-purple-900/60 via-slate-900 to-indigo-900/60 border border-slate-800 rounded-3xl p-6 shadow-2xl mb-8">
+  <div class="bg-gradient-to-r from-purple-900/60 via-slate-900 to-indigo-900/60 border border-slate-800 rounded-3xl p-6 shadow-2xl mb-8 space-y-4">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <div class="flex items-center gap-2 mb-1">
@@ -30,6 +31,19 @@ const currentDayKey = dayIndex >= 1 && dayIndex <= 5 ? daysOrder[dayIndex - 1] :
           <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Papà: Mer, Gio
         </div>
       </div>
+    </div>
+
+    <!-- Official PDFs Download Row -->
+    <div class="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-800/80 text-xs">
+      <span class="text-slate-400 font-bold flex items-center gap-1">
+        <i class="fa-solid fa-file-arrow-down text-amber-400"></i> Documenti Ufficiali Tandem:
+      </span>
+      <a href={`${baseUrl}${ALESSANDRO_DATA.pdfUrl}`} download target="_blank" class="bg-blue-600/30 hover:bg-blue-600/50 text-blue-200 border border-blue-500/50 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-file-pdf text-blue-400"></i> PDF Primary 3 (Ale - Info Evening)
+      </a>
+      <a href={`${baseUrl}${SEBASTIAN_DATA.pdfUrl}`} download target="_blank" class="bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 border border-emerald-500/50 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-file-pdf text-emerald-400"></i> PDF Primary 1 (Sebi - Attendance)
+      </a>
     </div>
   </div>
 
