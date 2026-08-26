@@ -326,6 +326,58 @@ function getEveningItems(checklist: ChecklistItem[]) {
         );
       })}
 
+      <!-- ROW 8: 🌙 SPATIUM SERALE (19:00 – 20:00) -->
+      <div class="axis-cell">
+        <span style="color: #cbd5e1; font-weight: 900; font-size: 0.72rem;">19:00</span>
+        <span style="font-size: 0.75rem;">🌙</span>
+      </div>
+      {daysKeys.map((key) => {
+        const d = child.days[key];
+        const ev = d.blocks.evening;
+        return (
+          <div class="row-ghost-evening">
+            <div class="solid-header solid-header-evening">
+              <span>
+                <span class="lang-it">🌙 SERA</span>
+                <span class="lang-en">🌙 EVENING</span>
+              </span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; opacity: 0.85;">{ev.time}</span>
+            </div>
+            <div class="evening-inner-content">
+              {ev.hasActivity ? (
+                <div class="evening-active-card" title={`${ev.time} · ${ev.notesIt || ''}`}>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    {ev.avatarImg ? (
+                      <img src={`${baseUrl}${ev.avatarImg}`} alt="Papino" class="w-6 h-6 rounded-full object-cover ring-1.5 ring-amber-300 shrink-0 bg-slate-950" />
+                    ) : (
+                      <span>{ev.icon}</span>
+                    )}
+                    <div style="overflow: hidden; flex: 1;">
+                      <div style="font-size: 0.72rem; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        <span class="lang-it">{ev.titleIt}</span>
+                        <span class="lang-en">{ev.titleEn}</span>
+                      </div>
+                      <div style="font-size: 0.58rem; color: #fef08a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        <span class="lang-it">{ev.notesIt}</span>
+                        <span class="lang-en">{ev.notesEn}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div class="evening-relax-card">
+                  <div style="font-size: 0.62rem; color: #94a3b8; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                    <span>✨</span>
+                    <span class="lang-it">Cena & Relax</span>
+                    <span class="lang-en">Dinner & Relax</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+
     </div>
   </div>
 

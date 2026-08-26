@@ -229,5 +229,37 @@ function getBackpackItems(checklist: ChecklistItem[]) {
       );
     })}
 
+    <!-- ROW 8: SPATIO SERALE (19:00) -->
+    <div class="axis-cell"><span style="color: #cbd5e1; font-weight: 900; font-size: 0.7rem;">19:00<br>🌙</span></div>
+    {daysKeys.map((key) => {
+      const aleDay = ALESSANDRO_DATA.days[key];
+      const sebiDay = SEBASTIAN_DATA.days[key];
+      const aleEv = aleDay.blocks.evening;
+      const sebiEv = sebiDay.blocks.evening;
+      return (
+        <div class="row-ghost-evening" style="height: 65px;">
+          <div class="solid-header solid-header-evening">
+            <span>🌙 SERA (19:00)</span>
+          </div>
+          <div class="evening-inner-content">
+            {aleEv.hasActivity ? (
+              <div class="evening-active-card" style="padding: 3px 6px;">
+                <div style="display: flex; align-items: center; gap: 5px;">
+                  <img src={`${baseUrl}/avatars/avatar_riccardo.png`} class="w-5 h-5 rounded-full ring-1 ring-amber-300 bg-slate-950" alt="Papino" />
+                  <span style="font-size: 0.65rem; font-weight: 900; color: #ffffff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    {aleEv.titleIt}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div class="evening-relax-card" style="font-size: 0.62rem; color: #94a3b8; text-align: center;">
+                ✨ Cena & Relax
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    })}
+
   </div>
 </div>

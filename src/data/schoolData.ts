@@ -51,11 +51,25 @@ export interface ExtraActivity {
   hasActivity: boolean;
 }
 
+export interface EveningActivity {
+  time: string;
+  startTime: string;
+  endTime: string;
+  icon: string;
+  titleIt: string;
+  titleEn: string;
+  notesIt?: string;
+  notesEn?: string;
+  hasActivity: boolean;
+  avatarImg?: string;
+}
+
 export interface DayScheduleBlocks {
   morning: TimeSlot[];
   lunch: TimeSlot;
   afternoon: TimeSlot[];
   extra: ExtraActivity;
+  evening: EveningActivity;
 }
 
 export interface WeekendItem {
@@ -229,6 +243,17 @@ export const ALESSANDRO_DATA: ChildData = {
           notesIt: 'Alessandro fa il corso STRONG dalle 16:00 alle 17:30 gestito da Kate',
           notesEn: 'Alessandro has STRONG class from 4:00pm to 5:30pm with Kate',
           hasActivity: true
+        },
+        evening: {
+          time: '19:00',
+          startTime: '19:00',
+          endTime: '20:00',
+          icon: '✨',
+          titleIt: 'Cena & Relax',
+          titleEn: 'Dinner & Relax',
+          notesIt: 'Serata tranquilla in famiglia',
+          notesEn: 'Quiet evening with family',
+          hasActivity: false
         }
       }
     },
@@ -293,6 +318,17 @@ export const ALESSANDRO_DATA: ChildData = {
           notesIt: 'I bimbi tornano a casa verso le 16:30',
           notesEn: 'Kids arrive home around 4:30pm',
           hasActivity: true
+        },
+        evening: {
+          time: '19:00',
+          startTime: '19:00',
+          endTime: '20:00',
+          icon: '✨',
+          titleIt: 'Cena & Relax',
+          titleEn: 'Dinner & Relax',
+          notesIt: 'Serata tranquilla in famiglia',
+          notesEn: 'Quiet evening with family',
+          hasActivity: false
         }
       }
     },
@@ -327,6 +363,17 @@ export const ALESSANDRO_DATA: ChildData = {
           urgent: true,
           textIt: 'Uscita ore 12:30: Pranzo speciale a casa con Papino (Riccardo)!',
           textEn: 'Pick-up at 12:30: Special lunch at home with Dad (Riccardo)!'
+        },
+        {
+          type: 'homework',
+          when: 'morning',
+          icon: '🇫🇷',
+          categoryLabelIt: 'Compiti Francese',
+          categoryLabelEn: 'French Homework',
+          target: 'both',
+          urgent: true,
+          textIt: 'Compiti Francese con Papino',
+          textEn: 'French homework with Dad'
         },
         {
           type: 'homework',
@@ -385,6 +432,18 @@ export const ALESSANDRO_DATA: ChildData = {
           notesIt: 'Corso di recitazione e teatro in inglese a Zurigo (16:10–17:25)',
           notesEn: 'English theatre & drama acting studio in Zurich (4:10–5:25pm)',
           hasActivity: false
+        },
+        evening: {
+          time: '19:00 – 20:00',
+          startTime: '19:00',
+          endTime: '20:00',
+          icon: '🇫🇷',
+          avatarImg: '/avatars/avatar_riccardo.png',
+          titleIt: '🇫🇷 Compiti Francese con Papino',
+          titleEn: '🇫🇷 French Homework with Dad',
+          notesIt: 'Les Loustics & conversazione francese insieme a Riccardo',
+          notesEn: 'Les Loustics & French conversation practice together with Riccardo',
+          hasActivity: true
         }
       }
     },
@@ -406,8 +465,8 @@ export const ALESSANDRO_DATA: ChildData = {
           categoryLabelEn: 'Bag (Night Before)',
           target: 'parent',
           urgent: true,
-          textIt: 'PREPARARE SACCA SPORT PER DOMANI (Scarpe pulite & kit Kartaus)',
-          textEn: 'PREPARE SPORT BAG FOR TOMORROW (Clean trainers & Kartaus kit)'
+          textIt: 'Sacca sport domani (kit Kartaus)',
+          textEn: 'Sport bag tomorrow (Kartaus kit)'
         },
         {
           type: 'homework',
@@ -417,8 +476,8 @@ export const ALESSANDRO_DATA: ChildData = {
           categoryLabelEn: 'Homework (Night Before)',
           target: 'child',
           urgent: true,
-          textIt: 'CHIUDERE TUTTO IL WOCHENPLAN DI MATEMATICA (Consegna domani!)',
-          textEn: 'FINISH MATHS WOCHENPLAN (Due tomorrow morning!)'
+          textIt: 'Chiudere Wochenplan matematica',
+          textEn: 'Finish Maths Wochenplan'
         },
         {
           type: 'homework',
@@ -462,6 +521,17 @@ export const ALESSANDRO_DATA: ChildData = {
           notesIt: 'Papà ritira i bimbi al Tandem alle 18:30',
           notesEn: 'Dad collects kids from Tandem at 6:30pm',
           hasActivity: true
+        },
+        evening: {
+          time: '19:00',
+          startTime: '19:00',
+          endTime: '20:00',
+          icon: '✨',
+          titleIt: 'Cena & Relax',
+          titleEn: 'Dinner & Relax',
+          notesIt: 'Serata tranquilla in famiglia',
+          notesEn: 'Quiet evening with family',
+          hasActivity: false
         }
       }
     },
@@ -483,7 +553,7 @@ export const ALESSANDRO_DATA: ChildData = {
           categoryLabelEn: 'Bag (Morning)',
           target: 'parent',
           urgent: true,
-          textIt: 'PORTARE SACCA SPORT & SCARPE DA GINNASTICA (Palestra Kartaus)',
+          textIt: 'Sacca sport & scarpe (Kartaus)',
           textEn: 'BRING SPORT BAG & CLEAN GYM SHOES (Kartaus Gym)'
         },
         {
@@ -505,7 +575,7 @@ export const ALESSANDRO_DATA: ChildData = {
           categoryLabelEn: 'Due Today (Child)',
           target: 'child',
           urgent: true,
-          textIt: 'CONSEGNA TASSATIVA WOCHENPLAN DI MATEMATICA al maestro Marvin!',
+          textIt: 'Consegna Wochenplan matematica',
           textEn: 'HAND IN MATHS WOCHENPLAN to Mr Marvin!'
         }
       ],
@@ -540,6 +610,17 @@ export const ALESSANDRO_DATA: ChildData = {
           notesIt: 'Relax e tempo libero in famiglia',
           notesEn: 'Relax and weekend family time',
           hasActivity: false
+        },
+        evening: {
+          time: '19:00',
+          startTime: '19:00',
+          endTime: '20:00',
+          icon: '✨',
+          titleIt: 'Cena & Relax',
+          titleEn: 'Dinner & Relax',
+          notesIt: 'Venerdì sera in famiglia',
+          notesEn: 'Friday evening with family',
+          hasActivity: false
         }
       }
     }
@@ -547,25 +628,25 @@ export const ALESSANDRO_DATA: ChildData = {
   weekend: [
     {
       dayKey: 'saturday',
-      dayNameIt: 'Sabato',
-      dayNameEn: 'Saturday',
-      emoji: '🌿',
-      time: 'Pomeriggio / Afternoon',
-      titleIt: 'Tempo Libero & Famiglia',
-      titleEn: 'Free Time & Family Play',
-      notesIt: 'Giochi all\'aperto, compiti e relax',
-      notesEn: 'Outdoor games, homework and relaxing'
+      dayNameIt: 'Sabato (Cavallo Sebi)',
+      dayNameEn: 'Saturday (Sebi Horse Riding)',
+      emoji: '🐴',
+      time: '14:00 – 16:00',
+      titleIt: 'Sebi a Cavallo (Equitazione Kolbenhof)',
+      titleEn: 'Sebi Horse Riding (Kolbenhof)',
+      notesIt: 'Pomeriggio al maneggio Kolbenhof per la lezione di equitazione di Sebi',
+      notesEn: 'Afternoon at Kolbenhof riding school for Sebi\'s horse riding lesson'
     },
     {
       dayKey: 'sunday',
-      dayNameIt: 'Domenica',
-      dayNameEn: 'Sunday',
-      emoji: '🌊',
-      time: 'Tutto il giorno / All day',
-      titleIt: 'Gite & Lago di Zurigo (Limmat)',
-      titleEn: 'Day Trips & Zurich Lake / Limmat',
-      notesIt: 'Tempo speciale in famiglia',
-      notesEn: 'Special family time'
+      dayNameIt: 'Domenica (Pianoforte)',
+      dayNameEn: 'Sunday (Piano Practice)',
+      emoji: '🎹🌊',
+      time: '19:00 – 20:00 (Sera)',
+      titleIt: '🎹 Compiti di Pianoforte con Papino',
+      titleEn: '🎹 Piano Practice with Dad',
+      notesIt: 'Gite in famiglia di giorno · Ore 19:00: Esercizi e ripasso di Pianoforte con Papino prima di lunedì',
+      notesEn: 'Family day trips · 7:00pm: Piano practice with Dad before Monday lesson'
     }
   ]
 };
@@ -646,6 +727,17 @@ export const SEBASTIAN_DATA: ChildData = {
           notesIt: 'Corso Strong fino alle 17:30 e poi lezione di Pianoforte (solo Sebi) fino alle 18:30 con Kate',
           notesEn: 'STRONG class until 5:30pm then Piano lesson (Sebi only) until 6:30pm with Kate',
           hasActivity: true
+        },
+        evening: {
+          time: '19:00',
+          startTime: '19:00',
+          endTime: '20:00',
+          icon: '✨',
+          titleIt: 'Cena & Relax',
+          titleEn: 'Dinner & Relax',
+          notesIt: 'Serata tranquilla a casa dopo il pianoforte',
+          notesEn: 'Quiet evening at home after piano',
+          hasActivity: false
         }
       }
     },
@@ -710,6 +802,17 @@ export const SEBASTIAN_DATA: ChildData = {
           notesIt: 'I bimbi sono a casa alle 16:30',
           notesEn: 'Kids are home by 4:30pm',
           hasActivity: true
+        },
+        evening: {
+          time: '19:00',
+          startTime: '19:00',
+          endTime: '20:00',
+          icon: '✨',
+          titleIt: 'Cena & Relax',
+          titleEn: 'Dinner & Relax',
+          notesIt: 'Serata tranquilla in famiglia',
+          notesEn: 'Quiet evening with family',
+          hasActivity: false
         }
       }
     },
@@ -791,6 +894,17 @@ export const SEBASTIAN_DATA: ChildData = {
           notesIt: 'Disegno, puzzle e storie a casa con Tata Silvana',
           notesEn: 'Drawing, puzzles and stories at home with Silvana',
           hasActivity: false
+        },
+        evening: {
+          time: '19:00',
+          startTime: '19:00',
+          endTime: '20:00',
+          icon: '✨',
+          titleIt: 'Cena & Giochi',
+          titleEn: 'Dinner & Play',
+          notesIt: 'Serata tranquilla a casa con Papino e Mamma',
+          notesEn: 'Quiet evening at home with Dad & Mum',
+          hasActivity: false
         }
       }
     },
@@ -857,6 +971,17 @@ export const SEBASTIAN_DATA: ChildData = {
           notesIt: 'Papà ritira i bimbi al Tandem alle 18:30',
           notesEn: 'Dad collects kids from Tandem at 6:30pm',
           hasActivity: true
+        },
+        evening: {
+          time: '19:00',
+          startTime: '19:00',
+          endTime: '20:00',
+          icon: '✨',
+          titleIt: 'Cena & Relax',
+          titleEn: 'Dinner & Relax',
+          notesIt: 'Serata tranquilla in famiglia',
+          notesEn: 'Quiet evening with family',
+          hasActivity: false
         }
       }
     },
@@ -899,7 +1024,7 @@ export const SEBASTIAN_DATA: ChildData = {
           categoryLabelEn: 'Swimming Bag',
           target: 'parent',
           urgent: true,
-          textIt: 'PREPARARE SACCA NUOTO PER STASERA (Costume, cuffia, ciabatte, telo)',
+          textIt: 'Sacca nuoto per stasera',
           textEn: 'PREPARE SWIMMING BAG FOR TONIGHT (Swimsuit, cap, towel)'
         }
       ],
@@ -934,6 +1059,17 @@ export const SEBASTIAN_DATA: ChildData = {
           notesIt: 'Lezione di nuoto di Sebastian dalle 18:00 alle 18:30 con Kate',
           notesEn: 'Sebastian swimming lesson from 6:00pm to 6:30pm with Kate',
           hasActivity: true
+        },
+        evening: {
+          time: '19:00',
+          startTime: '19:00',
+          endTime: '20:00',
+          icon: '✨',
+          titleIt: 'Cena & Relax',
+          titleEn: 'Dinner & Relax',
+          notesIt: 'Venerdì sera in famiglia dopo il nuoto',
+          notesEn: 'Friday evening with family after swimming',
+          hasActivity: false
         }
       }
     }
@@ -941,25 +1077,25 @@ export const SEBASTIAN_DATA: ChildData = {
   weekend: [
     {
       dayKey: 'saturday',
-      dayNameIt: 'Sabato (Cavallo)',
-      dayNameEn: 'Saturday (Horse Riding)',
+      dayNameIt: 'Sabato (Cavallo Sebi)',
+      dayNameEn: 'Saturday (Sebi Horse Riding)',
       emoji: '🐴',
-      time: 'Pomeriggio / Afternoon',
-      titleIt: 'Lezione di Cavallo (Equitazione)',
-      titleEn: 'Horse Riding Lesson',
+      time: '14:00 – 16:00',
+      titleIt: '🐴 Lezione di Cavallo al Kolbenhof',
+      titleEn: '🐴 Horse Riding Lesson at Kolbenhof',
       notesIt: 'Lezione di equitazione di Sebastian al sabato pomeriggio!',
       notesEn: 'Sebastian\'s horse riding lesson on Saturday afternoon!'
     },
     {
       dayKey: 'sunday',
-      dayNameIt: 'Domenica',
-      dayNameEn: 'Sunday',
-      emoji: '🌊',
-      time: 'Tutto il giorno / All day',
-      titleIt: 'Gite & Lago di Zurigo (Limmat)',
-      titleEn: 'Day Trips & Zurich Lake / Limmat',
-      notesIt: 'Tempo speciale in famiglia',
-      notesEn: 'Special family time'
+      dayNameIt: 'Domenica (Pianoforte)',
+      dayNameEn: 'Sunday (Piano Practice)',
+      emoji: '🎹🌊',
+      time: '19:00 – 20:00 (Sera)',
+      titleIt: '🎹 Esercizi di Pianoforte con Papino',
+      titleEn: '🎹 Piano Practice with Dad',
+      notesIt: 'Gite diurne · Ore 19:00: Esercizi di Pianoforte con Papino per preparare la lezione di lunedì',
+      notesEn: 'Day trips · 7:00pm: Piano practice with Dad to prepare for Monday lesson'
     }
   ]
 };
