@@ -657,18 +657,18 @@ export const SEBASTIAN_DATA: ChildData = {
   nickname: 'Sebi',
   gradeIt: 'Primary 1 (Tandem IMS)',
   gradeEn: 'Primary 1 (Tandem IMS)',
-  classTeacher: 'Ms Faux & Ms Rayment',
+  classTeacher: 'Frau Xenia Faux (DE) & Ms Gaby Rayment (EN)',
   avatarEmoji: '🧒',
   avatarBg: 'bg-gradient-to-br from-emerald-500 to-teal-700',
   avatarImg: '/avatars/avatar_sebi.png',
-  pdfUrl: '/docs/Primary-1-Attendance-Tandem.pdf',
-  pdfLabelIt: 'Scarica Documento Ufficiale Primary 1 (Attendance & Info)',
-  pdfLabelEn: 'Download Official Primary 1 Document (Attendance & Info)',
+  pdfUrl: '/docs/Primary-1-Schedule-Tandem.pdf',
+  pdfLabelIt: 'Scarica PDF Orario Ufficiale Primary 1 (1° Semestre)',
+  pdfLabelEn: 'Download Official Primary 1 PDF (1st Semester Timetable)',
   days: {
     monday: {
       dayKey: 'monday',
-      dayNameIt: 'Lunedì',
-      dayNameEn: 'Monday',
+      dayNameIt: 'Lunedì (Francese & Tedesco)',
+      dayNameEn: 'Monday (French & German)',
       emoji: '🟡',
       dropOff: '08:15 – 08:30',
       pickUpIt: '15:55',
@@ -682,40 +682,40 @@ export const SEBASTIAN_DATA: ChildData = {
           categoryLabelIt: 'Zaino (Mattina)',
           categoryLabelEn: 'Bag (Morning)',
           target: 'parent',
-          textIt: 'Controllo cartellina P1 & astuccio colori',
-          textEn: 'Check P1 folder & coloring pencils'
+          textIt: 'Astuccio completo e cartellina P1',
+          textEn: 'Check P1 folder & pencil case'
         },
         {
           type: 'backpack',
           when: 'morning',
-          icon: '📖',
+          icon: '🇫🇷',
           categoryLabelIt: 'Zaino (Mattina)',
           categoryLabelEn: 'Bag (Morning)',
           target: 'parent',
-          textIt: 'Libretto di lettura fonetica nello zaino',
-          textEn: 'Phonics reading booklet in bag'
+          textIt: 'Quaderno / materiale di Francese (Doppia ora al mattino)',
+          textEn: 'French material (Double period in the morning)'
         }
       ],
       blocks: {
         morning: [
-          { time: '08:30 – 10:05', startTime: '08:30', endTime: '10:05', type: 'lesson', icon: '🇬🇧', subjectIt: 'Fonetica & Inglese', subjectEn: 'Phonics & Early English', teacher: 'Ms Rayment', location: 'Aula P1', notesIt: 'Letters, sounds & vocabulary', notesEn: 'Letters, sounds & vocabulary' },
-          { time: '10:50 – 11:35', startTime: '10:50', endTime: '11:35', type: 'lesson', icon: '🇩🇪', subjectIt: 'Tedesco (Gioco & Dialogo)', subjectEn: 'Early German Immersion', teacher: 'Ms Faux', location: 'Aula P1', notesIt: 'Spielen & Sprechen', notesEn: 'Play & Speak' },
-          { time: '11:40 – 12:25', startTime: '11:40', endTime: '12:25', type: 'lesson', icon: '🔢', subjectIt: 'Matematica & Numeri', subjectEn: 'Early Maths & Numbers', teacher: 'Ms Rayment', location: 'Aula P1', notesIt: 'Counting & basic shapes', notesEn: 'Counting & basic shapes' }
+          { time: '08:30 – 10:05', startTime: '08:30', endTime: '10:05', type: 'lesson', icon: '🇫🇷', subjectIt: 'Francese (Doppia ora)', subjectEn: 'French (Double period)', teacher: 'Mme Conde', location: 'Lang Lab', notesIt: 'Immersion & vocaboli francesi', notesEn: 'French immersion & vocabulary' },
+          { time: '10:50 – 12:25', startTime: '10:50', endTime: '12:25', type: 'lesson', icon: '🇩🇪', subjectIt: 'Tedesco (Doppia ora)', subjectEn: 'German (Double period)', teacher: 'Frau Faux', location: 'Aula P1', notesIt: 'Lehrplan 21 Deutsch', notesEn: 'German curriculum Lehrplan 21' }
         ],
         lunch: {
-          time: '12:25 – 13:50',
-          startTime: '12:25',
-          endTime: '13:50',
+          time: '12:30 – 13:45',
+          startTime: '12:30',
+          endTime: '13:45',
           type: 'lunch',
           icon: '🍽️',
-          subjectIt: 'Mensa & Gioco a Scuola',
-          subjectEn: 'School Lunch & Play',
-          notesIt: 'Mensa e gioco all aperto',
-          notesEn: 'Supervised lunch & outdoor play'
+          subjectIt: 'Mensa & Gioco all\'Aperto',
+          subjectEn: 'School Lunch & Outdoor Play',
+          notesIt: 'Mensa scolastica e ricreazione sorvegliata',
+          notesEn: 'Supervised school lunch & outdoor recess'
         },
         afternoon: [
-          { time: '13:50 – 15:35', startTime: '13:50', endTime: '15:35', type: 'lesson', icon: '📖', subjectIt: 'Storie & Lettura P1', subjectEn: 'Topic & Storytime', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Racconti illustrati & scoperta', notesEn: 'Picture books & discovery' },
-          { time: '15:35 – 15:55', startTime: '15:35', endTime: '15:55', type: 'dismissal', icon: '🎒', subjectIt: 'Zainetti & Uscita (15:55)', subjectEn: 'Wrap-up & Dismissal (15:55)', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Preparazione per Strong e Pianoforte', notesEn: 'Getting ready for Strong & Piano' }
+          { time: '13:50 – 14:30', startTime: '13:50', endTime: '14:30', type: 'lesson', icon: '🔢', subjectIt: 'Matematica', subjectEn: 'Maths', teacher: 'Frau Faux / Ms Rayment', location: 'Aula P1', notesIt: 'Numeri e conteggio', notesEn: 'Numbers & counting' },
+          { time: '14:50 – 15:35', startTime: '14:50', endTime: '15:35', type: 'lesson', icon: '🌿', subjectIt: 'Natur und Technik (Scienze)', subjectEn: 'Science & Nature (Natur & Technik)', teacher: 'Frau Faux', location: 'Aula P1', notesIt: 'Scienze naturali e scoperta del mondo', notesEn: 'Nature, science & discovery' },
+          { time: '15:35 – 15:55', startTime: '15:35', endTime: '15:55', type: 'dismissal', icon: '🎒', subjectIt: 'Compiti & Uscita (15:55)', subjectEn: 'Homework & Dismissal (15:55)', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Uscita 15:55 / Preparazione Strong & Piano', notesEn: '15:55 dismissal / Ready for Strong & Piano' }
         ],
         extra: {
           time: '16:00 – 18:30',
@@ -743,8 +743,8 @@ export const SEBASTIAN_DATA: ChildData = {
     },
     tuesday: {
       dayKey: 'tuesday',
-      dayNameIt: 'Martedì',
-      dayNameEn: 'Tuesday',
+      dayNameIt: 'Martedì (Matematica & Enquiry)',
+      dayNameEn: 'Tuesday (Maths & Enquiry)',
       emoji: '🔴',
       dropOff: '08:15 – 08:30',
       pickUpIt: '15:55',
@@ -760,37 +760,27 @@ export const SEBASTIAN_DATA: ChildData = {
           target: 'parent',
           textIt: 'Snack sano per la ricreazione + borraccia',
           textEn: 'Healthy snack for recess + water bottle'
-        },
-        {
-          type: 'homework',
-          when: 'evening_before',
-          icon: '🌙',
-          categoryLabelIt: 'Compiti (Sera Prima)',
-          categoryLabelEn: 'Homework (Night Before)',
-          target: 'child',
-          textIt: 'Ripasso giocoso forme e numeri P1 con mamma/papà',
-          textEn: 'Playful review of shapes & numbers with mum/dad'
         }
       ],
       blocks: {
         morning: [
-          { time: '08:30 – 10:05', startTime: '08:30', endTime: '10:05', type: 'lesson', icon: '🔢', subjectIt: 'Matematica & Logica', subjectEn: 'Early Maths & Logic', teacher: 'Ms Rayment', location: 'Aula P1', notesIt: 'Giochi di logica e numeri', notesEn: 'Logic games & number bonds' },
-          { time: '10:50 – 12:25', startTime: '10:50', endTime: '12:25', type: 'lesson', icon: '🇩🇪', subjectIt: 'Tedesco & Canto', subjectEn: 'German & Singing', teacher: 'Ms Faux', location: 'Aula P1', notesIt: 'Canzoni e parole in tedesco', notesEn: 'German songs and vocabulary' }
+          { time: '08:30 – 10:05', startTime: '08:30', endTime: '10:05', type: 'lesson', icon: '🇩🇪🇬🇧', subjectIt: 'Tedesco / Inglese (Doppia ora)', subjectEn: 'German / English (Double period)', teacher: 'Frau Faux / Ms Rayment', location: 'Aula P1', notesIt: 'Lingue e fonetica bilingue', notesEn: 'Bilingual language immersion' },
+          { time: '10:50 – 12:25', startTime: '10:50', endTime: '12:25', type: 'lesson', icon: '🔢', subjectIt: 'Matematica (Doppia ora)', subjectEn: 'Maths (Double period)', teacher: 'Frau Faux / Ms Rayment', location: 'Aula P1', notesIt: 'Matematica bilingue (Mathe/Maths)', notesEn: 'Bilingual math concepts & shapes' }
         ],
         lunch: {
-          time: '12:25 – 13:50',
-          startTime: '12:25',
-          endTime: '13:50',
+          time: '12:30 – 13:45',
+          startTime: '12:30',
+          endTime: '13:45',
           type: 'lunch',
           icon: '🍽️',
-          subjectIt: 'Mensa & Gioco a Scuola',
-          subjectEn: 'School Lunch & Play',
-          notesIt: 'Mensa e gioco all aperto',
+          subjectIt: 'Mensa & Gioco all\'Aperto',
+          subjectEn: 'School Lunch & Outdoor Play',
+          notesIt: 'Mensa e ricreazione sorvegliata',
           notesEn: 'Supervised lunch & outdoor play'
         },
         afternoon: [
-          { time: '13:50 – 15:35', startTime: '13:50', endTime: '15:35', type: 'lesson', icon: '🌿', subjectIt: 'Natura & Scoperte', subjectEn: 'Discovery & Nature', teacher: 'Team P1', location: 'Giardino P1', notesIt: 'Esplorazione all aperto', notesEn: 'Outdoor nature exploration' },
-          { time: '15:35 – 15:55', startTime: '15:35', endTime: '15:55', type: 'dismissal', icon: '📖', subjectIt: 'Fiaba & Uscita (15:55)', subjectEn: 'Story & Dismissal (15:55)', teacher: 'Ms Rayment', location: 'Angolo Lettura', notesIt: 'Rientro a casa', notesEn: 'Going home' }
+          { time: '13:50 – 15:35', startTime: '13:50', endTime: '15:35', type: 'lesson', icon: '🔬', subjectIt: 'Enquiry / Scienze (Doppia ora)', subjectEn: 'Enquiry / Science (Double period)', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Progetti pratici ed esplorazione Enquiry', notesEn: 'Hands-on enquiry discovery projects' },
+          { time: '15:35 – 15:55', startTime: '15:35', endTime: '15:55', type: 'dismissal', icon: '🎒', subjectIt: 'Compiti & Uscita (15:55)', subjectEn: 'Homework & Dismissal (15:55)', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Rientro a casa ore 15:55', notesEn: 'Going home at 15:55' }
         ],
         extra: {
           time: '16:30',
@@ -834,8 +824,8 @@ export const SEBASTIAN_DATA: ChildData = {
           categoryLabelEn: 'Bag (Morning)',
           target: 'parent',
           urgent: true,
-          textIt: 'SCAMBIO LIBRO DI LETTURA SETTIMANALE P1',
-          textEn: 'WEEKLY P1 READING BOOK EXCHANGE'
+          textIt: 'Scambio libro di lettura settimanale P1 in biblioteca',
+          textEn: 'Weekly P1 reading book exchange at school library'
         },
         {
           type: 'backpack',
@@ -851,10 +841,9 @@ export const SEBASTIAN_DATA: ChildData = {
       ],
       blocks: {
         morning: [
-          { time: '08:30 – 09:15', startTime: '08:30', endTime: '09:15', type: 'lesson', icon: '🇩🇪', subjectIt: 'Tedesco & Storie', subjectEn: 'German & Stories', teacher: 'Ms Faux', location: 'Aula P1', notesIt: 'Storie in tedesco', notesEn: 'German stories' },
-          { time: '09:20 – 10:05', startTime: '09:20', endTime: '10:05', type: 'lesson', icon: '🇬🇧', subjectIt: 'Fonetica Inglese', subjectEn: 'English Phonics', teacher: 'Ms Rayment', location: 'Aula P1', notesIt: 'Suoni e lettere', notesEn: 'Sounds & blending letters' },
-          { time: '10:50 – 11:35', startTime: '10:50', endTime: '11:35', type: 'lesson', icon: '🏃', subjectIt: 'Movimento & Ritmo', subjectEn: 'Movement & Rhythm', teacher: 'Team P1', location: 'Palestra Piccola', notesIt: 'Movimento e coordinazione', notesEn: 'Movement & coordination' },
-          { time: '11:40 – 12:25', startTime: '11:40', endTime: '12:25', type: 'lesson', icon: '🎵', subjectIt: 'Canto & Musica', subjectEn: 'Singing & Music', teacher: 'Music Staff', location: 'Music Room', notesIt: 'Musica per i più piccoli', notesEn: 'Music and nursery rhymes' }
+          { time: '08:30 – 10:05', startTime: '08:30', endTime: '10:05', type: 'lesson', icon: '🇩🇪🇬🇧', subjectIt: 'Tedesco / Inglese (Doppia ora)', subjectEn: 'German / English (Double period)', teacher: 'Frau Faux / Ms Rayment', location: 'Aula P1', notesIt: 'Lettura & fonetica bilingue', notesEn: 'Reading & bilingual phonics' },
+          { time: '10:50 – 11:35', startTime: '10:50', endTime: '11:35', type: 'lesson', icon: '🔢', subjectIt: 'Matematica', subjectEn: 'Maths', teacher: 'Frau Faux / Ms Rayment', location: 'Aula P1', notesIt: 'Mathe / Maths P1', notesEn: 'Maths concepts' },
+          { time: '11:40 – 12:25', startTime: '11:40', endTime: '12:25', type: 'lesson', icon: '🔬', subjectIt: 'Enquiry / Scienze', subjectEn: 'Enquiry / Science', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Unità tematica Enquiry', notesEn: 'Enquiry thematic unit' }
         ],
         lunch: {
           time: '12:30',
@@ -880,8 +869,8 @@ export const SEBASTIAN_DATA: ChildData = {
             avatarImg: '/avatars/avatar_silvana.png',
             subjectIt: 'Silvana a Casa (13:30–19:00)',
             subjectEn: 'Silvana at Home (13:30–19:00)',
-            notesIt: 'Tata Silvana gestisce il pomeriggio a casa e giochi dalle 13:30 alle 19:00',
-            notesEn: 'Silvana manages afternoon at home & play from 1:30pm to 7:00pm'
+            notesIt: 'Tata Silvana gestisce il pomeriggio a casa e giochi (a scuola: opzione French Club/German Booster Club per iscritti 13:45-16:00)',
+            notesEn: 'Nanny Silvana manages afternoon at home & play (optional school booster club 1:45-4:00pm)'
           }
         ],
         extra: {
@@ -910,8 +899,8 @@ export const SEBASTIAN_DATA: ChildData = {
     },
     thursday: {
       dayKey: 'thursday',
-      dayNameIt: 'Giovedì (Sport P1)',
-      dayNameEn: 'Thursday (PE Day P1)',
+      dayNameIt: 'Giovedì (Musica & Arte)',
+      dayNameEn: 'Thursday (Music & Art History)',
       emoji: '🔵',
       dropOff: '08:15 – 08:30',
       pickUpIt: '15:55',
@@ -921,45 +910,35 @@ export const SEBASTIAN_DATA: ChildData = {
         {
           type: 'backpack',
           when: 'morning',
-          icon: '🎒',
-          categoryLabelIt: 'Zaino (Mattina)',
-          categoryLabelEn: 'Bag (Morning)',
-          target: 'parent',
-          urgent: true,
-          textIt: 'PORTARE KIT SPORT P1 (Scarpe ginnastica comode)',
-          textEn: 'BRING P1 PE KIT (Comfortable gym shoes)'
-        },
-        {
-          type: 'backpack',
-          when: 'morning',
           icon: '🎨',
           categoryLabelIt: 'Zaino (Mattina)',
           categoryLabelEn: 'Bag (Morning)',
           target: 'parent',
-          textIt: 'Verificare grembiulino pittura nell armadietto',
-          textEn: 'Check paint apron is in the cubby'
+          textIt: 'Astuccio completo per Art History & Musica',
+          textEn: 'Check pencil case for Art History & Music'
         }
       ],
       blocks: {
         morning: [
-          { time: '08:30 – 09:15', startTime: '08:30', endTime: '09:15', type: 'lesson', icon: '🏃', subjectIt: 'Sport & Movimento P1', subjectEn: 'SPORT & Movement P1', teacher: 'Coach', location: 'Turnhalle', notesIt: '👟 Scarpe da ginnastica', notesEn: '👟 Gym shoes required' },
-          { time: '09:20 – 10:05', startTime: '09:20', endTime: '10:05', type: 'lesson', icon: '🇬🇧', subjectIt: 'Fonetica & Lettura', subjectEn: 'English Phonics', teacher: 'Ms Rayment', location: 'Aula P1', notesIt: 'Lettura guidata', notesEn: 'Guided reading' },
-          { time: '10:50 – 12:25', startTime: '10:50', endTime: '12:25', type: 'lesson', icon: '🇩🇪', subjectIt: 'Tedesco (Attività Bilingue)', subjectEn: 'German Games', teacher: 'Ms Faux', location: 'Aula P1', notesIt: 'Attività bilingue', notesEn: 'Bilingual games & vocabulary' }
+          { time: '08:30 – 10:05', startTime: '08:30', endTime: '10:05', type: 'lesson', icon: '🇩🇪🇬🇧', subjectIt: 'Tedesco / Inglese (Doppia ora)', subjectEn: 'German / English (Double period)', teacher: 'Frau Faux / Ms Rayment', location: 'Aula P1', notesIt: 'Linguaggio e comunicazione bilingue', notesEn: 'Bilingual language and communication' },
+          { time: '10:50 – 11:35', startTime: '10:50', endTime: '11:35', type: 'lesson', icon: '🔢', subjectIt: 'Matematica', subjectEn: 'Maths', teacher: 'Frau Faux / Ms Rayment', location: 'Aula P1', notesIt: 'Matematica e logica', notesEn: 'Maths and logic' },
+          { time: '11:40 – 12:25', startTime: '11:40', endTime: '12:25', type: 'lesson', icon: '🎵', subjectIt: 'Musica', subjectEn: 'Music', teacher: 'Music Staff', location: 'Music Room', notesIt: 'Canto ed espressione musicale', notesEn: 'Singing & musical expression' }
         ],
         lunch: {
-          time: '12:25 – 13:50',
-          startTime: '12:25',
-          endTime: '13:50',
+          time: '12:30 – 13:45',
+          startTime: '12:30',
+          endTime: '13:45',
           type: 'lunch',
           icon: '🍽️',
-          subjectIt: 'Mensa & Gioco a Scuola',
-          subjectEn: 'School Lunch & Play',
-          notesIt: 'Mensa e ricreazione',
+          subjectIt: 'Mensa & Gioco all\'Aperto',
+          subjectEn: 'School Lunch & Outdoor Play',
+          notesIt: 'Mensa e ricreazione sorvegliata',
           notesEn: 'Supervised lunch & recess'
         },
         afternoon: [
-          { time: '13:50 – 15:35', startTime: '13:50', endTime: '15:35', type: 'lesson', icon: '🎨', subjectIt: 'Disegno & Lavoretti', subjectEn: 'Arts & Crafts', teacher: 'Team P1', location: 'Art Corner', notesIt: 'Disegno e manipolazione', notesEn: 'Drawing & tactile crafts' },
-          { time: '15:35 – 15:55', startTime: '15:35', endTime: '15:55', type: 'dismissal', icon: '📝', subjectIt: 'Chiusura & Uscita (15:55)', subjectEn: 'Daily Review & Dismissal (15:55)', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Chiusura giornata', notesEn: 'End of day reflection' }
+          { time: '13:50 – 14:30', startTime: '13:50', endTime: '14:30', type: 'lesson', icon: '🔬', subjectIt: 'Enquiry / Scienze', subjectEn: 'Enquiry / Science', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Progetto tematico Enquiry', notesEn: 'Thematic enquiry project' },
+          { time: '14:50 – 15:35', startTime: '14:50', endTime: '15:35', type: 'lesson', icon: '🎨', subjectIt: 'Storia dell\'Arte (Art History)', subjectEn: 'Art History', teacher: 'Mrs Schmid', location: 'Art Studio', notesIt: 'Colori, forme ed esplorazione artistica', notesEn: 'Colors, shapes & art history' },
+          { time: '15:35 – 15:55', startTime: '15:35', endTime: '15:55', type: 'dismissal', icon: '📝', subjectIt: 'Compiti & Uscita (15:55)', subjectEn: 'Homework & Dismissal (15:55)', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Uscita ore 15:55', notesEn: '15:55 dismissal' }
         ],
         extra: {
           time: '18:30',
@@ -987,8 +966,8 @@ export const SEBASTIAN_DATA: ChildData = {
     },
     friday: {
       dayKey: 'friday',
-      dayNameIt: 'Venerdì (Craft & Nuoto)',
-      dayNameEn: 'Friday (Craft & Swimming)',
+      dayNameIt: 'Venerdì (Sport Kartaus & Arte)',
+      dayNameEn: 'Friday (Kartaus PE & Art)',
       emoji: '🟣',
       dropOff: '08:15 – 08:30',
       pickUpIt: '15:55',
@@ -998,23 +977,24 @@ export const SEBASTIAN_DATA: ChildData = {
         {
           type: 'backpack',
           when: 'morning',
+          icon: '🏃',
+          categoryLabelIt: 'Zaino (Mattina)',
+          categoryLabelEn: 'Bag (Morning)',
+          target: 'parent',
+          urgent: true,
+          textIt: 'SACCA SPORT & SCARPE PULITE per Turnhalle Kartaus (11:10–12:00)',
+          textEn: 'BRING SPORT BAG & CLEAN GYM SHOES for Turnhalle Kartaus (11:10–12:00)'
+        },
+        {
+          type: 'backpack',
+          when: 'morning',
           icon: '🎨',
           categoryLabelIt: 'Zaino (Mattina)',
           categoryLabelEn: 'Bag (Morning)',
           target: 'parent',
           urgent: true,
-          textIt: 'Grembiulino per pittura & lavoretti',
-          textEn: 'Painting apron for messy crafts'
-        },
-        {
-          type: 'backpack',
-          when: 'morning',
-          icon: '🧸',
-          categoryLabelIt: 'Zaino (Mattina)',
-          categoryLabelEn: 'Bag (Morning)',
-          target: 'parent',
-          textIt: 'Show & Tell (se concordato con le maestre)',
-          textEn: 'Show & Tell toy (if scheduled)'
+          textIt: 'Paint shirt / Grembiule per arte del mattino',
+          textEn: 'Paint shirt / apron for morning art'
         },
         {
           type: 'backpack',
@@ -1024,30 +1004,29 @@ export const SEBASTIAN_DATA: ChildData = {
           categoryLabelEn: 'Swimming Bag',
           target: 'parent',
           urgent: true,
-          textIt: 'Sacca nuoto per stasera',
-          textEn: 'PREPARE SWIMMING BAG FOR TONIGHT (Swimsuit, cap, towel)'
+          textIt: 'Sacca nuoto per stasera (18:00–18:30)',
+          textEn: 'PREPARE SWIMMING BAG FOR TONIGHT (6:00–6:30pm)'
         }
       ],
       blocks: {
         morning: [
-          { time: '08:30 – 10:05', startTime: '08:30', endTime: '10:05', type: 'lesson', icon: '🇩🇪', subjectIt: 'Tedesco & Creatività', subjectEn: 'German & Creative Play', teacher: 'Ms Faux', location: 'Aula P1', notesIt: 'Attività creative in tedesco', notesEn: 'Creative activities in German' },
-          { time: '10:50 – 11:35', startTime: '10:50', endTime: '11:35', type: 'lesson', icon: '🇬🇧', subjectIt: 'Storie in Inglese', subjectEn: 'English Storytelling', teacher: 'Ms Rayment', location: 'Cozy Corner', notesIt: 'Storie & filastrocche', notesEn: 'Stories & rhymes' },
-          { time: '11:40 – 12:25', startTime: '11:40', endTime: '12:25', type: 'lesson', icon: '🔢', subjectIt: 'Matematica (Giochi con Numeri)', subjectEn: 'Early Math Games', teacher: 'Ms Rayment', location: 'Aula P1', notesIt: 'Giochi di gruppo con numeri', notesEn: 'Math group games' }
+          { time: '08:30 – 10:05', startTime: '08:30', endTime: '10:05', type: 'lesson', icon: '🇬🇧🎨', subjectIt: 'Inglese & Arte (Doppia ora)', subjectEn: 'English & Art (Double period)', teacher: 'Ms Rayment / Mrs Schmid', location: 'Aula P1 / Art Studio', notesIt: 'Creatività, disegno & lingua inglese', notesEn: 'Creativity, art & English language' },
+          { time: '10:50 – 12:25', startTime: '10:50', endTime: '12:25', type: 'lesson', icon: '🏃', subjectIt: 'Sport / PE (Turnhalle Kartaus 11:10–12:00)', subjectEn: 'Sport / PE (Turnhalle Kartaus 11:10–12:00)', teacher: 'Coach', location: 'Turnhalle Kartaus', notesIt: '👟 Lezione di Sport 11:10–12:00 presso la palestra Turnhalle Kartaus', notesEn: '👟 PE class 11:10–12:00 at Turnhalle Kartaus gym' }
         ],
         lunch: {
-          time: '12:25 – 13:50',
-          startTime: '12:25',
-          endTime: '13:50',
+          time: '12:30 – 13:45',
+          startTime: '12:30',
+          endTime: '13:45',
           type: 'lunch',
           icon: '🍽️',
-          subjectIt: 'Mensa & Gioco a Scuola',
-          subjectEn: 'School Lunch & Play',
-          notesIt: 'Mensa e ricreazione',
-          notesEn: 'Supervised lunch & recess'
+          subjectIt: 'Mensa & Gioco all\'Aperto',
+          subjectEn: 'School Lunch & Outdoor Play',
+          notesIt: 'Mensa e ricreazione sorvegliata',
+          notesEn: 'Supervised lunch & outdoor play'
         },
         afternoon: [
-          { time: '13:50 – 15:35', startTime: '13:50', endTime: '15:35', type: 'lesson', icon: '🧩', subjectIt: 'Gioco Libero & Costruzioni', subjectEn: 'Free Play & Construction', teacher: 'Team P1', location: 'Play Area', notesIt: 'Costruzioni e creatività', notesEn: 'Building blocks & creativity' },
-          { time: '15:35 – 15:55', startTime: '15:35', endTime: '15:55', type: 'dismissal', icon: '👋', subjectIt: 'Saluto del Venerdì & Uscita (15:55)', subjectEn: 'Weekend Circle & Dismissal (15:55)', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Preparazione per il nuoto serale', notesEn: 'Getting ready for evening swimming' }
+          { time: '13:50 – 15:35', startTime: '13:50', endTime: '15:35', type: 'lesson', icon: '🔬', subjectIt: 'Enquiry / Scienze (Doppia ora)', subjectEn: 'Enquiry / Science (Double period)', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Attività pratiche Enquiry', notesEn: 'Hands-on enquiry activities' },
+          { time: '15:35 – 15:55', startTime: '15:35', endTime: '15:55', type: 'dismissal', icon: '👋', subjectIt: 'Compiti & Uscita (15:55)', subjectEn: 'Homework & Dismissal (15:55)', teacher: 'Team P1', location: 'Aula P1', notesIt: 'Uscita 15:55 / Preparazione per il nuoto serale', notesEn: '15:55 dismissal / Ready for evening swimming' }
         ],
         extra: {
           time: '18:00 – 18:30',

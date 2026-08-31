@@ -169,24 +169,58 @@ function getBackpackItems(checklist: ChecklistItem[]) {
     {daysKeys.map((key) => {
       const aleDay = ALESSANDRO_DATA.days[key];
       const sebiDay = SEBASTIAN_DATA.days[key];
+      const isWednesday = key === 'wednesday';
       return (
-        <div class="row-solid-afternoon" style="height: 155px;">
+        <div class="row-solid-afternoon" style={isWednesday ? "height: 90px;" : "height: 200px;"}>
           <div class="solid-header solid-header-afternoon">
             <span>🌤️ POMERIGGIO</span>
             <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;">13:50–15:55</span>
           </div>
           <div class="solid-slots-container">
-            {aleDay.blocks.afternoon.map(s => (
-              <div class="minimal-slot-line" style={`font-size: 0.68rem; padding: 4px 6px; border-radius: 6px; ${s.type === 'afternoon_home' ? 'background: #581c87; border: 1px solid #c084fc; color: #ffffff;' : 'background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.15); color: #f1f5f9;'}`} title={`${s.time} · ${s.notesIt || ''}`}>
-                <span style="font-family: 'JetBrains Mono', monospace; color: #fef08a; font-weight: 800;">{s.startTime}</span>
-                {s.avatarImg ? (
-                  <img src={`${baseUrl}${s.avatarImg}`} class="w-6 h-6 rounded-full ring-1.5 ring-purple-300" alt="Silvana" />
-                ) : (
-                  <span>{s.icon}</span>
-                )}
-                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700;">{s.subjectIt}</span>
+            {isWednesday ? (
+              <div class="minimal-slot-line" style="font-size: 0.68rem; padding: 6px 8px; border-radius: 6px; background: #581c87; border: 1px solid #c084fc; color: #ffffff;" title="13:30–19:00 Silvana a casa">
+                <img src={`${baseUrl}/avatars/avatar_silvana.png`} class="w-6 h-6 rounded-full ring-1.5 ring-purple-300" alt="Silvana" />
+                <div>
+                  <div style="font-weight: 800;">🏠 Silvana a Casa (13:30–19:00)</div>
+                  <div style="font-size: 0.58rem; color: #e9d5ff;">Pomeriggio gestito a casa</div>
+                </div>
               </div>
-            ))}
+            ) : (
+              <>
+                <!-- Ale -->
+                <div style="background: rgba(30, 58, 138, 0.35); border: 1px solid #3b82f6; border-radius: 6px; padding: 4px 6px;">
+                  <div style="font-size: 0.68rem; font-weight: 900; color: #93c5fd; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
+                    <img src={`${baseUrl}/avatars/avatar_ale.png`} class="w-3.5 h-3.5 rounded-full" alt="Ale" />
+                    <span>Ale (P3)</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 2px;">
+                    {aleDay.blocks.afternoon.map(s => (
+                      <div style="font-size: 0.64rem; display: flex; align-items: center; gap: 4px; color: #f1f5f9;" title={`${s.time} · ${s.notesIt || ''}`}>
+                        <span style="color: #fef08a; font-family: 'JetBrains Mono', monospace; font-weight: 800;">{s.startTime}</span>
+                        <span>{s.icon}</span>
+                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{s.subjectIt}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <!-- Sebi -->
+                <div style="background: rgba(6, 78, 59, 0.35); border: 1px solid #10b981; border-radius: 6px; padding: 4px 6px;">
+                  <div style="font-size: 0.68rem; font-weight: 900; color: #6ee7b7; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
+                    <img src={`${baseUrl}/avatars/avatar_sebi.png`} class="w-3.5 h-3.5 rounded-full" alt="Sebi" />
+                    <span>Sebi (P1)</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 2px;">
+                    {sebiDay.blocks.afternoon.map(s => (
+                      <div style="font-size: 0.64rem; display: flex; align-items: center; gap: 4px; color: #f1f5f9;" title={`${s.time} · ${s.notesIt || ''}`}>
+                        <span style="color: #fef08a; font-family: 'JetBrains Mono', monospace; font-weight: 800;">{s.startTime}</span>
+                        <span>{s.icon}</span>
+                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{s.subjectIt}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       );
