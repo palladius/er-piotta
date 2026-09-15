@@ -10,3 +10,7 @@
 
 - [Workflow](./workflow.md)
 - [Code Style Guides](./code_styleguides/)
+
+## Companion Repositories
+
+- [Private Backend: Er Piotta Pvt](../../er-piotta-pvt/conductor/index.md)
