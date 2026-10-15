@@ -1,0 +1,339 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { INITIAL_TICKETS, UPCOMING_EVENTS } from '../data/ticketsData';
+
+const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+// Stats
+const totalTickets = INITIAL_TICKETS.length;
+const riccCount = INITIAL_TICKETS.filter(t => t.owner === 'riccardo').length;
+const kateCount = INITIAL_TICKETS.filter(t => t.owner === 'kate').length;
+const unassignedCount = INITIAL_TICKETS.filter(t => t.owner === 'unassigned').length;
+---
+
+<Layout title="Action Items & Tickets Piota (Tandem IMS)" activeTab="tickets">
+  
+  <!-- Header Bar -->
+  <div class="glass-panel p-4 md:p-6 mb-6">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-4">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center text-3xl shadow-lg shadow-amber-500/30 ring-2 ring-amber-300/40 text-slate-950">
+          📋
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-xl md:text-2xl font-black text-white">Tandem IMS · Action Items & Tickets</h1>
+            <span class="text-xs uppercase font-mono font-bold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Piota AI Cal Synced
+            </span>
+          </div>
+          <p class="text-xs md:text-sm text-slate-300 mt-0.5">
+            Avvisi rilevanti estratti dall'app Piota Schools: permessi, gite, conferme e materiale scolastico per Ale (P3) e Seby (P1).
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Owner Distribution Legend -->
+      <div class="flex flex-wrap items-center gap-2.5">
+        <!-- Riccardo Pill -->
+        <div class="flex items-center space-x-2 bg-slate-900/90 border border-amber-400/40 px-3 py-1.5 rounded-xl shadow-sm">
+          <img 
+            src={`${baseUrl}/avatars/avatar_riccardo.png`} 
+            alt="Riccardo" 
+            class="w-7 h-7 rounded-full object-cover ring-2 ring-amber-400"
+          />
+          <div class="text-xs">
+            <span class="text-amber-400 font-extrabold">Riccardo:</span>
+            <span class="text-white font-mono font-bold ml-1">{riccCount}</span>
+          </div>
+        </div>
+
+        <!-- Kate Pill -->
+        <div class="flex items-center space-x-2 bg-slate-900/90 border border-purple-500/40 px-3 py-1.5 rounded-xl shadow-sm">
+          <img 
+            src={`${baseUrl}/avatars/avatar_kate.png`} 
+            alt="Kate" 
+            class="w-7 h-7 rounded-full object-cover ring-2 ring-purple-500"
+          />
+          <div class="text-xs">
+            <span class="text-purple-400 font-extrabold">Kate:</span>
+            <span class="text-white font-mono font-bold ml-1">{kateCount}</span>
+          </div>
+        </div>
+
+        <!-- Unassigned Pill -->
+        <div class="flex items-center space-x-2 bg-slate-900/90 border border-slate-600/40 px-3 py-1.5 rounded-xl shadow-sm">
+          <div class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-xs text-slate-300 ring-2 ring-slate-400 font-bold">
+            👤
+          </div>
+          <div class="text-xs">
+            <span class="text-slate-300 font-extrabold">Nessuno:</span>
+            <span class="text-white font-mono font-bold ml-1">{unassignedCount}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- LEFT 2 COLS: Ticket Stream -->
+    <div class="lg:col-span-2 space-y-4">
+      <div class="flex items-center justify-between px-1">
+        <h2 class="text-lg font-black text-white flex items-center gap-2">
+          <span>🎯</span>
+          <span>Da Fare & Presi in Carico</span>
+          <span class="text-xs font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">{totalTickets}</span>
+        </h2>
+        <span class="text-xs text-slate-400 italic">Clicca sulle card per coordinare le azioni</span>
+      </div>
+
+      <!-- Ticket Cards List -->
+      <div class="space-y-3.5">
+        {INITIAL_TICKETS.map(ticket => {
+          const isRicc = ticket.owner === 'riccardo';
+          const isKate = ticket.owner === 'kate';
+          const isUnassigned = ticket.owner === 'unassigned';
+
+          // Ring & badge styles based on owner
+          const avatarRing = isRicc 
+            ? 'ring-4 ring-amber-400 shadow-lg shadow-amber-500/20' 
+            : isKate 
+              ? 'ring-4 ring-purple-500 shadow-lg shadow-purple-500/20' 
+              : 'ring-4 ring-slate-400/80 shadow-md shadow-slate-600/20';
+
+          const cardBorder = isRicc 
+            ? 'border-amber-400/30 hover:border-amber-400/60 bg-gradient-to-r from-slate-900/95 via-slate-900/85 to-amber-950/20' 
+            : isKate 
+              ? 'border-purple-500/30 hover:border-purple-500/60 bg-gradient-to-r from-slate-900/95 via-slate-900/85 to-purple-950/20' 
+              : 'border-slate-700/60 hover:border-slate-500/60 bg-slate-900/80';
+
+          return (
+            <div class={`glass-panel p-4 md:p-5 transition-all duration-200 border ${cardBorder} flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group`}>
+              
+              <!-- Left side: Content & Badges -->
+              <div class="flex items-start space-x-3.5 flex-1 min-w-0">
+                
+                <!-- Priority Dot & Category Icon -->
+                <div class="mt-1 flex-shrink-0">
+                  {ticket.priority === 'urgent' && (
+                    <span class="flex h-3 w-3 relative">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                    </span>
+                  )}
+                  {ticket.priority === 'high' && (
+                    <span class="inline-flex rounded-full h-3 w-3 bg-orange-400"></span>
+                  )}
+                  {ticket.priority === 'normal' && (
+                    <span class="inline-flex rounded-full h-3 w-3 bg-yellow-400"></span>
+                  )}
+                </div>
+
+                <div class="space-y-1.5 flex-1 min-w-0">
+                  <!-- Badges Line -->
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    {ticket.targetKid === 'seby' && (
+                      <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        🧒 Seby (P1)
+                      </span>
+                    )}
+                    {ticket.targetKid === 'ale' && (
+                      <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                        👦 Ale (P3)
+                      </span>
+                    )}
+                    {ticket.targetKid === 'family' && (
+                      <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                        👨‍👩‍👦‍👦 Famiglia
+                      </span>
+                    )}
+
+                    <span class="text-[10px] uppercase font-mono font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                      {ticket.category}
+                    </span>
+
+                    {ticket.dueDate && (
+                      <span class="text-[11px] text-amber-300/90 font-medium flex items-center gap-1 ml-auto">
+                        <i class="fa-regular fa-clock text-[10px]"></i>
+                        <span>{ticket.dueDate}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <!-- Title -->
+                  <h3 class="text-sm md:text-base font-extrabold text-white group-hover:text-amber-300 transition">
+                    {ticket.title}
+                  </h3>
+
+                  <!-- Description -->
+                  <p class="text-xs text-slate-300 leading-relaxed">
+                    {ticket.description}
+                  </p>
+
+                  <!-- Source Tag -->
+                  <div class="text-[10px] text-slate-400 pt-1 flex items-center gap-1">
+                    <i class="fa-solid fa-bullhorn text-[9px] text-slate-500"></i>
+                    <span>Fonte: {ticket.source}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right side: Owner Circular Avatar Badge -->
+              <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800 gap-2">
+                <div class="flex items-center space-x-2.5">
+                  <div class="text-right">
+                    <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Owner</div>
+                    <div class={`text-xs font-black ${isRicc ? 'text-amber-400' : isKate ? 'text-purple-400' : 'text-slate-400'}`}>
+                      {isRicc ? 'Riccardo' : isKate ? 'Kate' : 'Nessuno'}
+                    </div>
+                  </div>
+
+                  <!-- Circular Avatar with specific border color -->
+                  {isRicc && (
+                    <img 
+                      src={`${baseUrl}/avatars/avatar_riccardo.png`} 
+                      alt="Riccardo" 
+                      title="Assegnato a Riccardo (Bordo Giallo)"
+                      class={`w-11 h-11 rounded-full object-cover ${avatarRing} transition-transform group-hover:scale-105`}
+                    />
+                  )}
+
+                  {isKate && (
+                    <img 
+                      src={`${baseUrl}/avatars/avatar_kate.png`} 
+                      alt="Kate" 
+                      title="Assegnato a Kate (Bordo Viola)"
+                      class={`w-11 h-11 rounded-full object-cover ${avatarRing} transition-transform group-hover:scale-105`}
+                    />
+                  )}
+
+                  {isUnassigned && (
+                    <div 
+                      title="Nessun Owner (Bordo Grigio Neutro)"
+                      class={`w-11 h-11 rounded-full bg-slate-800/90 flex items-center justify-center text-slate-300 text-lg ${avatarRing} transition-transform group-hover:scale-105`}
+                    >
+                      <i class="fa-solid fa-user-plus text-sm text-slate-400"></i>
+                    </div>
+                  )}
+                </div>
+
+                <!-- Action Button -->
+                <button 
+                  type="button"
+                  class={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition ${
+                    isUnassigned 
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30' 
+                      : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'
+                  }`}
+                >
+                  {isUnassigned ? 'Prendi in carico' : 'Riassegna / Fatto'}
+                </button>
+              </div>
+
+            </div>
+          );
+        })}
+      </div>
+    </div>
+
+    <!-- RIGHT 1 COL: Google Calendar & Live Piota Feed -->
+    <div class="space-y-5">
+      
+      <!-- Calendar Sync Status Card -->
+      <div class="glass-panel p-4 md:p-5 border border-emerald-500/30 bg-gradient-to-b from-slate-900/90 to-emerald-950/20">
+        <div class="flex items-center space-x-3 mb-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl text-emerald-400">
+            📅
+          </div>
+          <div>
+            <h3 class="text-sm font-extrabold text-white">Google Calendar · Piota AI Cal</h3>
+            <p class="text-[11px] text-emerald-300/80">Sincronizzazione attiva & condivisa con Kate</p>
+          </div>
+        </div>
+
+        <div class="space-y-2 text-xs text-slate-300">
+          <div class="flex justify-between py-1 border-b border-slate-800">
+            <span class="text-slate-400">Calendario ID:</span>
+            <span class="font-mono text-[10px] text-slate-200">Piota AI Cal</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-slate-800">
+            <span class="text-slate-400">Accesso Kate:</span>
+            <span class="text-emerald-400 font-bold">Condiviso (Make changes)</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-slate-800">
+            <span class="text-slate-400">Guardrail di sicurezza:</span>
+            <span class="text-amber-300 font-bold">SOLO Piota AI Cal (Strict)</span>
+          </div>
+        </div>
+
+        <!-- Google Calendar Direct Embed Link -->
+        <div class="mt-4 pt-2">
+          <a 
+            href="https://calendar.google.com/calendar/embed?src=6f767188fee699aa6df086d477939ae2c40ac5cdfc457b5edd596234ef2a5a34%40group.calendar.google.com&ctz=Europe%2FZurich" 
+            target="_blank"
+            class="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs transition no-underline shadow-md shadow-emerald-600/30"
+          >
+            <i class="fa-solid fa-up-right-from-square"></i>
+            <span>Apri Piota AI Cal in Google Calendar</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Upcoming School Events from Piota -->
+      <div class="glass-panel p-4 md:p-5 border border-slate-800">
+        <div class="flex items-center space-x-2.5 mb-3.5">
+          <span class="text-lg">🥐</span>
+          <h3 class="text-sm font-extrabold text-white">Eventi Estratti dall'App Piota</h3>
+        </div>
+
+        <div class="space-y-3">
+          {UPCOMING_EVENTS.map(ev => (
+            <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition">
+              <div class="flex items-center justify-between mb-1">
+                <span class={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${
+                  ev.kid === 'seby' 
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
+                    : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                }`}>
+                  {ev.kid === 'seby' ? 'Sebastian (P1)' : 'Alessandro (P3)'}
+                </span>
+                <span class="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                  <i class="fa-solid fa-circle-check text-[9px]"></i>
+                  In Cal
+                </span>
+              </div>
+              <div class="text-xs font-black text-white">{ev.title}</div>
+              <div class="text-[11px] text-amber-300 mt-0.5">
+                <i class="fa-regular fa-calendar text-[10px] mr-1"></i>
+                {ev.date} · {ev.time}
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">
+                <i class="fa-solid fa-location-dot text-[9px] mr-1"></i>
+                {ev.location}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Obsidian Sync Quick Info -->
+      <div class="glass-panel p-4 border border-slate-800 text-xs text-slate-400 space-y-1.5">
+        <div class="font-bold text-slate-200 flex items-center gap-1.5">
+          <span>📓</span>
+          <span>Obsidian Integration</span>
+        </div>
+        <p class="text-[11px]">
+          I ticket e l'agenda vengono sincronizzati istantaneamente anche in:
+        </p>
+        <code class="block font-mono text-[10px] bg-slate-950 p-2 rounded text-slate-300 border border-slate-800/80 overflow-x-auto">
+          /home/riccardo/obsidian-pbt/Tandem/TICKETS.md
+        </code>
+      </div>
+
+    </div>
+
+  </div>
+
+</Layout>

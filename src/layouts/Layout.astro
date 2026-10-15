@@ -3,7 +3,7 @@ import '../styles/global.css';
 
 interface Props {
   title: string;
-  activeTab?: 'ale' | 'sebi' | 'famiglia';
+  activeTab?: 'ale' | 'sebi' | 'famiglia' | 'tickets';
 }
 
 const { title, activeTab = 'ale' } = Astro.props;
@@ -70,6 +70,14 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
           <span>
             <span class="lang-it">Famiglia</span>
             <span class="lang-en">Family</span>
+          </span>
+        </a>
+
+        <a href={`${baseUrl}/tickets`} class={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition no-underline ${activeTab === 'tickets' ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 shadow-md shadow-amber-500/30 ring-2 ring-amber-300 font-black' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-800'}`}>
+          <span class="text-sm">🎫</span>
+          <span>
+            <span class="lang-it">Tickets & Piota</span>
+            <span class="lang-en">Tickets & Piota</span>
           </span>
         </a>
       </div>
