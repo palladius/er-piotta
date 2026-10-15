@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Wrapper forwarding to er-piotta-pvt via UV
+export UV_CACHE_DIR="${UV_CACHE_DIR:-/tmp/uv-cache}"
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PVT_REPO="$(cd "$DIR/../../er-piotta-pvt" 2>/dev/null && pwd)"
+
+if [ ! -d "$PVT_REPO" ]; then
+  PVT_REPO="/home/riccardo/git/er-piotta-pvt"
+fi
+
+exec uv run --project "$PVT_REPO" python3 "$PVT_REPO/src/crawler.py" "$@"
