@@ -1,35 +1,67 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { INITIAL_TICKETS, UPCOMING_EVENTS } from '../data/ticketsData';
+import rawFeed from '../data/piota_feed.json';
 
 const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
 
+// Format feed items into unified cards
+const items = rawFeed.map(it => {
+  const c = it.consumption || {};
+  const tk = it.ticket || {};
+  const owner = (tk.owner || 'unassigned').toLowerCase();
+  
+  // Format kids display
+  const kids = it.target_kids || ['All'];
+  const isAle = kids.some((k: string) => k.toLowerCase() === 'ale' || k.toLowerCase() === 'alessandro');
+  const isSeby = kids.some((k: string) => k.toLowerCase() === 'seby' || k.toLowerCase() === 'sebastian');
+  const isAll = kids.some((k: string) => k.toLowerCase() === 'all') || (!isAle && !isSeby);
+
+  return {
+    id: it.id,
+    title: it.title,
+    body: it.body || '',
+    nature: it.nature || 'jfyi',
+    urgency: it.urgency || 'normal',
+    targetKids: kids,
+    classes: it.classes || [],
+    isAle,
+    isSeby,
+    isAll,
+    readRiccardo: !!c.read_by_riccardo,
+    readKate: !!c.read_by_kate,
+    owner: owner === 'riccardo' ? 'riccardo' : (owner === 'kate' ? 'kate' : 'unassigned'),
+    status: tk.status || 'open',
+    dateText: it.date_text || ''
+  };
+});
+
 // Stats
-const totalTickets = INITIAL_TICKETS.length;
-const riccCount = INITIAL_TICKETS.filter(t => t.owner === 'riccardo').length;
-const kateCount = INITIAL_TICKETS.filter(t => t.owner === 'kate').length;
-const unassignedCount = INITIAL_TICKETS.filter(t => t.owner === 'unassigned').length;
+const totalCount = items.length;
+const riccCount = items.filter(t => t.owner === 'riccardo').length;
+const kateCount = items.filter(t => t.owner === 'kate').length;
+const unassignedCount = items.filter(t => t.owner === 'unassigned').length;
+const actionCount = items.filter(t => t.nature === 'action_required').length;
 ---
 
-<Layout title="Action Items & Tickets Piota (Tandem IMS)" activeTab="tickets">
+<Layout title="Tandem IMS · Smart Agenda & OKF Feed" activeTab="tickets">
   
   <!-- Header Bar -->
   <div class="glass-panel p-4 md:p-6 mb-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center space-x-4">
         <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center text-3xl shadow-lg shadow-amber-500/30 ring-2 ring-amber-300/40 text-slate-950">
-          📋
+          🎒
         </div>
         <div>
           <div class="flex items-center space-x-2">
-            <h1 class="text-xl md:text-2xl font-black text-white">Tandem IMS · Action Items & Tickets</h1>
+            <h1 class="text-xl md:text-2xl font-black text-white">Tandem IMS · Knowledge & Smart Feed</h1>
             <span class="text-xs uppercase font-mono font-bold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30 flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Piota AI Cal Synced
+              Firestore & OKF Live
             </span>
           </div>
           <p class="text-xs md:text-sm text-slate-300 mt-0.5">
-            Avvisi rilevanti estratti dall'app Piota Schools: permessi, gite, conferme e materiale scolastico per Ale (P3) e Seby (P1).
+            Inbox autonoma e non-consumata per <b>Alessandro (P3)</b> e <b>Sebastian (P1)</b>. Sincronizzata con Firestore e Google Calendar.
           </p>
         </div>
       </div>
@@ -76,260 +108,212 @@ const unassignedCount = INITIAL_TICKETS.filter(t => t.owner === 'unassigned').le
     </div>
   </div>
 
+  <!-- Interactive Filter Controls (Client Side) -->
+  <div class="glass-panel p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
+    <!-- Kid Selection Tabs -->
+    <div class="flex items-center space-x-2" id="kid-filters">
+      <button data-filter="all" class="filter-btn active px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-emerald-500 text-slate-950 shadow-md">
+        🏫 Tutti ({totalCount})
+      </button>
+      <button data-filter="seby" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60">
+        🧒 Sebastian (P1)
+      </button>
+      <button data-filter="ale" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60">
+        👦 Alessandro (P3)
+      </button>
+    </div>
+
+    <!-- Nature & Read Filters -->
+    <div class="flex items-center space-x-2" id="type-filters">
+      <button data-type="all" class="type-btn active px-3 py-1 rounded-md text-xs font-semibold bg-slate-700 text-white">
+        Tutti i messaggi
+      </button>
+      <button data-type="action" class="type-btn px-3 py-1 rounded-md text-xs font-semibold bg-slate-800/80 text-rose-300 hover:bg-slate-700 border border-rose-500/30">
+        ⚡ Solo Azioni ({actionCount})
+      </button>
+      <button data-type="unread-ricc" class="type-btn px-3 py-1 rounded-md text-xs font-semibold bg-slate-800/80 text-amber-300 hover:bg-slate-700 border border-amber-500/30">
+        📬 Non letti Riccardo
+      </button>
+    </div>
+  </div>
+
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     
-    <!-- LEFT 2 COLS: Ticket Stream -->
+    <!-- LEFT 2 COLS: Feed Stream -->
     <div class="lg:col-span-2 space-y-4">
       <div class="flex items-center justify-between px-1">
         <h2 class="text-lg font-black text-white flex items-center gap-2">
-          <span>🎯</span>
-          <span>Da Fare & Presi in Carico</span>
-          <span class="text-xs font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">{totalTickets}</span>
+          <span>📬</span>
+          <span>Feed Comunicazioni & Compiti</span>
+          <span class="text-xs font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700" id="visible-count">{totalCount}</span>
         </h2>
-        <span class="text-xs text-slate-400 italic">Clicca sulle card per coordinare le azioni</span>
+        <span class="text-xs text-slate-400">Archivio non consumato per la famiglia</span>
       </div>
 
-      <!-- Ticket Cards List -->
-      <div class="space-y-3.5">
-        {INITIAL_TICKETS.map(ticket => {
-          const isRicc = ticket.owner === 'riccardo';
-          const isKate = ticket.owner === 'kate';
-          const isUnassigned = ticket.owner === 'unassigned';
+      <!-- Feed Cards List -->
+      <div class="space-y-3.5" id="items-container">
+        {items.map(item => {
+          const isRicc = item.owner === 'riccardo';
+          const isKate = item.owner === 'kate';
+          const isUnassigned = item.owner === 'unassigned';
 
           // Ring & badge styles based on owner
           const avatarRing = isRicc 
-            ? 'ring-4 ring-amber-400 shadow-lg shadow-amber-500/20' 
-            : isKate 
-              ? 'ring-4 ring-purple-500 shadow-lg shadow-purple-500/20' 
-              : 'ring-4 ring-slate-400/80 shadow-md shadow-slate-600/20';
+            ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-950 shadow-md shadow-amber-400/20' 
+            : (isKate 
+                ? 'ring-2 ring-purple-500 ring-offset-2 ring-offset-slate-950 shadow-md shadow-purple-500/20' 
+                : 'ring-2 ring-slate-500 ring-offset-1 ring-offset-slate-950 opacity-70');
 
           const cardBorder = isRicc 
-            ? 'border-amber-400/30 hover:border-amber-400/60 bg-gradient-to-r from-slate-900/95 via-slate-900/85 to-amber-950/20' 
-            : isKate 
-              ? 'border-purple-500/30 hover:border-purple-500/60 bg-gradient-to-r from-slate-900/95 via-slate-900/85 to-purple-950/20' 
-              : 'border-slate-700/60 hover:border-slate-500/60 bg-slate-900/80';
+            ? 'border-amber-400/30 hover:border-amber-400/60 bg-gradient-to-r from-amber-950/20 via-slate-900/60 to-slate-900/90' 
+            : (isKate 
+                ? 'border-purple-500/30 hover:border-purple-500/60 bg-gradient-to-r from-purple-950/20 via-slate-900/60 to-slate-900/90' 
+                : 'border-slate-800 hover:border-slate-700 bg-slate-900/60');
 
           return (
-            <div class={`glass-panel p-4 md:p-5 transition-all duration-200 border ${cardBorder} flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group`}>
-              
-              <!-- Left side: Content & Badges -->
-              <div class="flex items-start space-x-3.5 flex-1 min-w-0">
-                
-                <!-- Priority Dot & Category Icon -->
-                <div class="mt-1 flex-shrink-0">
-                  {ticket.priority === 'urgent' && (
-                    <span class="flex h-3 w-3 relative">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            <div 
+              class={`glass-panel p-4 md:p-5 rounded-2xl border transition-all duration-200 shadow-lg item-card ${cardBorder}`}
+              data-is-ale={item.isAle || item.isAll}
+              data-is-seby={item.isSeby || item.isAll}
+              data-nature={item.nature}
+              data-read-ricc={item.readRiccardo}
+            >
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex-1 min-w-0">
+                  
+                  <!-- Tags Row -->
+                  <div class="flex flex-wrap items-center gap-1.5 mb-2">
+                    {/* Kid Badges */}
+                    {item.targetKids.map((k: string) => (
+                      <span class={`text-[10px] font-mono font-extrabold uppercase px-2 py-0.5 rounded tracking-wide ${
+                        k.toLowerCase() === 'ale' 
+                          ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40' 
+                          : (k.toLowerCase() === 'seby' 
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' 
+                              : 'bg-purple-500/20 text-purple-300 border border-purple-500/40')
+                      }`}>
+                        {k.toLowerCase() === 'ale' ? '👦 Alessandro (P3)' : (k.toLowerCase() === 'seby' ? '🧒 Seby (P1)' : '🏫 Tutta la Scuola')}
+                      </span>
+                    ))}
+
+                    {/* Nature Badge */}
+                    {item.nature === 'action_required' && (
+                      <span class="text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded flex items-center gap-1">
+                        ⚡ Azione Richiesta
+                      </span>
+                    )}
+                    {item.nature === 'menu' && (
+                      <span class="text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded flex items-center gap-1">
+                        🍱 Menu Mensa
+                      </span>
+                    )}
+                    {item.nature === 'jfyi' && (
+                      <span class="text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded">
+                        ℹ️ JFYI
+                      </span>
+                    )}
+
+                    {/* Read Status Riccardo */}
+                    <span class={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded ${
+                      item.readRiccardo ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-800/40' : 'bg-slate-800 text-amber-300 border border-amber-500/30'
+                    }`}>
+                      {item.readRiccardo ? '✓ Letto Riccardo' : '○ Da leggere'}
                     </span>
-                  )}
-                  {ticket.priority === 'high' && (
-                    <span class="inline-flex rounded-full h-3 w-3 bg-orange-400"></span>
-                  )}
-                  {ticket.priority === 'normal' && (
-                    <span class="inline-flex rounded-full h-3 w-3 bg-yellow-400"></span>
-                  )}
-                </div>
-
-                <div class="space-y-1.5 flex-1 min-w-0">
-                  <!-- Badges Line -->
-                  <div class="flex flex-wrap items-center gap-1.5">
-                    {ticket.targetKid === 'seby' && (
-                      <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                        🧒 Seby (P1)
-                      </span>
-                    )}
-                    {ticket.targetKid === 'ale' && (
-                      <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                        👦 Ale (P3)
-                      </span>
-                    )}
-                    {ticket.targetKid === 'family' && (
-                      <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                        👨‍👩‍👦‍👦 Famiglia
-                      </span>
-                    )}
-
-                    <span class="text-[10px] uppercase font-mono font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                      {ticket.category}
-                    </span>
-
-                    {ticket.dueDate && (
-                      <span class="text-[11px] text-amber-300/90 font-medium flex items-center gap-1 ml-auto">
-                        <i class="fa-regular fa-clock text-[10px]"></i>
-                        <span>{ticket.dueDate}</span>
-                      </span>
-                    )}
                   </div>
 
                   <!-- Title -->
-                  <h3 class="text-sm md:text-base font-extrabold text-white group-hover:text-amber-300 transition">
-                    {ticket.title}
+                  <h3 class="text-base md:text-lg font-bold text-white leading-snug">
+                    {item.title}
                   </h3>
 
-                  <!-- Description -->
-                  <p class="text-xs text-slate-300 leading-relaxed">
-                    {ticket.description}
-                  </p>
-
-                  <!-- Source Tag -->
-                  <div class="text-[10px] text-slate-400 pt-1 flex items-center gap-1">
-                    <i class="fa-solid fa-bullhorn text-[9px] text-slate-500"></i>
-                    <span>Fonte: {ticket.source}</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Right side: Owner Circular Avatar Badge -->
-              <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800 gap-2">
-                <div class="flex items-center space-x-2.5">
-                  <div class="text-right">
-                    <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Owner</div>
-                    <div class={`text-xs font-black ${isRicc ? 'text-amber-400' : isKate ? 'text-purple-400' : 'text-slate-400'}`}>
-                      {isRicc ? 'Riccardo' : isKate ? 'Kate' : 'Nessuno'}
-                    </div>
+                  <!-- Description / Excerpt -->
+                  <div class="text-xs md:text-sm text-slate-300 mt-2 line-clamp-3 leading-relaxed whitespace-pre-line">
+                    {item.body}
                   </div>
 
-                  <!-- Circular Avatar with specific border color -->
-                  {isRicc && (
-                    <img 
-                      src={`${baseUrl}/avatars/avatar_riccardo.png`} 
-                      alt="Riccardo" 
-                      title="Assegnato a Riccardo (Bordo Giallo)"
-                      class={`w-11 h-11 rounded-full object-cover ${avatarRing} transition-transform group-hover:scale-105`}
-                    />
-                  )}
-
-                  {isKate && (
-                    <img 
-                      src={`${baseUrl}/avatars/avatar_kate.png`} 
-                      alt="Kate" 
-                      title="Assegnato a Kate (Bordo Viola)"
-                      class={`w-11 h-11 rounded-full object-cover ${avatarRing} transition-transform group-hover:scale-105`}
-                    />
-                  )}
-
-                  {isUnassigned && (
-                    <div 
-                      title="Nessun Owner (Bordo Grigio Neutro)"
-                      class={`w-11 h-11 rounded-full bg-slate-800/90 flex items-center justify-center text-slate-300 text-lg ${avatarRing} transition-transform group-hover:scale-105`}
-                    >
-                      <i class="fa-solid fa-user-plus text-sm text-slate-400"></i>
+                  {item.dateText && (
+                    <div class="text-[11px] text-slate-500 mt-2 font-mono">
+                      📅 {item.dateText}
                     </div>
                   )}
                 </div>
 
-                <!-- Action Button -->
-                <button 
-                  type="button"
-                  class={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition ${
-                    isUnassigned 
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30' 
-                      : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'
-                  }`}
-                >
-                  {isUnassigned ? 'Prendi in carico' : 'Riassegna / Fatto'}
-                </button>
+                <!-- Owner Avatar Box (Riccardo / Kate / Unassigned) -->
+                <div class="flex flex-col items-center justify-center pl-2 pt-1 min-w-[70px]">
+                  <div class="relative group cursor-pointer" title={`Owner: ${item.owner}`}>
+                    {isRicc && (
+                      <img 
+                        src={`${baseUrl}/avatars/avatar_riccardo.png`} 
+                        alt="Riccardo" 
+                        class={`w-11 h-11 rounded-full object-cover ${avatarRing}`}
+                      />
+                    )}
+                    {isKate && (
+                      <img 
+                        src={`${baseUrl}/avatars/avatar_kate.png`} 
+                        alt="Kate" 
+                        class={`w-11 h-11 rounded-full object-cover ${avatarRing}`}
+                      />
+                    )}
+                    {isUnassigned && (
+                      <div class={`w-11 h-11 rounded-full bg-slate-800 flex items-center justify-center text-lg text-slate-400 ${avatarRing}`}>
+                        👤
+                      </div>
+                    )}
+                  </div>
+                  <span class={`text-[10px] font-mono font-bold mt-1.5 uppercase ${
+                    isRicc ? 'text-amber-400' : (isKate ? 'text-purple-400' : 'text-slate-500')
+                  }`}>
+                    {isRicc ? 'Riccardo' : (isKate ? 'Kate' : 'Nessuno')}
+                  </span>
+                </div>
               </div>
-
             </div>
           );
         })}
       </div>
     </div>
 
-    <!-- RIGHT 1 COL: Google Calendar & Live Piota Feed -->
-    <div class="space-y-5">
+    <!-- RIGHT COL: Weekly Menu & Quick Tools -->
+    <div class="space-y-6">
       
-      <!-- Calendar Sync Status Card -->
-      <div class="glass-panel p-4 md:p-5 border border-emerald-500/30 bg-gradient-to-b from-slate-900/90 to-emerald-950/20">
+      <!-- Weekly Menu Card -->
+      <div class="glass-panel p-5 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-950/20 via-slate-900/60 to-slate-900/90 shadow-xl">
         <div class="flex items-center space-x-3 mb-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl text-emerald-400">
-            📅
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl">
+            🍱
           </div>
           <div>
-            <h3 class="text-sm font-extrabold text-white">Google Calendar · Piota AI Cal</h3>
-            <p class="text-[11px] text-emerald-300/80">Sincronizzazione attiva & condivisa con Kate</p>
+            <h3 class="text-sm font-bold text-white">Menù della Settimana</h3>
+            <p class="text-[11px] text-amber-300/80">Tandem IMS · Küsnacht & Zürich</p>
           </div>
         </div>
-
-        <div class="space-y-2 text-xs text-slate-300">
-          <div class="flex justify-between py-1 border-b border-slate-800">
-            <span class="text-slate-400">Calendario ID:</span>
-            <span class="font-mono text-[10px] text-slate-200">Piota AI Cal</span>
+        <div class="space-y-2 mt-4 text-xs text-slate-300">
+          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+            <span class="font-bold text-amber-400">📍 Menüplan Zürich KW43</span>
+            <p class="text-[11px] text-slate-400 mt-1">Disponibile per KG & Primary (P1 - P4)</p>
           </div>
-          <div class="flex justify-between py-1 border-b border-slate-800">
-            <span class="text-slate-400">Accesso Kate:</span>
-            <span class="text-emerald-400 font-bold">Condiviso (Make changes)</span>
+          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+            <span class="font-bold text-slate-400">📍 Menüplan Küsnacht KW39</span>
           </div>
-          <div class="flex justify-between py-1 border-b border-slate-800">
-            <span class="text-slate-400">Guardrail di sicurezza:</span>
-            <span class="text-amber-300 font-bold">SOLO Piota AI Cal (Strict)</span>
-          </div>
-        </div>
-
-        <!-- Google Calendar Direct Embed Link -->
-        <div class="mt-4 pt-2">
-          <a 
-            href="https://calendar.google.com/calendar/embed?src=6f767188fee699aa6df086d477939ae2c40ac5cdfc457b5edd596234ef2a5a34%40group.calendar.google.com&ctz=Europe%2FZurich" 
-            target="_blank"
-            class="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs transition no-underline shadow-md shadow-emerald-600/30"
-          >
-            <i class="fa-solid fa-up-right-from-square"></i>
-            <span>Apri Piota AI Cal in Google Calendar</span>
-          </a>
         </div>
       </div>
 
-      <!-- Upcoming School Events from Piota -->
-      <div class="glass-panel p-4 md:p-5 border border-slate-800">
-        <div class="flex items-center space-x-2.5 mb-3.5">
-          <span class="text-lg">🥐</span>
-          <h3 class="text-sm font-extrabold text-white">Eventi Estratti dall'App Piota</h3>
-        </div>
-
-        <div class="space-y-3">
-          {UPCOMING_EVENTS.map(ev => (
-            <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition">
-              <div class="flex items-center justify-between mb-1">
-                <span class={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${
-                  ev.kid === 'seby' 
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
-                    : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                }`}>
-                  {ev.kid === 'seby' ? 'Sebastian (P1)' : 'Alessandro (P3)'}
-                </span>
-                <span class="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
-                  <i class="fa-solid fa-circle-check text-[9px]"></i>
-                  In Cal
-                </span>
-              </div>
-              <div class="text-xs font-black text-white">{ev.title}</div>
-              <div class="text-[11px] text-amber-300 mt-0.5">
-                <i class="fa-regular fa-calendar text-[10px] mr-1"></i>
-                {ev.date} · {ev.time}
-              </div>
-              <div class="text-[10px] text-slate-400 mt-0.5">
-                <i class="fa-solid fa-location-dot text-[9px] mr-1"></i>
-                {ev.location}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <!-- Obsidian Sync Quick Info -->
-      <div class="glass-panel p-4 border border-slate-800 text-xs text-slate-400 space-y-1.5">
-        <div class="font-bold text-slate-200 flex items-center gap-1.5">
-          <span>📓</span>
-          <span>Obsidian Integration</span>
-        </div>
-        <p class="text-[11px]">
-          I ticket e l'agenda vengono sincronizzati istantaneamente anche in:
+      <!-- Quick Action Commands -->
+      <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+        <h3 class="text-sm font-black text-white flex items-center gap-2">
+          <span>⚡</span>
+          <span>CLI per Riccardo & AI Agents</span>
+        </h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Puoi interrogare, assegnare o marcare come letto ogni avviso dal terminale con <code>piota-cli</code>:
         </p>
-        <code class="block font-mono text-[10px] bg-slate-950 p-2 rounded text-slate-300 border border-slate-800/80 overflow-x-auto">
-          /home/riccardo/obsidian-pbt/Tandem/TICKETS.md
-        </code>
+        <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-[11px] font-mono text-emerald-400 space-y-1">
+          <div>$ piota-cli status</div>
+          <div>$ piota-cli list --kid seby</div>
+          <div>$ piota-cli read &lt;id&gt; --as riccardo</div>
+          <div>$ piota-cli claim &lt;id&gt; --owner kate</div>
+        </div>
       </div>
 
     </div>
@@ -337,3 +321,69 @@ const unassignedCount = INITIAL_TICKETS.filter(t => t.owner === 'unassigned').le
   </div>
 
 </Layout>
+
+<script>
+  // Client-side filtering logic
+  const kidButtons = document.querySelectorAll('#kid-filters .filter-btn');
+  const typeButtons = document.querySelectorAll('#type-filters .type-btn');
+  const cards = document.querySelectorAll('.item-card');
+  const visibleCountEl = document.getElementById('visible-count');
+
+  let activeKid = 'all';
+  let activeType = 'all';
+
+  function applyFilters() {
+    let visible = 0;
+    cards.forEach(card => {
+      const isAle = card.getAttribute('data-is-ale') === 'true';
+      const isSeby = card.getAttribute('data-is-seby') === 'true';
+      const nature = card.getAttribute('data-nature');
+      const readRicc = card.getAttribute('data-read-ricc') === 'true';
+
+      let matchKid = false;
+      if (activeKid === 'all') matchKid = true;
+      else if (activeKid === 'ale') matchKid = isAle;
+      else if (activeKid === 'seby') matchKid = isSeby;
+
+      let matchType = false;
+      if (activeType === 'all') matchType = true;
+      else if (activeType === 'action') matchType = (nature === 'action_required');
+      else if (activeType === 'unread-ricc') matchType = (!readRicc);
+
+      if (matchKid && matchType) {
+        (card as HTMLElement).style.display = 'block';
+        visible++;
+      } else {
+        (card as HTMLElement).style.display = 'none';
+      }
+    });
+
+    if (visibleCountEl) visibleCountEl.textContent = visible.toString();
+  }
+
+  kidButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      kidButtons.forEach(b => {
+        b.classList.remove('active', 'bg-emerald-500', 'text-slate-950');
+        b.classList.add('bg-slate-800/80', 'text-slate-300');
+      });
+      btn.classList.add('active', 'bg-emerald-500', 'text-slate-950');
+      btn.classList.remove('bg-slate-800/80', 'text-slate-300');
+      activeKid = btn.getAttribute('data-filter') || 'all';
+      applyFilters();
+    });
+  });
+
+  typeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      typeButtons.forEach(b => {
+        b.classList.remove('active', 'bg-slate-700', 'text-white');
+        b.classList.add('bg-slate-800/80');
+      });
+      btn.classList.add('active', 'bg-slate-700', 'text-white');
+      btn.classList.remove('bg-slate-800/80');
+      activeType = btn.getAttribute('data-type') || 'all';
+      applyFilters();
+    });
+  });
+</script>
