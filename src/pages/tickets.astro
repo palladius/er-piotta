@@ -199,10 +199,10 @@ const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArc
               data-kids={item.targetKids.join(', ')}
               data-nature={item.nature}
               data-owner={item.owner}
-              data-is-ale={item.isAle || item.isAll}
-              data-is-seby={item.isSeby || item.isAll}
-              data-read-ricc={item.readRiccardo}
-              data-archived={item.isArchived}
+              data-is-ale={item.isAle || item.isAll ? "true" : "false"}
+              data-is-seby={item.isSeby || item.isAll ? "true" : "false"}
+              data-read-ricc={item.readRiccardo ? "true" : "false"}
+              data-archived={item.isArchived ? "true" : "false"}
             >
               <div class="flex items-start justify-between gap-3">
                 <div class="flex-1 min-w-0">

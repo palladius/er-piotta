@@ -36,9 +36,10 @@
     "id": "alert_lost-found-290926",
     "consumption": {
       "read_by_kate": false,
-      "archived": false,
+      "archived": true,
       "read_by_riccardo": false,
-      "app_consumed": true
+      "app_consumed": true,
+      "archived_by_riccardo": true
     },
     "urgency": "high",
     "nature": "action_required",
@@ -115,7 +116,7 @@
       "required": false
     },
     "crawled_at": "2026-10-17T09:08:27.619728",
-    "body": "Dear Parents,\n\nWhat a fantastic day outdoors! The children from Primary 1-4 enjoyed grilling sausages and marshmallows, making delicious Schlangenbrot, building, climbing, and exploring. They collected and observed natural materials, walked, ran, played and enjoyed lots of sunshine. A day full of adventure, discovery, laughter and wonderful memories.\n\nPlease click here to see pictures from our Nature Day.",
+    "body": "Dear Parents,\n\nWhat a fantastic day outdoors! The children from Primary 1-4 enjoyed grilling sausages and marshmallows, making delicious Schlangenbrot, building, climbing, and exploring. They collected and observed natural materials, walked, ran, played and enjoyed lots of sunshine. A day full of adventure, discovery, laughter and wonderful memories.\n\n\ud83d\udcf8 **Guarda l'album fotografico:** [Photos Nature Day 22.9.26 (Google Photos)](https://photos.app.goo.gl/SFyCSk2Ytyo8P4L79)",
     "type": "alert",
     "source_url": "piota://uk.co.piota.schools/alerts/photos-nature-day-22926",
     "date_text": "Last updated date 24 Sep 26 9:06 am",
@@ -133,9 +134,10 @@
     "id": "alert_pr1-bibliothek",
     "consumption": {
       "read_by_kate": false,
-      "archived": false,
+      "archived": true,
       "read_by_riccardo": false,
-      "app_consumed": true
+      "app_consumed": true,
+      "archived_by_riccardo": true
     },
     "urgency": "high",
     "nature": "action_required",
@@ -201,9 +203,10 @@
     "id": "alert_pr1-french-homework-during-the-holidays",
     "consumption": {
       "read_by_kate": false,
-      "archived": false,
+      "archived": true,
       "read_by_riccardo": false,
-      "app_consumed": true
+      "app_consumed": true,
+      "archived_by_riccardo": true
     },
     "urgency": "high",
     "nature": "action_required",
@@ -271,9 +274,10 @@
     "id": "alert_pr1-mathematik-lernzielkontrolle",
     "consumption": {
       "read_by_kate": false,
-      "archived": false,
+      "archived": true,
       "read_by_riccardo": false,
-      "app_consumed": true
+      "app_consumed": true,
+      "archived_by_riccardo": true
     },
     "urgency": "high",
     "nature": "action_required",
@@ -309,9 +313,10 @@
     "urgency": "high",
     "consumption": {
       "read_by_kate": false,
-      "archived": false,
+      "archived": true,
       "read_by_riccardo": true,
-      "app_consumed": true
+      "app_consumed": true,
+      "archived_by_riccardo": true
     },
     "created_at": "2026-10-17T07:08:04.299000+00:00",
     "ticket": {
@@ -377,9 +382,10 @@
     "id": "alert_pr3-important-information-french-week",
     "consumption": {
       "read_by_kate": false,
-      "archived": false,
+      "archived": true,
       "read_by_riccardo": false,
-      "app_consumed": true
+      "app_consumed": true,
+      "archived_by_riccardo": true
     },
     "urgency": "high",
     "nature": "action_required",
