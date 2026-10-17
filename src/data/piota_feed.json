@@ -147,7 +147,7 @@
       "required": true
     },
     "crawled_at": "2026-10-17T09:08:33.700754",
-    "body": "Liebe Eltern\n\nMorgen ist Bibliothek. Bitte alle B\u00fccher mitbringen.\n\nFreundliche Gr\u00fcsse\n\nXenia Faux\n\n--------\n\nDear parents,\n\nTomorrow is library. Please bring all the books to school.\n\nKind regards,\n\nXenia Faux",
+    "body": "Liebe Eltern\n\nMorgen ist Bibliothek. Bitte alle B\u00fccher mitbringen.\n\nFreundliche Gr\u00fcsse\n\nXenia Faux",
     "type": "alert",
     "source_url": "piota://uk.co.piota.schools/alerts/pr1-bibliothek",
     "date_text": "Last updated date 23 Sep 26 5:00 pm",
@@ -253,7 +253,7 @@
       "required": false
     },
     "crawled_at": "2026-10-17T09:09:08.132995",
-    "body": "",
+    "body": "# PR1- French Week information letters",
     "type": "alert",
     "source_url": "piota://uk.co.piota.schools/alerts/pr1-french-week-information-letters",
     "date_text": null,
@@ -285,7 +285,7 @@
       "required": true
     },
     "crawled_at": "2026-10-17T09:09:25.720836",
-    "body": "PR1 - Bibliothek\n\nLiebe Eltern\n\nMorgen ist Bibliothek. Bitte alle B\u00fccher mitbringen.\n\nFreundliche Gr\u00fcsse\n\nXenia Faux\n\n--------\n\nDear parents,\n\nTomorrow is library. Please bring all the books to school.\n\nKind regards,\n\nXenia Faux",
+    "body": "PR1 - Bibliothek\n\nLiebe Eltern\n\nMorgen ist Bibliothek. Bitte alle B\u00fccher mitbringen.\n\nFreundliche Gr\u00fcsse\n\nXenia Faux",
     "type": "alert",
     "source_url": "piota://uk.co.piota.schools/alerts/pr1-mathematik-lernzielkontrolle",
     "date_text": "Last updated date 23 Sep 26 5:00 pm",
@@ -359,7 +359,7 @@
       "required": false
     },
     "crawled_at": "2026-10-17T09:07:57.984517",
-    "body": "",
+    "body": "# PR1 - Traditions Topic",
     "type": "alert",
     "source_url": "piota://uk.co.piota.schools/alerts/pr1-traditions-topic",
     "date_text": null,

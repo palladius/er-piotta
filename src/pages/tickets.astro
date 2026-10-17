@@ -4,42 +4,48 @@ import rawFeed from '../data/piota_feed.json';
 
 const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
 
-// Format feed items into unified cards
-const items = rawFeed.map(it => {
-  const c = it.consumption || {};
-  const tk = it.ticket || {};
-  const owner = (tk.owner || 'unassigned').toLowerCase();
-  
-  // Format kids display
-  const kids = it.target_kids || ['All'];
-  const isAle = kids.some((k: string) => k.toLowerCase() === 'ale' || k.toLowerCase() === 'alessandro');
-  const isSeby = kids.some((k: string) => k.toLowerCase() === 'seby' || k.toLowerCase() === 'sebastian');
-  const isAll = kids.some((k: string) => k.toLowerCase() === 'all') || (!isAle && !isSeby);
+// Format feed items into unified cards (Filtered for Seefeld Tandem IMS, no Kusnacht, no bus)
+const items = rawFeed
+  .filter(it => {
+    const text = `${it.title} ${it.body || ''}`.toLowerCase();
+    if (text.includes('küsnacht') || text.includes('kusnacht')) return false;
+    if (text.includes('school bus') || text.includes('bus service')) return false;
+    return true;
+  })
+  .map(it => {
+    const c = it.consumption || {};
+    const tk = it.ticket || {};
+    const owner = (tk.owner || 'unassigned').toLowerCase();
+    
+    const kids = it.target_kids || ['All'];
+    const isAle = kids.some((k: string) => k.toLowerCase() === 'ale' || k.toLowerCase() === 'alessandro');
+    const isSeby = kids.some((k: string) => k.toLowerCase() === 'seby' || k.toLowerCase() === 'sebastian');
+    const isAll = kids.some((k: string) => k.toLowerCase() === 'all') || (!isAle && !isSeby);
 
-  return {
-    id: it.id,
-    title: it.title,
-    body: it.body || '',
-    titleIt: it.title_it || it.title,
-    bodyIt: it.body_it || it.body || '',
-    titleEn: it.title_en || it.title,
-    bodyEn: it.body_en || it.body || '',
-    hasTranslation: !!it.has_translation,
-    nature: it.nature || 'jfyi',
-    urgency: it.urgency || 'normal',
-    targetKids: kids,
-    classes: it.classes || [],
-    isAle,
-    isSeby,
-    isAll,
-    readRiccardo: !!c.read_by_riccardo,
-    readKate: !!c.read_by_kate,
-    isArchived: !!c.archived || !!c.archived_by_riccardo,
-    owner: owner === 'riccardo' ? 'riccardo' : (owner === 'kate' ? 'kate' : 'unassigned'),
-    status: tk.status || 'open',
-    dateText: it.date_text || ''
-  };
-});
+    return {
+      id: it.id,
+      title: it.title,
+      body: it.body || '',
+      titleIt: it.title_it || it.title,
+      bodyIt: it.body_it || it.body || '',
+      titleEn: it.title_en || it.title,
+      bodyEn: it.body_en || it.body || '',
+      hasTranslation: !!it.has_translation,
+      nature: it.nature || 'jfyi',
+      urgency: it.urgency || 'normal',
+      targetKids: kids,
+      classes: it.classes || [],
+      isAle,
+      isSeby,
+      isAll,
+      readRiccardo: !!c.read_by_riccardo,
+      readKate: !!c.read_by_kate,
+      isArchived: !!c.archived || !!c.archived_by_riccardo,
+      owner: owner === 'riccardo' ? 'riccardo' : (owner === 'kate' ? 'kate' : 'unassigned'),
+      status: tk.status || 'open',
+      dateText: it.date_text || ''
+    };
+  });
 
 // Stats
 const totalCount = items.length;
@@ -49,37 +55,37 @@ const unassignedCount = items.filter(t => t.owner === 'unassigned').length;
 const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArchived).length;
 ---
 
-<Layout title="Tandem IMS · Smart Agenda & OKF Feed" activeTab="tickets">
+<Layout title="Tandem IMS Seefeld · Smart Agenda & OKF Feed" activeTab="tickets">
   
   <!-- Header Bar -->
-  <div class="glass-panel p-4 md:p-6 mb-6">
+  <div class="glass-panel p-4 md:p-5 mb-5">
     <div class="flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center space-x-4">
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center text-3xl shadow-lg shadow-amber-500/30 ring-2 ring-amber-300/40 text-slate-950">
+      <div class="flex items-center space-x-3.5">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/30 ring-2 ring-amber-300/40 text-slate-950">
           🎒
         </div>
         <div>
           <div class="flex items-center space-x-2">
-            <h1 class="text-xl md:text-2xl font-black text-white">Tandem IMS · Knowledge & Smart Feed</h1>
-            <span class="text-xs uppercase font-mono font-bold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30 flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Firestore & OKF Live
+            <h1 class="text-lg md:text-xl font-black text-white">Tandem IMS Seefeld · Feed & Action Items</h1>
+            <span class="text-[10px] uppercase font-mono font-bold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Live OKF
             </span>
           </div>
-          <p class="text-xs md:text-sm text-slate-300 mt-0.5">
-            Inbox autonoma e non-consumata per <b>Alessandro (P3)</b> e <b>Sebastian (P1)</b>. Sincronizzata con Firestore e Google Calendar.
+          <p class="text-xs text-slate-300 mt-0.5">
+            Inbox per <b>Alessandro (P3)</b> e <b>Sebastian (P1)</b> · Tandem IMS Seefeld. Clicca su qualsiasi messaggio per leggerlo completo.
           </p>
         </div>
       </div>
 
       <!-- Quick Owner Distribution Legend -->
-      <div class="flex flex-wrap items-center gap-2.5">
+      <div class="flex flex-wrap items-center gap-2">
         <!-- Riccardo Pill -->
-        <div class="flex items-center space-x-2 bg-slate-900/90 border border-amber-400/40 px-3 py-1.5 rounded-xl shadow-sm">
+        <div class="flex items-center space-x-2 bg-slate-900/90 border border-amber-400/40 px-2.5 py-1 rounded-xl shadow-sm">
           <img 
             src={`${baseUrl}/avatars/avatar_riccardo.png`} 
             alt="Riccardo" 
-            class="w-7 h-7 rounded-full object-cover ring-2 ring-amber-400"
+            class="w-6 h-6 rounded-full object-cover ring-2 ring-amber-400"
           />
           <div class="text-xs">
             <span class="text-amber-400 font-extrabold">Riccardo:</span>
@@ -88,11 +94,11 @@ const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArc
         </div>
 
         <!-- Kate Pill -->
-        <div class="flex items-center space-x-2 bg-slate-900/90 border border-purple-500/40 px-3 py-1.5 rounded-xl shadow-sm">
+        <div class="flex items-center space-x-2 bg-slate-900/90 border border-purple-500/40 px-2.5 py-1 rounded-xl shadow-sm">
           <img 
             src={`${baseUrl}/avatars/avatar_kate.png`} 
             alt="Kate" 
-            class="w-7 h-7 rounded-full object-cover ring-2 ring-purple-500"
+            class="w-6 h-6 rounded-full object-cover ring-2 ring-purple-500"
           />
           <div class="text-xs">
             <span class="text-purple-400 font-extrabold">Kate:</span>
@@ -101,8 +107,8 @@ const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArc
         </div>
 
         <!-- Unassigned Pill -->
-        <div class="flex items-center space-x-2 bg-slate-900/90 border border-slate-600/40 px-3 py-1.5 rounded-xl shadow-sm">
-          <div class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-xs text-slate-300 ring-2 ring-slate-400 font-bold">
+        <div class="flex items-center space-x-2 bg-slate-900/90 border border-slate-600/40 px-2.5 py-1 rounded-xl shadow-sm">
+          <div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-xs text-slate-300 ring-2 ring-slate-400 font-bold">
             👤
           </div>
           <div class="text-xs">
@@ -115,17 +121,17 @@ const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArc
   </div>
 
   <!-- Interactive Filter Controls (Client Side) -->
-  <div class="glass-panel p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
+  <div class="glass-panel p-3 mb-5 flex flex-wrap items-center justify-between gap-3">
     <!-- Kid Selection Tabs -->
     <div class="flex items-center space-x-2" id="kid-filters">
-      <button data-filter="all" class="filter-btn active px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-emerald-500 text-slate-950 shadow-md">
+      <button data-filter="all" class="filter-btn active px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-emerald-500 text-slate-950 shadow-md">
         🏫 Tutti
       </button>
-      <button data-filter="seby" class="filter-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60">
+      <button data-filter="seby" class="filter-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60">
         <img src={`${baseUrl}/avatars/avatar_sebi_school.jpg`} alt="Seby" class="w-5 h-5 rounded-full object-cover ring-1 ring-emerald-400" />
         <span>Sebastian (P1)</span>
       </button>
-      <button data-filter="ale" class="filter-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60">
+      <button data-filter="ale" class="filter-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60">
         <img src={`${baseUrl}/avatars/avatar_ale_school.jpg`} alt="Ale" class="w-5 h-5 rounded-full object-cover ring-1 ring-blue-400" />
         <span>Alessandro (P3)</span>
       </button>
@@ -148,90 +154,82 @@ const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArc
     </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
     
-    <!-- LEFT 2 COLS: Feed Stream -->
-    <div class="lg:col-span-2 space-y-4">
+    <!-- LEFT 2 COLS: Compact Feed Stream -->
+    <div class="lg:col-span-2 space-y-3">
       <div class="flex items-center justify-between px-1">
-        <h2 class="text-lg font-black text-white flex items-center gap-2">
+        <h2 class="text-sm font-black text-white flex items-center gap-2">
           <span>📬</span>
           <span>Feed Comunicazioni & Compiti</span>
           <span class="text-xs font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700" id="visible-count">{totalCount}</span>
         </h2>
-        <span class="text-xs text-slate-400">Archivio non consumato per la famiglia</span>
+        <span class="text-[11px] text-slate-400">Clicca su una card per aprire il dettaglio</span>
       </div>
 
-      <!-- Feed Cards List -->
-      <div class="space-y-3.5" id="items-container">
+      <!-- Feed Cards List (Compact Multi-card density) -->
+      <div class="space-y-2.5" id="items-container">
         {items.map(item => {
           const isRicc = item.owner === 'riccardo';
           const isKate = item.owner === 'kate';
           const isUnassigned = item.owner === 'unassigned';
 
-          // Ring & badge styles based on owner
           const avatarRing = isRicc 
-            ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-950 shadow-md shadow-amber-400/20' 
+            ? 'ring-2 ring-amber-400' 
             : (isKate 
-                ? 'ring-2 ring-purple-500 ring-offset-2 ring-offset-slate-950 shadow-md shadow-purple-500/20' 
-                : 'ring-2 ring-slate-500 ring-offset-1 ring-offset-slate-950 opacity-70');
+                ? 'ring-2 ring-purple-500' 
+                : 'ring-1 ring-slate-500 opacity-60');
 
           const cardBorder = isRicc 
-            ? 'border-amber-400/30 hover:border-amber-400/60 bg-gradient-to-r from-amber-950/20 via-slate-900/60 to-slate-900/90' 
+            ? 'border-amber-400/30 hover:border-amber-400/70 bg-gradient-to-r from-amber-950/20 via-slate-900/80 to-slate-900/90' 
             : (isKate 
-                ? 'border-purple-500/30 hover:border-purple-500/60 bg-gradient-to-r from-purple-950/20 via-slate-900/60 to-slate-900/90' 
-                : 'border-slate-800 hover:border-slate-700 bg-slate-900/60');
+                ? 'border-purple-500/30 hover:border-purple-500/70 bg-gradient-to-r from-purple-950/20 via-slate-900/80 to-slate-900/90' 
+                : 'border-slate-800/80 hover:border-slate-700 bg-slate-900/70');
 
           return (
             <div 
-              class={`glass-panel p-4 md:p-5 rounded-2xl border transition-all duration-200 shadow-lg item-card ${cardBorder}`}
+              class={`glass-panel p-3.5 rounded-xl border transition-all duration-150 shadow-md item-card hover:bg-slate-850 cursor-pointer ${cardBorder}`}
               id={`card-${item.id}`}
+              data-id={item.id}
+              data-title={item.title}
+              data-body={item.body}
+              data-title-it={item.titleIt}
+              data-body-it={item.bodyIt}
+              data-date={item.dateText}
+              data-kids={item.targetKids.join(', ')}
+              data-nature={item.nature}
+              data-owner={item.owner}
               data-is-ale={item.isAle || item.isAll}
               data-is-seby={item.isSeby || item.isAll}
-              data-nature={item.nature}
               data-read-ricc={item.readRiccardo}
               data-archived={item.isArchived}
             >
               <div class="flex items-start justify-between gap-3">
                 <div class="flex-1 min-w-0">
                   
-                  <!-- Tags Row -->
-                  <div class="flex flex-wrap items-center gap-2 mb-2">
+                  <!-- Compact Tags Row -->
+                  <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
                     
-                    {/* Minimal Nature Indicator (Zen Icons with tooltip on hover) */}
+                    {/* Zen Icon with hover */}
                     {item.nature === 'action_required' && (
-                      <div class="relative group cursor-help">
-                        <span class="w-6 h-6 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-xs font-bold shadow-sm">
-                          ⚡
-                        </span>
-                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block z-30 px-2 py-1 bg-slate-900 text-amber-300 text-[10px] font-mono rounded border border-amber-500/40 shadow-xl whitespace-nowrap">
-                          Action Required
-                        </div>
-                      </div>
+                      <span class="w-5 h-5 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-[10px] font-bold shrink-0" title="Action Required">
+                        ⚡
+                      </span>
                     )}
                     {item.nature === 'jfyi' && (
-                      <div class="relative group cursor-help">
-                        <span class="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-xs font-bold shadow-sm">
-                          🌿
-                        </span>
-                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block z-30 px-2 py-1 bg-slate-900 text-emerald-300 text-[10px] font-mono rounded border border-emerald-500/40 shadow-xl whitespace-nowrap">
-                          JFYI (Tranquillo / Informativo)
-                        </div>
-                      </div>
+                      <span class="w-5 h-5 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-[10px] font-bold shrink-0" title="JFYI">
+                        🌿
+                      </span>
                     )}
                     {item.nature === 'menu' && (
-                      <div class="relative group cursor-help">
-                        <span class="w-6 h-6 rounded-lg bg-blue-500/20 border border-blue-500/40 text-blue-400 flex items-center justify-center text-xs font-bold shadow-sm">
-                          🍱
-                        </span>
-                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block z-30 px-2 py-1 bg-slate-900 text-blue-300 text-[10px] font-mono rounded border border-blue-500/40 shadow-xl whitespace-nowrap">
-                          Menu Mensa
-                        </div>
-                      </div>
+                      <span class="w-5 h-5 rounded-md bg-blue-500/20 border border-blue-500/40 text-blue-400 flex items-center justify-center text-[10px] font-bold shrink-0" title="Menu">
+                        🍱
+                      </span>
                     )}
 
                     {/* Kid Badges */}
                     {item.targetKids.map((k: string) => (
-                      <span class={`text-[10px] font-mono font-extrabold uppercase px-2 py-0.5 rounded tracking-wide ${
+                      <span class={`text-[9px] font-mono font-extrabold uppercase px-1.5 py-0.5 rounded ${
                         k.toLowerCase() === 'ale' 
                           ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40' 
                           : (k.toLowerCase() === 'seby' 
@@ -242,57 +240,45 @@ const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArc
                       </span>
                     ))}
 
-                    {/* Read Status Pill */}
-                    <span class={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
-                      item.readRiccardo ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-800/40' : 'bg-slate-800 text-slate-400 border border-slate-700'
-                    }`}>
-                      {item.readRiccardo ? '✓ Letto' : '○ Nuovo'}
-                    </span>
-
                     {/* Archive status badge */}
                     {item.isArchived && (
-                      <span class="text-[10px] font-mono bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700">
+                      <span class="text-[9px] font-mono bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700">
                         📁 Archiviato
                       </span>
                     )}
 
-                    {/* Translation Button if German/Multilingual */}
                     {item.hasTranslation && (
-                      <button 
-                        class="translate-btn text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-950/80 text-blue-300 hover:bg-blue-900 border border-blue-500/40 transition flex items-center gap-1 shadow-sm"
-                        data-id={item.id}
-                      >
-                        🌐 <span class="lang-label">Traduci in IT</span>
-                      </button>
+                      <span class="text-[9px] font-mono bg-blue-950/80 text-blue-300 border border-blue-500/30 px-1 py-0.5 rounded">
+                        🌐 DE
+                      </span>
                     )}
                   </div>
 
-                  <!-- Title (Original / Translated) -->
-                  <h3 class="text-base md:text-lg font-bold text-white leading-snug card-title" data-orig={item.title} data-it={item.titleIt} data-en={item.titleEn}>
+                  <!-- Title (Clickable) -->
+                  <h3 class="text-sm md:text-base font-bold text-white hover:text-amber-400 transition leading-snug card-title-clickable">
                     {item.title}
                   </h3>
 
-                  <!-- Description / Excerpt -->
-                  <div class="text-xs md:text-sm text-slate-300 mt-2 line-clamp-3 leading-relaxed whitespace-pre-line card-body" data-orig={item.body} data-it={item.bodyIt} data-en={item.bodyEn}>
+                  <!-- Excerpt (Truncated) -->
+                  <p class="text-xs text-slate-300 mt-1 line-clamp-2 leading-relaxed card-body-clickable">
                     {item.body}
-                  </div>
+                  </p>
 
-                  <!-- Footer Info & CLI Helper -->
-                  <div class="mt-3 pt-2.5 border-t border-slate-800/60 flex flex-wrap items-center justify-between gap-2">
-                    <div class="text-[11px] text-slate-500 font-mono flex items-center gap-2">
+                  <!-- Micro Footer -->
+                  <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10px]">
+                    <div class="text-slate-500 font-mono">
                       {item.dateText && <span>📅 {item.dateText}</span>}
                     </div>
 
-                    <!-- Micro CLI Helper & Archive Action Button -->
-                    <div class="flex items-center gap-2">
-                      <code class="text-[10px] font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-emerald-400/90 select-all" title="Copia ed esegui da terminale">
+                    <!-- Mini CLI helper + Quick Archive -->
+                    <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
+                      <code class="font-mono bg-slate-950/90 px-1.5 py-0.5 rounded border border-slate-800 text-emerald-400 text-[9px] select-all" title="Copia comando CLI">
                         piota-cli {item.isArchived ? 'archive --unarchive' : 'archive'} {item.id} --as riccardo
                       </code>
 
                       <button 
-                        class="archive-toggle-btn text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-rose-950 hover:text-rose-300 hover:border-rose-500/40 border border-slate-700 transition"
+                        class="archive-toggle-btn text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-rose-950 hover:text-rose-300 border border-slate-700 transition"
                         data-id={item.id}
-                        data-is-archived={item.isArchived ? "true" : "false"}
                       >
                         {item.isArchived ? 'Ripristina' : 'Archivia'}
                       </button>
@@ -301,30 +287,30 @@ const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArc
 
                 </div>
 
-                <!-- Owner Avatar Box (Riccardo / Kate / Unassigned) -->
-                <div class="flex flex-col items-center justify-center pl-2 pt-1 min-w-[70px]">
-                  <div class="relative group cursor-pointer" title={`Owner: ${item.owner}`}>
+                <!-- Owner Avatar Box -->
+                <div class="flex flex-col items-center justify-center pl-1 shrink-0">
+                  <div class="relative group" title={`Owner: ${item.owner}`}>
                     {isRicc && (
                       <img 
                         src={`${baseUrl}/avatars/avatar_riccardo.png`} 
                         alt="Riccardo" 
-                        class={`w-11 h-11 rounded-full object-cover ${avatarRing}`}
+                        class={`w-9 h-9 rounded-full object-cover ${avatarRing}`}
                       />
                     )}
                     {isKate && (
                       <img 
                         src={`${baseUrl}/avatars/avatar_kate.png`} 
                         alt="Kate" 
-                        class={`w-11 h-11 rounded-full object-cover ${avatarRing}`}
+                        class={`w-9 h-9 rounded-full object-cover ${avatarRing}`}
                       />
                     )}
                     {isUnassigned && (
-                      <div class={`w-11 h-11 rounded-full bg-slate-800 flex items-center justify-center text-lg text-slate-400 ${avatarRing}`}>
+                      <div class={`w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-sm text-slate-400 ${avatarRing}`}>
                         👤
                       </div>
                     )}
                   </div>
-                  <span class={`text-[10px] font-mono font-bold mt-1.5 uppercase ${
+                  <span class={`text-[9px] font-mono font-bold mt-1 uppercase ${
                     isRicc ? 'text-amber-400' : (isKate ? 'text-purple-400' : 'text-slate-500')
                   }`}>
                     {isRicc ? 'Riccardo' : (isKate ? 'Kate' : 'Nessuno')}
@@ -337,41 +323,56 @@ const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArc
       </div>
     </div>
 
-    <!-- RIGHT COL: Weekly Menu & Quick Tools -->
-    <div class="space-y-6">
+    <!-- RIGHT COL: Zurich Menu & Tools -->
+    <div class="space-y-4">
       
-      <!-- Weekly Menu Card -->
-      <div class="glass-panel p-5 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-950/20 via-slate-900/60 to-slate-900/90 shadow-xl">
-        <div class="flex items-center space-x-3 mb-3">
-          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl">
-            🍱
+      <!-- Weekly Menu Card (Clickable Modal Trigger!) -->
+      <div 
+        id="menu-card-trigger"
+        class="glass-panel p-4 rounded-xl border border-amber-500/40 bg-gradient-to-br from-amber-950/30 via-slate-900/70 to-slate-900/90 shadow-xl cursor-pointer hover:border-amber-400 transition group"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-lg text-amber-400">
+              🍱
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-white group-hover:text-amber-300 transition">Menù della Settimana</h3>
+              <p class="text-[10px] text-amber-300/80">Tandem IMS · Seefeld (Zürich)</p>
+            </div>
           </div>
-          <div>
-            <h3 class="text-sm font-bold text-white">Menù della Settimana</h3>
-            <p class="text-[11px] text-amber-300/80">Tandem IMS · Küsnacht & Zürich</p>
+          <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30 font-mono font-bold">KW 43</span>
+        </div>
+
+        <!-- Menu Table Thumbnail Preview -->
+        <div class="rounded-lg overflow-hidden border border-slate-700/80 bg-white/5 relative group-hover:ring-2 ring-amber-400/50 transition">
+          <img 
+            src={`${baseUrl}/menu/menu_zurich_kw43_table.png`} 
+            alt="Menüplan Zürich KW43" 
+            class="w-full object-cover hover:scale-105 transition duration-300"
+          />
+          <div class="absolute inset-0 bg-slate-950/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition backdrop-blur-[1px]">
+            <span class="bg-amber-500 text-slate-950 font-black text-xs px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5">
+              <span>🔍</span>
+              <span>Ingrandisci Menù Completo</span>
+            </span>
           </div>
         </div>
-        <div class="space-y-2 mt-4 text-xs text-slate-300">
-          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
-            <span class="font-bold text-amber-400">📍 Menüplan Zürich KW43</span>
-            <p class="text-[11px] text-slate-400 mt-1">Disponibile per KG & Primary (P1 - P4)</p>
-          </div>
-          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
-            <span class="font-bold text-slate-400">📍 Menüplan Küsnacht KW39</span>
-          </div>
-        </div>
+        <p class="text-[10px] text-slate-400 mt-2 text-center italic">
+          Clicca per aprire la tabella completa in alta definizione
+        </p>
       </div>
 
       <!-- Quick Action Commands -->
-      <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
-        <h3 class="text-sm font-black text-white flex items-center gap-2">
+      <div class="glass-panel p-4 rounded-xl border border-slate-800 space-y-3">
+        <h3 class="text-xs font-black text-white flex items-center gap-1.5">
           <span>⚡</span>
-          <span>CLI per Riccardo & AI Agents</span>
+          <span>CLI per Riccardo & Agenti</span>
         </h3>
-        <p class="text-xs text-slate-400 leading-relaxed">
-          Comandi diretti per terminale e prompt Gemini:
+        <p class="text-[11px] text-slate-400 leading-relaxed">
+          Comandi diretti da eseguire su pupurabbux o da prompt AI:
         </p>
-        <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-[11px] font-mono text-emerald-400 space-y-1">
+        <div class="bg-slate-950/90 p-2.5 rounded-lg border border-slate-800 text-[10px] font-mono text-emerald-400 space-y-1">
           <div>$ piota-cli status</div>
           <div>$ piota-cli list --kid seby</div>
           <div>$ piota-cli read &lt;id&gt; --as riccardo</div>
@@ -384,10 +385,82 @@ const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArc
 
   </div>
 
+  <!-- MODAL 1: Detail Modal for Reading Entire Notice / Photos / Links -->
+  <div id="detail-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-2xl w-full max-h-[85vh] rounded-2xl border border-slate-700 shadow-2xl flex flex-col overflow-hidden bg-slate-900" onclick="event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-slate-800 flex items-start justify-between gap-3 bg-slate-950/60">
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <span id="modal-badge-kid" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30"></span>
+            <span id="modal-badge-nature" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30"></span>
+            <span id="modal-date" class="text-[10px] text-slate-400 font-mono"></span>
+          </div>
+          <h2 id="modal-title" class="text-lg md:text-xl font-bold text-white leading-snug"></h2>
+        </div>
+        <button id="modal-close-btn" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-base transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Modal Toolbar -->
+      <div class="px-4 py-2 bg-slate-950/40 border-b border-slate-800/80 flex items-center justify-between gap-2 text-xs">
+        <button id="modal-translate-btn" class="px-2.5 py-1 rounded bg-blue-950 text-blue-300 hover:bg-blue-900 border border-blue-500/40 text-[11px] font-mono flex items-center gap-1.5">
+          🌐 <span id="modal-translate-label">Traduci in Italiano</span>
+        </button>
+        <div class="text-[11px] text-slate-400 font-mono">
+          Owner: <strong id="modal-owner" class="text-white"></strong>
+        </div>
+      </div>
+
+      <!-- Modal Body Content -->
+      <div class="p-5 overflow-y-auto space-y-4 text-xs md:text-sm text-slate-200 leading-relaxed whitespace-pre-line font-sans" id="modal-body">
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-3.5 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between gap-3">
+        <code id="modal-cli-code" class="text-[10px] font-mono text-emerald-400 bg-slate-950 px-2 py-1 rounded border border-slate-800 select-all"></code>
+        <button id="modal-bottom-close" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition">
+          Chiudi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Full Screen Zoom for Weekly Menu Zürich -->
+  <div id="menu-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="max-w-4xl w-full max-h-[90vh] rounded-2xl border border-amber-500/40 shadow-2xl flex flex-col overflow-hidden bg-slate-900" onclick="event.stopPropagation()">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <span>🍱</span>
+            <span>Menüplan Zürich KW43 (Tandem IMS Seefeld)</span>
+          </h2>
+          <p class="text-xs text-amber-400 font-mono">Kindergarten & Primary (P1 - P4)</p>
+        </div>
+        <button id="menu-modal-close" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-base transition">
+          ✕
+        </button>
+      </div>
+      <div class="p-4 overflow-auto flex items-center justify-center bg-slate-950/50">
+        <img 
+          src={`${baseUrl}/menu/menu_zurich_kw43_table.png`} 
+          alt="Menüplan Zürich KW43 High-Res" 
+          class="max-w-full rounded-lg shadow-2xl border border-slate-800"
+        />
+      </div>
+      <div class="p-3 bg-slate-950 border-t border-slate-800 flex justify-end">
+        <button id="menu-modal-close-bottom" class="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition">
+          Chiudi Menù
+        </button>
+      </div>
+    </div>
+  </div>
+
 </Layout>
 
 <script>
-  // Client-side filtering logic
+  // Filter logic
   const kidButtons = document.querySelectorAll('#kid-filters .filter-btn');
   const typeButtons = document.querySelectorAll('#type-filters .type-btn');
   const cards = document.querySelectorAll('.item-card');
@@ -453,34 +526,10 @@ const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArc
     });
   });
 
-  // Dynamic Translation Toggle Button
-  document.querySelectorAll('.translate-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const card = btn.closest('.item-card');
-      if (!card) return;
-      const titleEl = card.querySelector('.card-title');
-      const bodyEl = card.querySelector('.card-body');
-      const labelEl = btn.querySelector('.lang-label');
-      if (!titleEl || !bodyEl || !labelEl) return;
-
-      const currentLang = btn.getAttribute('data-current') || 'orig';
-      if (currentLang === 'orig') {
-        titleEl.textContent = titleEl.getAttribute('data-it') || titleEl.textContent;
-        bodyEl.textContent = bodyEl.getAttribute('data-it') || bodyEl.textContent;
-        labelEl.textContent = 'Mostra Originale';
-        btn.setAttribute('data-current', 'it');
-      } else {
-        titleEl.textContent = titleEl.getAttribute('data-orig') || titleEl.textContent;
-        bodyEl.textContent = bodyEl.getAttribute('data-orig') || bodyEl.textContent;
-        labelEl.textContent = 'Traduci in IT';
-        btn.setAttribute('data-current', 'orig');
-      }
-    });
-  });
-
-  // Archive Click Handler (Client state toggle)
+  // Archive Click Handler
   document.querySelectorAll('.archive-toggle-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       const card = btn.closest('.item-card');
       if (!card) return;
       const isArchived = card.getAttribute('data-archived') === 'true';
@@ -489,6 +538,103 @@ const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArc
       btn.textContent = newArchived ? 'Ripristina' : 'Archivia';
       applyFilters();
     });
+  });
+
+  // Notice Detail Modal Popup
+  const detailModal = document.getElementById('detail-modal');
+  const modalTitle = document.getElementById('modal-title');
+  const modalBody = document.getElementById('modal-body');
+  const modalDate = document.getElementById('modal-date');
+  const modalBadgeKid = document.getElementById('modal-badge-kid');
+  const modalBadgeNature = document.getElementById('modal-badge-nature');
+  const modalOwner = document.getElementById('modal-owner');
+  const modalCliCode = document.getElementById('modal-cli-code');
+  const modalTranslateBtn = document.getElementById('modal-translate-btn');
+  const modalTranslateLabel = document.getElementById('modal-translate-label');
+
+  let currentModalItem: any = null;
+  let isTranslated = false;
+
+  function makeLinksClickable(text: string) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 underline font-semibold break-all">${url}</a>`);
+  }
+
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      currentModalItem = {
+        id: card.getAttribute('data-id'),
+        title: card.getAttribute('data-title') || '',
+        body: card.getAttribute('data-body') || '',
+        titleIt: card.getAttribute('data-title-it') || '',
+        bodyIt: card.getAttribute('data-body-it') || '',
+        date: card.getAttribute('data-date') || '',
+        kids: card.getAttribute('data-kids') || '',
+        nature: card.getAttribute('data-nature') || '',
+        owner: card.getAttribute('data-owner') || ''
+      };
+
+      isTranslated = false;
+      if (modalTranslateLabel) modalTranslateLabel.textContent = 'Traduci in Italiano';
+
+      if (modalTitle) modalTitle.textContent = currentModalItem.title;
+      if (modalBody) modalBody.innerHTML = makeLinksClickable(currentModalItem.body);
+      if (modalDate) modalDate.textContent = currentModalItem.date ? `📅 ${currentModalItem.date}` : '';
+      if (modalBadgeKid) modalBadgeKid.textContent = currentModalItem.kids;
+      if (modalBadgeNature) modalBadgeNature.textContent = currentModalItem.nature === 'action_required' ? '⚡ Action Required' : '🌿 JFYI';
+      if (modalOwner) modalOwner.textContent = currentModalItem.owner.toUpperCase();
+      if (modalCliCode) modalCliCode.textContent = `piota-cli read ${currentModalItem.id} --as riccardo`;
+
+      if (detailModal) detailModal.classList.remove('hidden');
+    });
+  });
+
+  function closeDetailModal() {
+    if (detailModal) detailModal.classList.add('hidden');
+  }
+
+  document.getElementById('modal-close-btn')?.addEventListener('click', closeDetailModal);
+  document.getElementById('modal-bottom-close')?.addEventListener('click', closeDetailModal);
+  detailModal?.addEventListener('click', closeDetailModal);
+
+  // Modal translation toggle
+  modalTranslateBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!currentModalItem) return;
+    isTranslated = !isTranslated;
+    if (isTranslated) {
+      if (modalTitle) modalTitle.textContent = currentModalItem.titleIt || currentModalItem.title;
+      if (modalBody) modalBody.innerHTML = makeLinksClickable(currentModalItem.bodyIt || currentModalItem.body);
+      if (modalTranslateLabel) modalTranslateLabel.textContent = 'Mostra Originale';
+    } else {
+      if (modalTitle) modalTitle.textContent = currentModalItem.title;
+      if (modalBody) modalBody.innerHTML = makeLinksClickable(currentModalItem.body);
+      if (modalTranslateLabel) modalTranslateLabel.textContent = 'Traduci in Italiano';
+    }
+  });
+
+  // Menu Modal Zoom
+  const menuModal = document.getElementById('menu-modal');
+  const menuTrigger = document.getElementById('menu-card-trigger');
+
+  function openMenuModal() {
+    if (menuModal) menuModal.classList.remove('hidden');
+  }
+  function closeMenuModal() {
+    if (menuModal) menuModal.classList.add('hidden');
+  }
+
+  menuTrigger?.addEventListener('click', openMenuModal);
+  document.getElementById('menu-modal-close')?.addEventListener('click', closeMenuModal);
+  document.getElementById('menu-modal-close-bottom')?.addEventListener('click', closeMenuModal);
+  menuModal?.addEventListener('click', closeMenuModal);
+
+  // Keyboard escape
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeDetailModal();
+      closeMenuModal();
+    }
   });
 
   applyFilters();
