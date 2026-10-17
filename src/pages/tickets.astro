@@ -20,6 +20,11 @@ const items = rawFeed.map(it => {
     id: it.id,
     title: it.title,
     body: it.body || '',
+    titleIt: it.title_it || it.title,
+    bodyIt: it.body_it || it.body || '',
+    titleEn: it.title_en || it.title,
+    bodyEn: it.body_en || it.body || '',
+    hasTranslation: !!it.has_translation,
     nature: it.nature || 'jfyi',
     urgency: it.urgency || 'normal',
     targetKids: kids,
@@ -29,6 +34,7 @@ const items = rawFeed.map(it => {
     isAll,
     readRiccardo: !!c.read_by_riccardo,
     readKate: !!c.read_by_kate,
+    isArchived: !!c.archived || !!c.archived_by_riccardo,
     owner: owner === 'riccardo' ? 'riccardo' : (owner === 'kate' ? 'kate' : 'unassigned'),
     status: tk.status || 'open',
     dateText: it.date_text || ''
@@ -40,7 +46,7 @@ const totalCount = items.length;
 const riccCount = items.filter(t => t.owner === 'riccardo').length;
 const kateCount = items.filter(t => t.owner === 'kate').length;
 const unassignedCount = items.filter(t => t.owner === 'unassigned').length;
-const actionCount = items.filter(t => t.nature === 'action_required').length;
+const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArchived).length;
 ---
 
 <Layout title="Tandem IMS · Smart Agenda & OKF Feed" activeTab="tickets">
@@ -113,7 +119,7 @@ const actionCount = items.filter(t => t.nature === 'action_required').length;
     <!-- Kid Selection Tabs -->
     <div class="flex items-center space-x-2" id="kid-filters">
       <button data-filter="all" class="filter-btn active px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-emerald-500 text-slate-950 shadow-md">
-        🏫 Tutti ({totalCount})
+        🏫 Tutti
       </button>
       <button data-filter="seby" class="filter-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60">
         <img src={`${baseUrl}/avatars/avatar_sebi_school.jpg`} alt="Seby" class="w-5 h-5 rounded-full object-cover ring-1 ring-emerald-400" />
@@ -125,16 +131,19 @@ const actionCount = items.filter(t => t.nature === 'action_required').length;
       </button>
     </div>
 
-    <!-- Nature & Read Filters -->
+    <!-- Nature & Archive Filters -->
     <div class="flex items-center space-x-2" id="type-filters">
-      <button data-type="all" class="type-btn active px-3 py-1 rounded-md text-xs font-semibold bg-slate-700 text-white">
-        Tutti i messaggi
+      <button data-type="active" class="type-btn active px-3 py-1 rounded-md text-xs font-semibold bg-slate-700 text-white">
+        Attivi
       </button>
-      <button data-type="action" class="type-btn px-3 py-1 rounded-md text-xs font-semibold bg-slate-800/80 text-rose-300 hover:bg-slate-700 border border-rose-500/30">
-        ⚡ Solo Azioni ({actionCount})
+      <button data-type="action" class="type-btn px-3 py-1 rounded-md text-xs font-semibold bg-slate-800/80 text-amber-300 hover:bg-slate-700 border border-amber-500/30">
+        ⚡ Azioni ({actionCount})
       </button>
-      <button data-type="unread-ricc" class="type-btn px-3 py-1 rounded-md text-xs font-semibold bg-slate-800/80 text-amber-300 hover:bg-slate-700 border border-amber-500/30">
+      <button data-type="unread-ricc" class="type-btn px-3 py-1 rounded-md text-xs font-semibold bg-slate-800/80 text-emerald-300 hover:bg-slate-700 border border-emerald-500/30">
         📬 Non letti Riccardo
+      </button>
+      <button data-type="archived" class="type-btn px-3 py-1 rounded-md text-xs font-semibold bg-slate-800/80 text-slate-400 hover:bg-slate-700 border border-slate-700">
+        📁 Archiviati
       </button>
     </div>
   </div>
@@ -175,16 +184,51 @@ const actionCount = items.filter(t => t.nature === 'action_required').length;
           return (
             <div 
               class={`glass-panel p-4 md:p-5 rounded-2xl border transition-all duration-200 shadow-lg item-card ${cardBorder}`}
+              id={`card-${item.id}`}
               data-is-ale={item.isAle || item.isAll}
               data-is-seby={item.isSeby || item.isAll}
               data-nature={item.nature}
               data-read-ricc={item.readRiccardo}
+              data-archived={item.isArchived}
             >
               <div class="flex items-start justify-between gap-3">
                 <div class="flex-1 min-w-0">
                   
                   <!-- Tags Row -->
-                  <div class="flex flex-wrap items-center gap-1.5 mb-2">
+                  <div class="flex flex-wrap items-center gap-2 mb-2">
+                    
+                    {/* Minimal Nature Indicator (Zen Icons with tooltip on hover) */}
+                    {item.nature === 'action_required' && (
+                      <div class="relative group cursor-help">
+                        <span class="w-6 h-6 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-xs font-bold shadow-sm">
+                          ⚡
+                        </span>
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block z-30 px-2 py-1 bg-slate-900 text-amber-300 text-[10px] font-mono rounded border border-amber-500/40 shadow-xl whitespace-nowrap">
+                          Action Required
+                        </div>
+                      </div>
+                    )}
+                    {item.nature === 'jfyi' && (
+                      <div class="relative group cursor-help">
+                        <span class="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-xs font-bold shadow-sm">
+                          🌿
+                        </span>
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block z-30 px-2 py-1 bg-slate-900 text-emerald-300 text-[10px] font-mono rounded border border-emerald-500/40 shadow-xl whitespace-nowrap">
+                          JFYI (Tranquillo / Informativo)
+                        </div>
+                      </div>
+                    )}
+                    {item.nature === 'menu' && (
+                      <div class="relative group cursor-help">
+                        <span class="w-6 h-6 rounded-lg bg-blue-500/20 border border-blue-500/40 text-blue-400 flex items-center justify-center text-xs font-bold shadow-sm">
+                          🍱
+                        </span>
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block z-30 px-2 py-1 bg-slate-900 text-blue-300 text-[10px] font-mono rounded border border-blue-500/40 shadow-xl whitespace-nowrap">
+                          Menu Mensa
+                        </div>
+                      </div>
+                    )}
+
                     {/* Kid Badges */}
                     {item.targetKids.map((k: string) => (
                       <span class={`text-[10px] font-mono font-extrabold uppercase px-2 py-0.5 rounded tracking-wide ${
@@ -194,50 +238,67 @@ const actionCount = items.filter(t => t.nature === 'action_required').length;
                               ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' 
                               : 'bg-purple-500/20 text-purple-300 border border-purple-500/40')
                       }`}>
-                        {k.toLowerCase() === 'ale' ? '👦 Alessandro (P3)' : (k.toLowerCase() === 'seby' ? '🧒 Seby (P1)' : '🏫 Tutta la Scuola')}
+                        {k.toLowerCase() === 'ale' ? 'Ale (P3)' : (k.toLowerCase() === 'seby' ? 'Seby (P1)' : 'Tutti')}
                       </span>
                     ))}
 
-                    {/* Nature Badge */}
-                    {item.nature === 'action_required' && (
-                      <span class="text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded flex items-center gap-1">
-                        ⚡ Azione Richiesta
-                      </span>
-                    )}
-                    {item.nature === 'menu' && (
-                      <span class="text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded flex items-center gap-1">
-                        🍱 Menu Mensa
-                      </span>
-                    )}
-                    {item.nature === 'jfyi' && (
-                      <span class="text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded">
-                        ℹ️ JFYI
+                    {/* Read Status Pill */}
+                    <span class={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
+                      item.readRiccardo ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-800/40' : 'bg-slate-800 text-slate-400 border border-slate-700'
+                    }`}>
+                      {item.readRiccardo ? '✓ Letto' : '○ Nuovo'}
+                    </span>
+
+                    {/* Archive status badge */}
+                    {item.isArchived && (
+                      <span class="text-[10px] font-mono bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700">
+                        📁 Archiviato
                       </span>
                     )}
 
-                    {/* Read Status Riccardo */}
-                    <span class={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded ${
-                      item.readRiccardo ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-800/40' : 'bg-slate-800 text-amber-300 border border-amber-500/30'
-                    }`}>
-                      {item.readRiccardo ? '✓ Letto Riccardo' : '○ Da leggere'}
-                    </span>
+                    {/* Translation Button if German/Multilingual */}
+                    {item.hasTranslation && (
+                      <button 
+                        class="translate-btn text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-950/80 text-blue-300 hover:bg-blue-900 border border-blue-500/40 transition flex items-center gap-1 shadow-sm"
+                        data-id={item.id}
+                      >
+                        🌐 <span class="lang-label">Traduci in IT</span>
+                      </button>
+                    )}
                   </div>
 
-                  <!-- Title -->
-                  <h3 class="text-base md:text-lg font-bold text-white leading-snug">
+                  <!-- Title (Original / Translated) -->
+                  <h3 class="text-base md:text-lg font-bold text-white leading-snug card-title" data-orig={item.title} data-it={item.titleIt} data-en={item.titleEn}>
                     {item.title}
                   </h3>
 
                   <!-- Description / Excerpt -->
-                  <div class="text-xs md:text-sm text-slate-300 mt-2 line-clamp-3 leading-relaxed whitespace-pre-line">
+                  <div class="text-xs md:text-sm text-slate-300 mt-2 line-clamp-3 leading-relaxed whitespace-pre-line card-body" data-orig={item.body} data-it={item.bodyIt} data-en={item.bodyEn}>
                     {item.body}
                   </div>
 
-                  {item.dateText && (
-                    <div class="text-[11px] text-slate-500 mt-2 font-mono">
-                      📅 {item.dateText}
+                  <!-- Footer Info & CLI Helper -->
+                  <div class="mt-3 pt-2.5 border-t border-slate-800/60 flex flex-wrap items-center justify-between gap-2">
+                    <div class="text-[11px] text-slate-500 font-mono flex items-center gap-2">
+                      {item.dateText && <span>📅 {item.dateText}</span>}
                     </div>
-                  )}
+
+                    <!-- Micro CLI Helper & Archive Action Button -->
+                    <div class="flex items-center gap-2">
+                      <code class="text-[10px] font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-emerald-400/90 select-all" title="Copia ed esegui da terminale">
+                        piota-cli {item.isArchived ? 'archive --unarchive' : 'archive'} {item.id} --as riccardo
+                      </code>
+
+                      <button 
+                        class="archive-toggle-btn text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-rose-950 hover:text-rose-300 hover:border-rose-500/40 border border-slate-700 transition"
+                        data-id={item.id}
+                        data-is-archived={item.isArchived ? "true" : "false"}
+                      >
+                        {item.isArchived ? 'Ripristina' : 'Archivia'}
+                      </button>
+                    </div>
+                  </div>
+
                 </div>
 
                 <!-- Owner Avatar Box (Riccardo / Kate / Unassigned) -->
@@ -308,12 +369,13 @@ const actionCount = items.filter(t => t.nature === 'action_required').length;
           <span>CLI per Riccardo & AI Agents</span>
         </h3>
         <p class="text-xs text-slate-400 leading-relaxed">
-          Puoi interrogare, assegnare o marcare come letto ogni avviso dal terminale con <code>piota-cli</code>:
+          Comandi diretti per terminale e prompt Gemini:
         </p>
         <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-[11px] font-mono text-emerald-400 space-y-1">
           <div>$ piota-cli status</div>
           <div>$ piota-cli list --kid seby</div>
           <div>$ piota-cli read &lt;id&gt; --as riccardo</div>
+          <div>$ piota-cli archive &lt;id&gt; --as riccardo</div>
           <div>$ piota-cli claim &lt;id&gt; --owner kate</div>
         </div>
       </div>
@@ -332,7 +394,7 @@ const actionCount = items.filter(t => t.nature === 'action_required').length;
   const visibleCountEl = document.getElementById('visible-count');
 
   let activeKid = 'all';
-  let activeType = 'all';
+  let activeType = 'active';
 
   function applyFilters() {
     let visible = 0;
@@ -341,6 +403,7 @@ const actionCount = items.filter(t => t.nature === 'action_required').length;
       const isSeby = card.getAttribute('data-is-seby') === 'true';
       const nature = card.getAttribute('data-nature');
       const readRicc = card.getAttribute('data-read-ricc') === 'true';
+      const isArchived = card.getAttribute('data-archived') === 'true';
 
       let matchKid = false;
       if (activeKid === 'all') matchKid = true;
@@ -348,9 +411,10 @@ const actionCount = items.filter(t => t.nature === 'action_required').length;
       else if (activeKid === 'seby') matchKid = isSeby;
 
       let matchType = false;
-      if (activeType === 'all') matchType = true;
-      else if (activeType === 'action') matchType = (nature === 'action_required');
-      else if (activeType === 'unread-ricc') matchType = (!readRicc);
+      if (activeType === 'active') matchType = (!isArchived);
+      else if (activeType === 'archived') matchType = (isArchived);
+      else if (activeType === 'action') matchType = (!isArchived && nature === 'action_required');
+      else if (activeType === 'unread-ricc') matchType = (!isArchived && !readRicc);
 
       if (matchKid && matchType) {
         (card as HTMLElement).style.display = 'block';
@@ -384,8 +448,48 @@ const actionCount = items.filter(t => t.nature === 'action_required').length;
       });
       btn.classList.add('active', 'bg-slate-700', 'text-white');
       btn.classList.remove('bg-slate-800/80');
-      activeType = btn.getAttribute('data-type') || 'all';
+      activeType = btn.getAttribute('data-type') || 'active';
       applyFilters();
     });
   });
+
+  // Dynamic Translation Toggle Button
+  document.querySelectorAll('.translate-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const card = btn.closest('.item-card');
+      if (!card) return;
+      const titleEl = card.querySelector('.card-title');
+      const bodyEl = card.querySelector('.card-body');
+      const labelEl = btn.querySelector('.lang-label');
+      if (!titleEl || !bodyEl || !labelEl) return;
+
+      const currentLang = btn.getAttribute('data-current') || 'orig';
+      if (currentLang === 'orig') {
+        titleEl.textContent = titleEl.getAttribute('data-it') || titleEl.textContent;
+        bodyEl.textContent = bodyEl.getAttribute('data-it') || bodyEl.textContent;
+        labelEl.textContent = 'Mostra Originale';
+        btn.setAttribute('data-current', 'it');
+      } else {
+        titleEl.textContent = titleEl.getAttribute('data-orig') || titleEl.textContent;
+        bodyEl.textContent = bodyEl.getAttribute('data-orig') || bodyEl.textContent;
+        labelEl.textContent = 'Traduci in IT';
+        btn.setAttribute('data-current', 'orig');
+      }
+    });
+  });
+
+  // Archive Click Handler (Client state toggle)
+  document.querySelectorAll('.archive-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const card = btn.closest('.item-card');
+      if (!card) return;
+      const isArchived = card.getAttribute('data-archived') === 'true';
+      const newArchived = !isArchived;
+      card.setAttribute('data-archived', newArchived ? 'true' : 'false');
+      btn.textContent = newArchived ? 'Ripristina' : 'Archivia';
+      applyFilters();
+    });
+  });
+
+  applyFilters();
 </script>

@@ -28,7 +28,8 @@
     ],
     "classes": [
       "P1"
-    ]
+    ],
+    "has_translation": false
   },
   {
     "title": "Lost & Found 29.09.26",
@@ -59,7 +60,8 @@
     ],
     "classes": [
       "All-School"
-    ]
+    ],
+    "has_translation": false
   },
   {
     "title": "Photo Gallery (PR1)",
@@ -91,7 +93,8 @@
     ],
     "classes": [
       "P1"
-    ]
+    ],
+    "has_translation": false
   },
   {
     "title": "Photos - Nature Day 22.9.26",
@@ -122,7 +125,8 @@
     ],
     "classes": [
       "P1"
-    ]
+    ],
+    "has_translation": false
   },
   {
     "title": "PR1 - Bibliothek",
@@ -153,7 +157,12 @@
     ],
     "classes": [
       "P1"
-    ]
+    ],
+    "title_it": "PR1 - Biblioteca",
+    "body_it": "Cari genitori,\n\nDomani c'\u00e8 la biblioteca. Per favore, portate tutti i libri a scuola.\n\nCordiali saluti,\n\nXenia Faux",
+    "title_en": "PR1 - Library",
+    "body_en": "Dear parents,\n\nTomorrow is library. Please bring all the books to school.\n\nKind regards,\n\nXenia Faux",
+    "has_translation": true
   },
   {
     "title": "PR1 - Enquiry Exhibition",
@@ -184,7 +193,8 @@
     ],
     "classes": [
       "P1"
-    ]
+    ],
+    "has_translation": false
   },
   {
     "title": "PR1 - French homework during the holidays",
@@ -217,7 +227,12 @@
     "classes": [
       "P1",
       "P3"
-    ]
+    ],
+    "title_it": "PR1 - Compiti di francese per le vacanze",
+    "body_it": "PR1-PR2-PR3-PR4 - Settimana Francese - Promemoria - Escursione domani\n\nCari genitori,\n\nUn cordiale promemoria: la nostra escursione a Friburgo \u00e8 domani!\n\n\ud83d\udccd Punto d'incontro: ore 08:15 sotto l'Angelo Blu alla Stazione Centrale di Zurigo (Z\u00fcrich HB)\n\ud83d\ude86 Partenza del treno: ore 08:32\n\nGli insegnanti terranno in mano cartelli con i nomi delle loro classi (Primary 1, Primary 2, ecc.) in modo che possiate trovare facilmente l'insegnante di vostro figlio/a. Una volta che vostro figlio/a sar\u00e0 con il/la suo/a insegnante, vi preghiamo gentilmente di salutarlo/a e di lasciare l'area dell'incontro per aiutarci a evitare sovraffollamento. \ud83d\ude42\n\nSi prega di assicurarsi che vostro figlio/a porti un piccolo zaino contenente:\n\n*   Un astuccio e/o un libro, se lo desiderano\n*   Una borraccia\n*   Uno spuntino\n*   Una macchina fotografica, se lo desiderano\n*   Il pranzo, se vostro figlio/a non ha aderito al pranzo fornito dalla scuola\n\nSi prega di ricordare anche il CAPPELLO TANDEM di vostro figlio/a!\n\nGrazie per il vostro supporto. Non vediamo l'ora di trascorrere una splendida giornata insieme!",
+    "title_en": "PR1 - French homework during the holidays",
+    "body_en": "PR1-PR2-PR3-PR4 - French Week - Reminder - Excursion tomorrow\n\nDear Parents,\n\nA friendly reminder that our excursion to Fribourg is tomorrow!\n\n\ud83d\udccd Meeting point: 08:15 under the Blue Angel at Z\u00fcrich HB\n\ud83d\ude86 Train departure: 08:32\n\nTeachers will be holding signs with their class names (Primary 1, Primary 2, etc.) so you can easily find your child\u2019s teacher. Once your child is with their teacher, we kindly ask you to say goodbye and leave the meeting area to help us avoid overcrowding. \ud83d\ude42\n\nPlease make sure your child brings a small backpack containing:\n\n*   A pencil case and/or book, if they wish\n*   A water bottle\n*   A snack\n*   A camera, if desired\n*   Lunch, if your child is not signed up for the school-provided lunch\n\nPlease also remember your child\u2019s TANDEM HAT!\n\nThank you for your support. We look forward to a lovely day together!",
+    "has_translation": true
   },
   {
     "title": "PR1- French Week information letters",
@@ -248,7 +263,8 @@
     ],
     "classes": [
       "P1"
-    ]
+    ],
+    "has_translation": false
   },
   {
     "title": "PR1 - Mathematik Lernzielkontrolle",
@@ -279,7 +295,12 @@
     ],
     "classes": [
       "P1"
-    ]
+    ],
+    "title_it": "PR1 - Matematica Verifica degli obiettivi di apprendimento",
+    "body_it": "PR1 - Biblioteca\n\nCari genitori,\n\nDomani c'\u00e8 la biblioteca. Per favore, portate tutti i libri.\n\nCordiali saluti,\n\nXenia Faux",
+    "title_en": "PR1 - Mathematics Learning Objective Assessment",
+    "body_en": "PR1 - Library\n\nDear parents,\n\nTomorrow is library. Please bring all the books to school.\n\nKind regards,\n\nXenia Faux",
+    "has_translation": true
   },
   {
     "title": "PR1-PR2-PR3-PR4 - French Week - Reminder - Excursion tomorrow",
@@ -312,7 +333,12 @@
     "classes": [
       "P1",
       "P3"
-    ]
+    ],
+    "title_it": "PR1-PR2-PR3-PR4 - Settimana Francese - Promemoria - Gita domani",
+    "body_it": "Cari Genitori,\n\nVi ricordiamo che la nostra gita a Friburgo \u00e8 domani!\n\n\ud83d\udccd Punto di incontro: 08:15 sotto l'Angelo Blu alla Stazione Centrale di Zurigo (Z\u00fcrich HB)\n\ud83d\ude86 Partenza del treno: 08:32\n\nGli insegnanti avranno dei cartelli con i nomi delle loro classi (Primary 1, Primary 2, ecc.) in modo che possiate trovare facilmente l'insegnante di vostro figlio/a. Una volta che vostro figlio/a sar\u00e0 con il/la suo/a insegnante, vi chiediamo gentilmente di salutarlo/a e di lasciare l'area di incontro per aiutarci a evitare il sovraffollamento. \ud83d\ude42\n\nSi prega di assicurarsi che vostro figlio/a porti un piccolo zaino contenente:\n\n*   Un astuccio e/o un libro, se lo desiderano\n*   Una bottiglia d'acqua\n*   Uno spuntino\n*   Una macchina fotografica, se desiderata\n*   Il pranzo, se vostro figlio/a non \u00e8 iscritto/a per il pranzo fornito dalla scuola\n\nSi prega di ricordarsi anche del CAPPELLO TANDEM di vostro figlio/a!\n\nGrazie per il vostro supporto. Non vediamo l'ora di trascorrere una splendida giornata insieme!",
+    "title_en": "PR1-PR2-PR3-PR4 - French Week - Reminder - Excursion tomorrow",
+    "body_en": "Dear Parents,\n\nA friendly reminder that our excursion to Fribourg is tomorrow!\n\n\ud83d\udccd Meeting point: 08:15 under the Blue Angel at Z\u00fcrich HB\n\ud83d\ude86 Train departure: 08:32\n\nTeachers will be holding signs with their class names (Primary 1, Primary 2, etc.) so you can easily find your child\u2019s teacher. Once your child is with their teacher, we kindly ask you to say goodbye and leave the meeting area to help us avoid overcrowding. \ud83d\ude42\n\nPlease make sure your child brings a small backpack containing:\n\n* A pencil case and/or book, if they wish\n* A water bottle\n* A snack\n* A camera, if desired\n* Lunch, if your child is not signed up for the school-provided lunch\n\nPlease also remember your child\u2019s TANDEM HAT!\n\nThank you for your support. We look forward to a lovely day together!",
+    "has_translation": true
   },
   {
     "title": "PR1 - Traditions Topic",
@@ -343,7 +369,8 @@
     ],
     "classes": [
       "P1"
-    ]
+    ],
+    "has_translation": false
   },
   {
     "title": "PR3 - Important information French Week",
@@ -374,7 +401,8 @@
     ],
     "classes": [
       "P3"
-    ]
+    ],
+    "has_translation": false
   },
   {
     "title": "Primary - Halloween Event",
@@ -405,7 +433,8 @@
     ],
     "classes": [
       "All-School"
-    ]
+    ],
+    "has_translation": false
   },
   {
     "title": "PTC - French (Primary 1-4)",
@@ -437,7 +466,8 @@
     ],
     "classes": [
       "P1"
-    ]
+    ],
+    "has_translation": false
   },
   {
     "title": "R\u00e4beliechtli-Umzug, 3.11.2026",
@@ -468,7 +498,12 @@
     ],
     "classes": [
       "All-School"
-    ]
+    ],
+    "title_it": "Corteo delle lanterne di rapa, 3.11.2026",
+    "body_it": "Cari genitori,\n\nSiamo molto lieti di celebrare la festa delle \"R\u00e4beliechtli\" insieme ai bambini dell'asilo e della scuola materna marted\u00ec 3 novembre 2026, alle ore 17:15. L'evento sar\u00e0 caratterizzato da una piccola processione di lanterne e da un piacevole momento conviviale.\n\nAffinch\u00e9 possiamo pianificare al meglio, vi chiediamo di\n\nquesto modulo\n\nper farci sapere se voi e vostro figlio/a parteciperete.\n\nL'evento si svolger\u00e0 al di fuori dell'orario scolastico regolare. Ci incontreremo alle ore 17:15 presso il parco giochi del GZ Riesbach, di fronte a Tandem.\n\nVi preghiamo di compilare il modulo entro questo venerd\u00ec, 25 settembre 2026, in modo da avere tempo sufficiente per organizzare tutto il necessario.\n\nSiamo molto lieti di celebrare questa bella tradizione insieme a voi e ai vostri figli!\n\nCordiali saluti,\n\nXenia Faux e Gaby Rayment",
+    "title_en": "Turnip Lantern Procession, November 3, 2026",
+    "body_en": "Dear Parents,\n\nWe are very much looking forward to celebrating R\u00e4beliechtli together with the Kindergarten and Pre-School children on Tuesday, 3 November 2026, at 5:15 p.m. We will celebrate with a small lantern procession and a special evening together.\n\nTo help us with the planning, please fill out\n\nthis form\n\nto let us know whether you and your child will be joining us.\n\nThe event will take place outside regular school hours. We will meet at 5:15 p.m. at the playground of GZ Riesbach, opposite Tandem.\n\nPlease complete the form by this Friday, 25 September 2026, so that we have enough time to make all the necessary arrangements.\n\nWe are very much looking forward to celebrating this beautiful tradition together with you and your children!\n\nKind regards,\n\nXenia Faux and Gaby Rayment",
+    "has_translation": true
   },
   {
     "ticket": {
@@ -500,6 +535,7 @@
       "P1",
       "P3",
       "KG"
-    ]
+    ],
+    "has_translation": false
   }
 ]
