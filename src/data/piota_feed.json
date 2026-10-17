@@ -1,547 +1,554 @@
 [
   {
-    "title": "Christmas Breakfast Events  - Save the date",
-    "id": "alert_christmas-breakfast-events-save-the-date",
-    "consumption": {
-      "read_by_kate": false,
-      "archived": false,
-      "read_by_riccardo": false,
-      "app_consumed": true
-    },
-    "urgency": "normal",
-    "nature": "action_required",
-    "created_at": "2026-10-17T07:08:50.468000+00:00",
-    "ticket": {
-      "status": "open",
-      "due_date": null,
-      "owner": "unassigned",
-      "required": true
-    },
-    "crawled_at": "2026-10-17T09:08:50.427313",
-    "body": "PR1 - Traditions Topic\n\nDear Parents,\nFor our next unit of Enquiry we will be exploring different traditions and investigating the question, \"How can traditions help us find out about the past?\" During this unit, the children will explore what traditions are, how they pass from one generation to another, how they can change over time, and how we can use stories, photographs, and objects as evidence to learn about the past. We know that children often learn most meaningfully when they can connect new ideas to their own lives, experiences, and families. Therefore, we would like to give the children the opportunity to share traditions from their own families.\nWe would love to welcome a parent, grandparent, or other family member into the classroom as a \"family historian\" to help share one tradition from your family or culture. There is no expectation that a tradition needs to be connected to a particular country or culture. Every family has traditions, and we want to hear about the ones that matter most to your family. This could be a tradition connected to a celebration, food, music, clothing, a special day, a family activity, story, or simply something your family has done for generations. Of course, we know that families are busy, so there is absolutely no obligation to take part. We will still be exploring lots of traditions in class.\nIf you are interested in visiting, you would not need to prepare a formal presentation. It would be an informal, show-and-tell-style discussion. We would like the children to have the opportunity to listen, ask questions, and think like historians. If possible, it would be wonderful if you could bring one piece of evidence connected to the tradition, such as a photograph, a book/story, object, or recipe.\nIf you would like to participate, please send us an email telling us which date you would like to visit. The possible dates and times would be as follows:\n\nList start. List of 16 items.\n\nWednesday 28th of October",
     "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/christmas-breakfast-events-save-the-date",
-    "date_text": null,
-    "updated_at": "2026-10-17T07:08:50.468000+00:00",
-    "target_kids": [
-      "Seby"
-    ],
-    "classes": [
-      "P1"
-    ],
-    "has_translation": false
-  },
-  {
-    "title": "Lost & Found 29.09.26",
-    "id": "alert_lost-found-290926",
-    "consumption": {
-      "read_by_kate": false,
-      "archived": true,
-      "read_by_riccardo": false,
-      "app_consumed": true,
-      "archived_by_riccardo": true
-    },
-    "urgency": "high",
-    "nature": "action_required",
-    "created_at": "2026-10-17T07:08:10.178000+00:00",
-    "ticket": {
-      "status": "open",
-      "due_date": null,
-      "owner": "unassigned",
-      "required": true
-    },
-    "crawled_at": "2026-10-17T09:08:10.126076",
-    "body": "Dear parents,\n\nTomorrow, September 29th, all lost and found items will be placed at the front entrance. Please take a moment during drop-off or pick-up to check if any of these items belong to your child. Any unclaimed items will be donated to charity.\nThank you very much!\n\nKind regards,\nThe Kindergarten Team",
-    "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/lost-found-290926",
-    "date_text": "Last updated date 28 Sep 26 8:01 am",
-    "updated_at": "2026-10-17T07:08:10.178000+00:00",
-    "target_kids": [
-      "All"
-    ],
-    "classes": [
-      "All-School"
-    ],
-    "has_translation": false
-  },
-  {
-    "title": "Photo Gallery (PR1)",
-    "id": "alert_photo-gallery-pr1",
-    "consumption": {
-      "read_by_kate": false,
-      "archived": false,
-      "read_by_riccardo": false,
-      "app_consumed": true
-    },
-    "urgency": "normal",
-    "nature": "jfyi",
-    "created_at": "2026-10-17T07:09:14.116000+00:00",
-    "ticket": {
-      "status": "none",
-      "due_date": null,
-      "owner": "unassigned",
-      "required": false
-    },
-    "crawled_at": "2026-10-17T09:09:14.073222",
-    "body": "PTC - French (Primary 1-4)\n\nDear parents,\n\nHere is the link to book an appointment for the parent meetings, where we can discuss how your children are progressing and how they are doing in French.\n\nhttps://calendar.app.google/91sbBo7EAsoLJezU8\n\nThank you, and I look forward to seeing you!\n\nBest wishes,\n\nAmaia Conde",
-    "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/photo-gallery-pr1",
-    "date_text": "Last updated date 24 Sep 26 1:37 pm",
-    "updated_at": "2026-10-17T07:09:14.116000+00:00",
-    "target_kids": [
-      "Seby",
-      "Ale"
-    ],
-    "classes": [
-      "P1"
-    ],
-    "has_translation": false
-  },
-  {
-    "title": "Photos - Nature Day 22.9.26",
-    "id": "alert_photos-nature-day-22926",
-    "consumption": {
-      "read_by_kate": false,
-      "archived": false,
-      "read_by_riccardo": false,
-      "app_consumed": true
-    },
-    "urgency": "normal",
-    "nature": "jfyi",
-    "created_at": "2026-10-17T07:08:27.666000+00:00",
-    "ticket": {
-      "status": "none",
-      "due_date": null,
-      "owner": "unassigned",
-      "required": false
-    },
-    "crawled_at": "2026-10-17T09:08:27.619728",
-    "body": "Dear Parents,\n\nWhat a fantastic day outdoors! The children from Primary 1-4 enjoyed grilling sausages and marshmallows, making delicious Schlangenbrot, building, climbing, and exploring. They collected and observed natural materials, walked, ran, played and enjoyed lots of sunshine. A day full of adventure, discovery, laughter and wonderful memories.\n\n\ud83d\udcf8 **Guarda l'album fotografico:** [Photos Nature Day 22.9.26 (Google Photos)](https://photos.app.goo.gl/SFyCSk2Ytyo8P4L79)",
-    "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/photos-nature-day-22926",
-    "date_text": "Last updated date 24 Sep 26 9:06 am",
-    "updated_at": "2026-10-17T07:08:27.666000+00:00",
-    "target_kids": [
-      "Seby"
-    ],
-    "classes": [
-      "P1"
-    ],
-    "has_translation": false
-  },
-  {
-    "title": "PR1 - Bibliothek",
-    "id": "alert_pr1-bibliothek",
-    "consumption": {
-      "read_by_kate": false,
-      "archived": true,
-      "read_by_riccardo": false,
-      "app_consumed": true,
-      "archived_by_riccardo": true
-    },
-    "urgency": "high",
-    "nature": "action_required",
-    "created_at": "2026-10-17T07:08:33.744000+00:00",
-    "ticket": {
-      "status": "open",
-      "due_date": null,
-      "owner": "unassigned",
-      "required": true
-    },
-    "crawled_at": "2026-10-17T09:08:33.700754",
-    "body": "Liebe Eltern\n\nMorgen ist Bibliothek. Bitte alle B\u00fccher mitbringen.\n\nFreundliche Gr\u00fcsse\n\nXenia Faux",
-    "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/pr1-bibliothek",
-    "date_text": "Last updated date 23 Sep 26 5:00 pm",
-    "updated_at": "2026-10-17T07:08:33.744000+00:00",
-    "target_kids": [
-      "Seby"
-    ],
-    "classes": [
-      "P1"
-    ],
-    "title_it": "PR1 - Biblioteca",
-    "body_it": "Cari genitori,\n\nDomani c'\u00e8 la biblioteca. Per favore, portate tutti i libri a scuola.\n\nCordiali saluti,\n\nXenia Faux",
-    "title_en": "PR1 - Library",
-    "body_en": "Dear parents,\n\nTomorrow is library. Please bring all the books to school.\n\nKind regards,\n\nXenia Faux",
-    "has_translation": true
-  },
-  {
-    "title": "PR1 - Enquiry Exhibition",
-    "id": "alert_pr1-enquiry-exhibition",
-    "consumption": {
-      "read_by_kate": false,
-      "archived": false,
-      "read_by_riccardo": false,
-      "app_consumed": true
-    },
-    "urgency": "normal",
-    "nature": "jfyi",
-    "created_at": "2026-10-17T07:09:19.919000+00:00",
-    "ticket": {
-      "status": "none",
-      "due_date": null,
-      "owner": "unassigned",
-      "required": false
-    },
-    "crawled_at": "2026-10-17T09:09:19.876305",
-    "body": "Photos - Nature Day 22.9.26\n\nDear Parents,\n\nWhat a fantastic day outdoors! The children from Primary 1-4 enjoyed grilling sausages and marshmallows, making delicious Schlangenbrot, building, climbing, and exploring. They collected and observed natural materials, walked, ran, played and enjoyed lots of sunshine. A day full of adventure, discovery, laughter and wonderful memories.\n\nPlease click here to see pictures from our Nature Day.",
-    "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/pr1-enquiry-exhibition",
-    "date_text": "Last updated date 24 Sep 26 9:06 am",
-    "updated_at": "2026-10-17T07:09:19.919000+00:00",
-    "target_kids": [
-      "Seby"
-    ],
-    "classes": [
-      "P1"
-    ],
-    "has_translation": false
-  },
-  {
-    "title": "PR1 - French homework during the holidays",
-    "id": "alert_pr1-french-homework-during-the-holidays",
-    "consumption": {
-      "read_by_kate": false,
-      "archived": true,
-      "read_by_riccardo": false,
-      "app_consumed": true,
-      "archived_by_riccardo": true
-    },
-    "urgency": "high",
-    "nature": "action_required",
-    "created_at": "2026-10-17T07:08:56.379000+00:00",
-    "ticket": {
-      "status": "open",
-      "due_date": null,
-      "owner": "unassigned",
-      "required": true
-    },
-    "crawled_at": "2026-10-17T09:08:56.313484",
-    "body": "PR1-PR2-PR3-PR4 - French Week - Reminder - Excursion tomorrow\n\nDear Parents,\n\nA friendly reminder that our excursion to Fribourg is tomorrow!\n\n\ud83d\udccd Meeting point: 08:15 under the Blue Angel at Z\u00fcrich HB\n\ud83d\ude86 Train departure: 08:32\n\nTeachers will be holding signs with their class names (Primary 1, Primary 2, etc.) so you can easily find your child\u2019s teacher. Once your child is with their teacher, we kindly ask you to say goodbye and leave the meeting area to help us avoid overcrowding. \ud83d\ude42\n\nPlease make sure your child brings a small backpack containing:\n\nList start. List of 5 items.\n\nA pencil case and/or book, if they wish\n\n\u2022\n\nA water bottle\n\n\u2022\n\nA snack\n\n\u2022\n\nA camera, if desired\n\n\u2022\n\nLunch, if your child is not signed up for the school-provided lunch\n\nList end.\n\nPlease also remember your child\u2019s TANDEM HAT!\n\nThank you for your support. We look forward to a lovely day together!",
-    "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/pr1-french-homework-during-the-holidays",
-    "date_text": "Last updated date 30 Sep 26 12:01 pm",
-    "updated_at": "2026-10-17T07:08:56.379000+00:00",
-    "target_kids": [
-      "Seby",
-      "Ale"
-    ],
-    "classes": [
-      "P1",
-      "P3"
-    ],
-    "title_it": "PR1 - Compiti di francese per le vacanze",
-    "body_it": "PR1-PR2-PR3-PR4 - Settimana Francese - Promemoria - Escursione domani\n\nCari genitori,\n\nUn cordiale promemoria: la nostra escursione a Friburgo \u00e8 domani!\n\n\ud83d\udccd Punto d'incontro: ore 08:15 sotto l'Angelo Blu alla Stazione Centrale di Zurigo (Z\u00fcrich HB)\n\ud83d\ude86 Partenza del treno: ore 08:32\n\nGli insegnanti terranno in mano cartelli con i nomi delle loro classi (Primary 1, Primary 2, ecc.) in modo che possiate trovare facilmente l'insegnante di vostro figlio/a. Una volta che vostro figlio/a sar\u00e0 con il/la suo/a insegnante, vi preghiamo gentilmente di salutarlo/a e di lasciare l'area dell'incontro per aiutarci a evitare sovraffollamento. \ud83d\ude42\n\nSi prega di assicurarsi che vostro figlio/a porti un piccolo zaino contenente:\n\n*   Un astuccio e/o un libro, se lo desiderano\n*   Una borraccia\n*   Uno spuntino\n*   Una macchina fotografica, se lo desiderano\n*   Il pranzo, se vostro figlio/a non ha aderito al pranzo fornito dalla scuola\n\nSi prega di ricordare anche il CAPPELLO TANDEM di vostro figlio/a!\n\nGrazie per il vostro supporto. Non vediamo l'ora di trascorrere una splendida giornata insieme!",
-    "title_en": "PR1 - French homework during the holidays",
-    "body_en": "PR1-PR2-PR3-PR4 - French Week - Reminder - Excursion tomorrow\n\nDear Parents,\n\nA friendly reminder that our excursion to Fribourg is tomorrow!\n\n\ud83d\udccd Meeting point: 08:15 under the Blue Angel at Z\u00fcrich HB\n\ud83d\ude86 Train departure: 08:32\n\nTeachers will be holding signs with their class names (Primary 1, Primary 2, etc.) so you can easily find your child\u2019s teacher. Once your child is with their teacher, we kindly ask you to say goodbye and leave the meeting area to help us avoid overcrowding. \ud83d\ude42\n\nPlease make sure your child brings a small backpack containing:\n\n*   A pencil case and/or book, if they wish\n*   A water bottle\n*   A snack\n*   A camera, if desired\n*   Lunch, if your child is not signed up for the school-provided lunch\n\nPlease also remember your child\u2019s TANDEM HAT!\n\nThank you for your support. We look forward to a lovely day together!",
-    "has_translation": true
-  },
-  {
-    "title": "PR1- French Week information letters",
-    "id": "alert_pr1-french-week-information-letters",
-    "consumption": {
-      "read_by_kate": false,
-      "archived": false,
-      "read_by_riccardo": false,
-      "app_consumed": true
-    },
-    "urgency": "normal",
-    "nature": "jfyi",
-    "created_at": "2026-10-17T07:09:08.171000+00:00",
-    "ticket": {
-      "status": "none",
-      "due_date": null,
-      "owner": "unassigned",
-      "required": false
-    },
-    "crawled_at": "2026-10-17T09:09:08.132995",
-    "body": "# PR1- French Week information letters",
-    "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/pr1-french-week-information-letters",
-    "date_text": null,
-    "updated_at": "2026-10-17T07:09:08.171000+00:00",
-    "target_kids": [
-      "Seby"
-    ],
-    "classes": [
-      "P1"
-    ],
-    "has_translation": false
-  },
-  {
-    "title": "PR1 - Mathematik Lernzielkontrolle",
-    "id": "alert_pr1-mathematik-lernzielkontrolle",
-    "consumption": {
-      "read_by_kate": false,
-      "archived": true,
-      "read_by_riccardo": false,
-      "app_consumed": true,
-      "archived_by_riccardo": true
-    },
-    "urgency": "high",
-    "nature": "action_required",
-    "created_at": "2026-10-17T07:09:25.759000+00:00",
-    "ticket": {
-      "status": "open",
-      "due_date": null,
-      "owner": "unassigned",
-      "required": true
-    },
-    "crawled_at": "2026-10-17T09:09:25.720836",
-    "body": "PR1 - Bibliothek\n\nLiebe Eltern\n\nMorgen ist Bibliothek. Bitte alle B\u00fccher mitbringen.\n\nFreundliche Gr\u00fcsse\n\nXenia Faux",
-    "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/pr1-mathematik-lernzielkontrolle",
-    "date_text": "Last updated date 23 Sep 26 5:00 pm",
-    "updated_at": "2026-10-17T07:09:25.759000+00:00",
-    "target_kids": [
-      "Seby"
-    ],
-    "classes": [
-      "P1"
-    ],
-    "title_it": "PR1 - Matematica Verifica degli obiettivi di apprendimento",
-    "body_it": "PR1 - Biblioteca\n\nCari genitori,\n\nDomani c'\u00e8 la biblioteca. Per favore, portate tutti i libri.\n\nCordiali saluti,\n\nXenia Faux",
-    "title_en": "PR1 - Mathematics Learning Objective Assessment",
-    "body_en": "PR1 - Library\n\nDear parents,\n\nTomorrow is library. Please bring all the books to school.\n\nKind regards,\n\nXenia Faux",
-    "has_translation": true
-  },
-  {
-    "title": "PR1-PR2-PR3-PR4 - French Week - Reminder - Excursion tomorrow",
-    "id": "alert_pr1-pr2-pr3-pr4-french-week-reminder-excursion-tomorrow",
-    "nature": "action_required",
-    "urgency": "high",
-    "consumption": {
-      "read_by_kate": false,
-      "archived": true,
-      "read_by_riccardo": true,
-      "app_consumed": true,
-      "archived_by_riccardo": true
-    },
-    "created_at": "2026-10-17T07:08:04.299000+00:00",
     "ticket": {
       "status": "claimed",
-      "due_date": null,
+      "required": true,
       "owner": "Riccardo",
-      "required": true
+      "due_date": null
     },
-    "crawled_at": "2026-10-17T09:08:04.143762",
-    "body": "Dear Parents,\n\nA friendly reminder that our excursion to Fribourg is tomorrow!\n\n\ud83d\udccd Meeting point: 08:15 under the Blue Angel at Z\u00fcrich HB\n\ud83d\ude86 Train departure: 08:32\n\nTeachers will be holding signs with their class names (Primary 1, Primary 2, etc.) so you can easily find your child\u2019s teacher. Once your child is with their teacher, we kindly ask you to say goodbye and leave the meeting area to help us avoid overcrowding. \ud83d\ude42\n\nPlease make sure your child brings a small backpack containing:\n\nList start. List of 5 items.\n\nA pencil case and/or book, if they wish\n\n\u2022\n\nA water bottle\n\n\u2022\n\nA snack\n\n\u2022\n\nA camera, if desired\n\n\u2022\n\nLunch, if your child is not signed up for the school-provided lunch\n\nList end.\n\nPlease also remember your child\u2019s TANDEM HAT!\n\nThank you for your support. We look forward to a lovely day together!",
+    "source_url": "piota://uk.co.piota.schools/alerts/christmas-breakfast-events-save-the-date",
+    "id": "alert_christmas-breakfast-events-save-the-date",
+    "target_kids": [
+      "Seby"
+    ],
+    "created_at": "2026-10-17T07:08:50.468000+00:00",
+    "crawled_at": "2026-10-17T09:08:50.427313",
+    "consumption": {
+      "archived": false,
+      "read_by_riccardo": false,
+      "app_consumed": true,
+      "read_by_kate": false
+    },
+    "date_text": null,
+    "classes": [
+      "P1"
+    ],
+    "title": "Christmas Breakfast Events  - Save the date",
+    "nature": "action_required",
+    "body": "PR1 - Traditions Topic\n\nDear Parents,\nFor our next unit of Enquiry we will be exploring different traditions and investigating the question, \"How can traditions help us find out about the past?\" During this unit, the children will explore what traditions are, how they pass from one generation to another, how they can change over time, and how we can use stories, photographs, and objects as evidence to learn about the past. We know that children often learn most meaningfully when they can connect new ideas to their own lives, experiences, and families. Therefore, we would like to give the children the opportunity to share traditions from their own families.\nWe would love to welcome a parent, grandparent, or other family member into the classroom as a \"family historian\" to help share one tradition from your family or culture. There is no expectation that a tradition needs to be connected to a particular country or culture. Every family has traditions, and we want to hear about the ones that matter most to your family. This could be a tradition connected to a celebration, food, music, clothing, a special day, a family activity, story, or simply something your family has done for generations. Of course, we know that families are busy, so there is absolutely no obligation to take part. We will still be exploring lots of traditions in class.\nIf you are interested in visiting, you would not need to prepare a formal presentation. It would be an informal, show-and-tell-style discussion. We would like the children to have the opportunity to listen, ask questions, and think like historians. If possible, it would be wonderful if you could bring one piece of evidence connected to the tradition, such as a photograph, a book/story, object, or recipe.\nIf you would like to participate, please send us an email telling us which date you would like to visit. The possible dates and times would be as follows:\n\nList start. List of 16 items.\n\nWednesday 28th of October",
+    "updated_at": "2026-10-17T13:06:44.332000+00:00",
+    "urgency": "normal",
+    "has_translation": false,
+    "title_it": null,
+    "body_it": null
+  },
+  {
     "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/pr1-pr2-pr3-pr4-french-week-reminder-excursion-tomorrow",
-    "date_text": "Last updated date 30 Sep 26 12:01 pm",
-    "updated_at": "2026-10-17T07:10:32.733000+00:00",
+    "ticket": {
+      "status": "open",
+      "owner": "unassigned",
+      "required": true,
+      "due_date": null
+    },
+    "source_url": "piota://uk.co.piota.schools/alerts/lost-found-290926",
+    "id": "alert_lost-found-290926",
+    "target_kids": [
+      "All"
+    ],
+    "created_at": "2026-10-17T07:08:10.178000+00:00",
+    "crawled_at": "2026-10-17T09:08:10.126076",
+    "date_text": "Last updated date 28 Sep 26 8:01 am",
+    "consumption": {
+      "archived": true,
+      "read_by_riccardo": false,
+      "archived_by_riccardo": true,
+      "app_consumed": true,
+      "read_by_kate": false
+    },
+    "classes": [
+      "All-School"
+    ],
+    "title": "Lost & Found 29.09.26",
+    "nature": "action_required",
+    "updated_at": "2026-10-17T12:26:54.867000+00:00",
+    "body": "Dear parents,\n\nTomorrow, September 29th, all lost and found items will be placed at the front entrance. Please take a moment during drop-off or pick-up to check if any of these items belong to your child. Any unclaimed items will be donated to charity.\nThank you very much!\n\nKind regards,\nThe Kindergarten Team",
+    "urgency": "high",
+    "has_translation": false,
+    "title_it": null,
+    "body_it": null
+  },
+  {
+    "type": "alert",
+    "ticket": {
+      "status": "none",
+      "owner": "unassigned",
+      "required": false,
+      "due_date": null
+    },
+    "source_url": "piota://uk.co.piota.schools/alerts/photo-gallery-pr1",
+    "id": "alert_photo-gallery-pr1",
     "target_kids": [
       "Seby",
       "Ale"
     ],
+    "created_at": "2026-10-17T07:09:14.116000+00:00",
+    "crawled_at": "2026-10-17T09:09:14.073222",
+    "consumption": {
+      "archived": false,
+      "read_by_riccardo": false,
+      "app_consumed": true,
+      "read_by_kate": false
+    },
+    "date_text": "Last updated date 24 Sep 26 1:37 pm",
+    "classes": [
+      "P1"
+    ],
+    "title": "Photo Gallery (PR1)",
+    "nature": "jfyi",
+    "updated_at": "2026-10-17T07:09:14.116000+00:00",
+    "body": "PTC - French (Primary 1-4)\n\nDear parents,\n\nHere is the link to book an appointment for the parent meetings, where we can discuss how your children are progressing and how they are doing in French.\n\nhttps://calendar.app.google/91sbBo7EAsoLJezU8\n\nThank you, and I look forward to seeing you!\n\nBest wishes,\n\nAmaia Conde",
+    "urgency": "normal",
+    "has_translation": false,
+    "title_it": null,
+    "body_it": null
+  },
+  {
+    "type": "alert",
+    "ticket": {
+      "status": "none",
+      "owner": "unassigned",
+      "required": false,
+      "due_date": null
+    },
+    "source_url": "piota://uk.co.piota.schools/alerts/photos-nature-day-22926",
+    "id": "alert_photos-nature-day-22926",
+    "target_kids": [
+      "Seby"
+    ],
+    "created_at": "2026-10-17T07:08:27.666000+00:00",
+    "crawled_at": "2026-10-17T09:08:27.619728",
+    "consumption": {
+      "archived": false,
+      "read_by_riccardo": false,
+      "app_consumed": true,
+      "read_by_kate": false
+    },
+    "date_text": "Last updated date 24 Sep 26 9:06 am",
+    "classes": [
+      "P1"
+    ],
+    "title": "Photos - Nature Day 22.9.26",
+    "nature": "jfyi",
+    "updated_at": "2026-10-17T07:08:27.666000+00:00",
+    "body": "Dear Parents,\n\nWhat a fantastic day outdoors! The children from Primary 1-4 enjoyed grilling sausages and marshmallows, making delicious Schlangenbrot, building, climbing, and exploring. They collected and observed natural materials, walked, ran, played and enjoyed lots of sunshine. A day full of adventure, discovery, laughter and wonderful memories.\n\nPlease click here to see pictures from our Nature Day.",
+    "urgency": "normal",
+    "has_translation": false,
+    "title_it": null,
+    "body_it": null
+  },
+  {
+    "type": "alert",
+    "ticket": {
+      "status": "open",
+      "owner": "unassigned",
+      "required": true,
+      "due_date": null
+    },
+    "source_url": "piota://uk.co.piota.schools/alerts/pr1-bibliothek",
+    "id": "alert_pr1-bibliothek",
+    "target_kids": [
+      "Seby"
+    ],
+    "created_at": "2026-10-17T07:08:33.744000+00:00",
+    "crawled_at": "2026-10-17T09:08:33.700754",
+    "consumption": {
+      "archived": false,
+      "read_by_riccardo": false,
+      "app_consumed": true,
+      "read_by_kate": false
+    },
+    "date_text": "Last updated date 23 Sep 26 5:00 pm",
+    "classes": [
+      "P1"
+    ],
+    "title": "PR1 - Bibliothek",
+    "nature": "action_required",
+    "updated_at": "2026-10-17T07:08:33.744000+00:00",
+    "body": "Liebe Eltern\n\nMorgen ist Bibliothek. Bitte alle Bücher mitbringen.\n\nFreundliche Grüsse\n\nXenia Faux\n\n--------\n\nDear parents,\n\nTomorrow is library. Please bring all the books to school.\n\nKind regards,\n\nXenia Faux",
+    "urgency": "high",
+    "has_translation": true,
+    "title_it": "PR1 - Biblioteca",
+    "body_it": "Cari genitori,\n\nDomani c'è la biblioteca. Per favore, portate tutti i libri a scuola.\n\nCordiali saluti,\n\nXenia Faux"
+  },
+  {
+    "type": "alert",
+    "ticket": {
+      "status": "none",
+      "owner": "unassigned",
+      "required": false,
+      "due_date": null
+    },
+    "source_url": "piota://uk.co.piota.schools/alerts/pr1-enquiry-exhibition",
+    "id": "alert_pr1-enquiry-exhibition",
+    "target_kids": [
+      "Seby"
+    ],
+    "created_at": "2026-10-17T07:09:19.919000+00:00",
+    "crawled_at": "2026-10-17T09:09:19.876305",
+    "consumption": {
+      "archived": false,
+      "read_by_riccardo": false,
+      "app_consumed": true,
+      "read_by_kate": false
+    },
+    "date_text": "Last updated date 24 Sep 26 9:06 am",
+    "classes": [
+      "P1"
+    ],
+    "title": "PR1 - Enquiry Exhibition",
+    "nature": "jfyi",
+    "updated_at": "2026-10-17T07:09:19.919000+00:00",
+    "body": "Photos - Nature Day 22.9.26\n\nDear Parents,\n\nWhat a fantastic day outdoors! The children from Primary 1-4 enjoyed grilling sausages and marshmallows, making delicious Schlangenbrot, building, climbing, and exploring. They collected and observed natural materials, walked, ran, played and enjoyed lots of sunshine. A day full of adventure, discovery, laughter and wonderful memories.\n\nPlease click here to see pictures from our Nature Day.",
+    "urgency": "normal",
+    "has_translation": false,
+    "title_it": null,
+    "body_it": null
+  },
+  {
+    "type": "alert",
+    "ticket": {
+      "status": "open",
+      "owner": "unassigned",
+      "required": true,
+      "due_date": null
+    },
+    "source_url": "piota://uk.co.piota.schools/alerts/pr1-french-homework-during-the-holidays",
+    "id": "alert_pr1-french-homework-during-the-holidays",
+    "target_kids": [
+      "Seby",
+      "Ale"
+    ],
+    "created_at": "2026-10-17T07:08:56.379000+00:00",
+    "crawled_at": "2026-10-17T09:08:56.313484",
+    "consumption": {
+      "archived": false,
+      "read_by_riccardo": false,
+      "app_consumed": true,
+      "read_by_kate": false
+    },
+    "date_text": "Last updated date 30 Sep 26 12:01 pm",
     "classes": [
       "P1",
       "P3"
     ],
-    "title_it": "PR1-PR2-PR3-PR4 - Settimana Francese - Promemoria - Gita domani",
-    "body_it": "Cari Genitori,\n\nVi ricordiamo che la nostra gita a Friburgo \u00e8 domani!\n\n\ud83d\udccd Punto di incontro: 08:15 sotto l'Angelo Blu alla Stazione Centrale di Zurigo (Z\u00fcrich HB)\n\ud83d\ude86 Partenza del treno: 08:32\n\nGli insegnanti avranno dei cartelli con i nomi delle loro classi (Primary 1, Primary 2, ecc.) in modo che possiate trovare facilmente l'insegnante di vostro figlio/a. Una volta che vostro figlio/a sar\u00e0 con il/la suo/a insegnante, vi chiediamo gentilmente di salutarlo/a e di lasciare l'area di incontro per aiutarci a evitare il sovraffollamento. \ud83d\ude42\n\nSi prega di assicurarsi che vostro figlio/a porti un piccolo zaino contenente:\n\n*   Un astuccio e/o un libro, se lo desiderano\n*   Una bottiglia d'acqua\n*   Uno spuntino\n*   Una macchina fotografica, se desiderata\n*   Il pranzo, se vostro figlio/a non \u00e8 iscritto/a per il pranzo fornito dalla scuola\n\nSi prega di ricordarsi anche del CAPPELLO TANDEM di vostro figlio/a!\n\nGrazie per il vostro supporto. Non vediamo l'ora di trascorrere una splendida giornata insieme!",
-    "title_en": "PR1-PR2-PR3-PR4 - French Week - Reminder - Excursion tomorrow",
-    "body_en": "Dear Parents,\n\nA friendly reminder that our excursion to Fribourg is tomorrow!\n\n\ud83d\udccd Meeting point: 08:15 under the Blue Angel at Z\u00fcrich HB\n\ud83d\ude86 Train departure: 08:32\n\nTeachers will be holding signs with their class names (Primary 1, Primary 2, etc.) so you can easily find your child\u2019s teacher. Once your child is with their teacher, we kindly ask you to say goodbye and leave the meeting area to help us avoid overcrowding. \ud83d\ude42\n\nPlease make sure your child brings a small backpack containing:\n\n* A pencil case and/or book, if they wish\n* A water bottle\n* A snack\n* A camera, if desired\n* Lunch, if your child is not signed up for the school-provided lunch\n\nPlease also remember your child\u2019s TANDEM HAT!\n\nThank you for your support. We look forward to a lovely day together!",
-    "has_translation": true
+    "title": "PR1 - French homework during the holidays",
+    "nature": "action_required",
+    "updated_at": "2026-10-17T07:08:56.379000+00:00",
+    "body": "PR1-PR2-PR3-PR4 - French Week - Reminder - Excursion tomorrow\n\nDear Parents,\n\nA friendly reminder that our excursion to Fribourg is tomorrow!\n\n📍 Meeting point: 08:15 under the Blue Angel at Zürich HB\n🚆 Train departure: 08:32\n\nTeachers will be holding signs with their class names (Primary 1, Primary 2, etc.) so you can easily find your child’s teacher. Once your child is with their teacher, we kindly ask you to say goodbye and leave the meeting area to help us avoid overcrowding. 🙂\n\nPlease make sure your child brings a small backpack containing:\n\nList start. List of 5 items.\n\nA pencil case and/or book, if they wish\n\n•\n\nA water bottle\n\n•\n\nA snack\n\n•\n\nA camera, if desired\n\n•\n\nLunch, if your child is not signed up for the school-provided lunch\n\nList end.\n\nPlease also remember your child’s TANDEM HAT!\n\nThank you for your support. We look forward to a lovely day together!",
+    "urgency": "high",
+    "has_translation": true,
+    "title_it": "PR1 - Compiti di francese per le vacanze",
+    "body_it": "PR1-PR2-PR3-PR4 - Settimana Francese - Promemoria - Escursione domani\n\nCari genitori,\n\nUn cordiale promemoria: la nostra escursione a Friburgo è domani!\n\n📍 Punto d'incontro: ore 08:15 sotto l'Angelo Blu alla Stazione Centrale di Zurigo (Zürich HB)\n🚆 Partenza del treno: ore 08:32\n\nGli insegnanti terranno in mano cartelli con i nomi delle loro classi (Primary 1, Primary 2, ecc.) in modo che possiate trovare facilmente l'insegnante di vostro figlio/a. Una volta che vostro figlio/a sarà con il/la suo/a insegnante, vi preghiamo gentilmente di salutarlo/a e di lasciare l'area dell'incontro per aiutarci a evitare sovraffollamento. 🙂\n\nSi prega di assicurarsi che vostro figlio/a porti un piccolo zaino contenente:\n\n*   Un astuccio e/o un libro, se lo desiderano\n*   Una borraccia\n*   Uno spuntino\n*   Una macchina fotografica, se lo desiderano\n*   Il pranzo, se vostro figlio/a non ha aderito al pranzo fornito dalla scuola\n\nSi prega di ricordare anche il CAPPELLO TANDEM di vostro figlio/a!\n\nGrazie per il vostro supporto. Non vediamo l'ora di trascorrere una splendida giornata insieme!"
   },
   {
-    "title": "PR1 - Traditions Topic",
-    "id": "alert_pr1-traditions-topic",
-    "consumption": {
-      "read_by_kate": false,
-      "archived": false,
-      "read_by_riccardo": false,
-      "app_consumed": true
-    },
-    "urgency": "normal",
-    "nature": "jfyi",
-    "created_at": "2026-10-17T07:07:58.237000+00:00",
+    "type": "alert",
     "ticket": {
       "status": "none",
-      "due_date": null,
       "owner": "unassigned",
-      "required": false
+      "required": false,
+      "due_date": null
     },
-    "crawled_at": "2026-10-17T09:07:57.984517",
-    "body": "# PR1 - Traditions Topic",
-    "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/pr1-traditions-topic",
-    "date_text": null,
-    "updated_at": "2026-10-17T07:07:58.237000+00:00",
+    "source_url": "piota://uk.co.piota.schools/alerts/pr1-french-week-information-letters",
+    "id": "alert_pr1-french-week-information-letters",
     "target_kids": [
       "Seby"
     ],
+    "created_at": "2026-10-17T07:09:08.171000+00:00",
+    "crawled_at": "2026-10-17T09:09:08.132995",
+    "consumption": {
+      "archived": false,
+      "read_by_riccardo": false,
+      "app_consumed": true,
+      "read_by_kate": false
+    },
+    "date_text": null,
     "classes": [
       "P1"
     ],
-    "has_translation": false
+    "title": "PR1- French Week information letters",
+    "nature": "jfyi",
+    "updated_at": "2026-10-17T07:09:08.171000+00:00",
+    "body": "",
+    "urgency": "normal",
+    "has_translation": false,
+    "title_it": null,
+    "body_it": null
   },
   {
-    "title": "PR3 - Important information French Week",
-    "id": "alert_pr3-important-information-french-week",
-    "consumption": {
-      "read_by_kate": false,
-      "archived": true,
-      "read_by_riccardo": false,
-      "app_consumed": true,
-      "archived_by_riccardo": true
-    },
-    "urgency": "high",
-    "nature": "action_required",
-    "created_at": "2026-10-17T07:09:02.266000+00:00",
+    "type": "alert",
     "ticket": {
       "status": "open",
-      "due_date": null,
       "owner": "unassigned",
-      "required": true
+      "required": true,
+      "due_date": null
     },
-    "crawled_at": "2026-10-17T09:09:02.231555",
-    "body": "Lost & Found 29.09.26\n\nDear parents,\n\nTomorrow, September 29th, all lost and found items will be placed at the front entrance. Please take a moment during drop-off or pick-up to check if any of these items belong to your child. Any unclaimed items will be donated to charity.\nThank you very much!\n\nKind regards,\nThe Kindergarten Team",
-    "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/pr3-important-information-french-week",
-    "date_text": "Last updated date 28 Sep 26 8:01 am",
-    "updated_at": "2026-10-17T07:09:02.266000+00:00",
+    "source_url": "piota://uk.co.piota.schools/alerts/pr1-mathematik-lernzielkontrolle",
+    "id": "alert_pr1-mathematik-lernzielkontrolle",
     "target_kids": [
-      "Ale"
+      "Seby"
     ],
-    "classes": [
-      "P3"
-    ],
-    "has_translation": false
-  },
-  {
-    "title": "Primary - Halloween Event",
-    "id": "alert_primary-halloween-event",
+    "created_at": "2026-10-17T07:09:25.759000+00:00",
+    "crawled_at": "2026-10-17T09:09:25.720836",
     "consumption": {
-      "read_by_kate": false,
       "archived": false,
       "read_by_riccardo": false,
-      "app_consumed": true
+      "app_consumed": true,
+      "read_by_kate": false
     },
-    "urgency": "normal",
-    "nature": "jfyi",
-    "created_at": "2026-10-17T07:08:15.953000+00:00",
-    "ticket": {
-      "status": "none",
-      "due_date": null,
-      "owner": "unassigned",
-      "required": false
-    },
-    "crawled_at": "2026-10-17T09:08:15.907472",
-    "body": "Dear Parents,\n\nOn Friday 30th of October****we will be celebrating Halloween with a special Halloween party for Primary classes 1-4.\n\nThere will be a costume parade, dancing, spooky decorations, craft activities, and, of course, trick or treating. All activities will take place during the school day (13:45-15:45) and within the school building.\n\nAll the children are invited to dress up on this day (please no super scary costumes, or weapons). Children who do not wish to dress up do not need to, and are also welcome to join all the activities.\n\nIf you have any questions, please contact Ms Rayment (grayment@\u0167andem-ims.ch) or Herr Biehl (\n\nmbiehl@tandem-ims.ch\n\n).\n\nWe are looking forward to celebrating together!\n\nUploaded image",
-    "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/primary-halloween-event",
-    "date_text": "Last updated date 25 Sep 26 12:01 pm",
-    "updated_at": "2026-10-17T07:08:15.953000+00:00",
-    "target_kids": [
-      "All"
-    ],
+    "date_text": "Last updated date 23 Sep 26 5:00 pm",
     "classes": [
-      "All-School"
+      "P1"
     ],
-    "has_translation": false
+    "title": "PR1 - Mathematik Lernzielkontrolle",
+    "nature": "action_required",
+    "updated_at": "2026-10-17T07:09:25.759000+00:00",
+    "body": "PR1 - Bibliothek\n\nLiebe Eltern\n\nMorgen ist Bibliothek. Bitte alle Bücher mitbringen.\n\nFreundliche Grüsse\n\nXenia Faux\n\n--------\n\nDear parents,\n\nTomorrow is library. Please bring all the books to school.\n\nKind regards,\n\nXenia Faux",
+    "urgency": "high",
+    "has_translation": true,
+    "title_it": "PR1 - Matematica Verifica degli obiettivi di apprendimento",
+    "body_it": "PR1 - Biblioteca\n\nCari genitori,\n\nDomani c'è la biblioteca. Per favore, portate tutti i libri.\n\nCordiali saluti,\n\nXenia Faux"
   },
   {
-    "title": "PTC - French (Primary 1-4)",
-    "id": "alert_ptc-french-primary-1-4",
-    "consumption": {
-      "read_by_kate": false,
-      "archived": false,
-      "read_by_riccardo": false,
-      "app_consumed": true
-    },
-    "urgency": "normal",
-    "nature": "jfyi",
-    "created_at": "2026-10-17T07:08:21.760000+00:00",
-    "ticket": {
-      "status": "none",
-      "due_date": null,
-      "owner": "unassigned",
-      "required": false
-    },
-    "crawled_at": "2026-10-17T09:08:21.719357",
-    "body": "Dear parents,\n\nHere is the link to book an appointment for the parent meetings, where we can discuss how your children are progressing and how they are doing in French.\n\nhttps://calendar.app.google/91sbBo7EAsoLJezU8\n\nThank you, and I look forward to seeing you!\n\nBest wishes,\n\nAmaia Conde",
     "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/ptc-french-primary-1-4",
-    "date_text": "Last updated date 24 Sep 26 1:37 pm",
-    "updated_at": "2026-10-17T07:08:21.760000+00:00",
+    "ticket": {
+      "status": "claimed",
+      "required": true,
+      "owner": "Riccardo",
+      "due_date": null
+    },
+    "source_url": "piota://uk.co.piota.schools/alerts/pr1-pr2-pr3-pr4-french-week-reminder-excursion-tomorrow",
+    "id": "alert_pr1-pr2-pr3-pr4-french-week-reminder-excursion-tomorrow",
     "target_kids": [
       "Seby",
       "Ale"
     ],
+    "created_at": "2026-10-17T07:08:04.299000+00:00",
+    "crawled_at": "2026-10-17T09:08:04.143762",
+    "date_text": "Last updated date 30 Sep 26 12:01 pm",
+    "consumption": {
+      "archived": false,
+      "read_by_riccardo": true,
+      "app_consumed": true,
+      "read_by_kate": false
+    },
+    "classes": [
+      "P1",
+      "P3"
+    ],
+    "title": "PR1-PR2-PR3-PR4 - French Week - Reminder - Excursion tomorrow",
+    "nature": "action_required",
+    "updated_at": "2026-10-17T07:10:32.733000+00:00",
+    "body": "Dear Parents,\n\nA friendly reminder that our excursion to Fribourg is tomorrow!\n\n📍 Meeting point: 08:15 under the Blue Angel at Zürich HB\n🚆 Train departure: 08:32\n\nTeachers will be holding signs with their class names (Primary 1, Primary 2, etc.) so you can easily find your child’s teacher. Once your child is with their teacher, we kindly ask you to say goodbye and leave the meeting area to help us avoid overcrowding. 🙂\n\nPlease make sure your child brings a small backpack containing:\n\nList start. List of 5 items.\n\nA pencil case and/or book, if they wish\n\n•\n\nA water bottle\n\n•\n\nA snack\n\n•\n\nA camera, if desired\n\n•\n\nLunch, if your child is not signed up for the school-provided lunch\n\nList end.\n\nPlease also remember your child’s TANDEM HAT!\n\nThank you for your support. We look forward to a lovely day together!",
+    "urgency": "high",
+    "has_translation": true,
+    "title_it": "PR1-PR2-PR3-PR4 - Settimana Francese - Promemoria - Gita domani",
+    "body_it": "Cari Genitori,\n\nVi ricordiamo che la nostra gita a Friburgo è domani!\n\n📍 Punto di incontro: 08:15 sotto l'Angelo Blu alla Stazione Centrale di Zurigo (Zürich HB)\n🚆 Partenza del treno: 08:32\n\nGli insegnanti avranno dei cartelli con i nomi delle loro classi (Primary 1, Primary 2, ecc.) in modo che possiate trovare facilmente l'insegnante di vostro figlio/a. Una volta che vostro figlio/a sarà con il/la suo/a insegnante, vi chiediamo gentilmente di salutarlo/a e di lasciare l'area di incontro per aiutarci a evitare il sovraffollamento. 🙂\n\nSi prega di assicurarsi che vostro figlio/a porti un piccolo zaino contenente:\n\n*   Un astuccio e/o un libro, se lo desiderano\n*   Una bottiglia d'acqua\n*   Uno spuntino\n*   Una macchina fotografica, se desiderata\n*   Il pranzo, se vostro figlio/a non è iscritto/a per il pranzo fornito dalla scuola\n\nSi prega di ricordarsi anche del CAPPELLO TANDEM di vostro figlio/a!\n\nGrazie per il vostro supporto. Non vediamo l'ora di trascorrere una splendida giornata insieme!"
+  },
+  {
+    "type": "alert",
+    "ticket": {
+      "status": "none",
+      "owner": "unassigned",
+      "required": false,
+      "due_date": null
+    },
+    "source_url": "piota://uk.co.piota.schools/alerts/pr1-traditions-topic",
+    "id": "alert_pr1-traditions-topic",
+    "target_kids": [
+      "Seby"
+    ],
+    "created_at": "2026-10-17T07:07:58.237000+00:00",
+    "crawled_at": "2026-10-17T09:07:57.984517",
+    "consumption": {
+      "archived": false,
+      "read_by_riccardo": false,
+      "app_consumed": true,
+      "read_by_kate": false
+    },
+    "date_text": null,
     "classes": [
       "P1"
     ],
-    "has_translation": false
+    "title": "PR1 - Traditions Topic",
+    "nature": "jfyi",
+    "updated_at": "2026-10-17T07:07:58.237000+00:00",
+    "body": "",
+    "urgency": "normal",
+    "has_translation": false,
+    "title_it": null,
+    "body_it": null
   },
   {
-    "title": "R\u00e4beliechtli-Umzug, 3.11.2026",
-    "id": "alert_r\u00e4beliechtli-umzug-3112026",
+    "type": "alert",
+    "ticket": {
+      "status": "open",
+      "owner": "unassigned",
+      "required": true,
+      "due_date": null
+    },
+    "source_url": "piota://uk.co.piota.schools/alerts/pr3-important-information-french-week",
+    "id": "alert_pr3-important-information-french-week",
+    "target_kids": [
+      "Ale"
+    ],
+    "created_at": "2026-10-17T07:09:02.266000+00:00",
+    "crawled_at": "2026-10-17T09:09:02.231555",
     "consumption": {
-      "read_by_kate": false,
       "archived": false,
       "read_by_riccardo": false,
-      "app_consumed": true
+      "app_consumed": true,
+      "read_by_kate": false
     },
-    "urgency": "normal",
-    "nature": "jfyi",
-    "created_at": "2026-10-17T07:08:44.417000+00:00",
+    "date_text": "Last updated date 28 Sep 26 8:01 am",
+    "classes": [
+      "P3"
+    ],
+    "title": "PR3 - Important information French Week",
+    "nature": "action_required",
+    "updated_at": "2026-10-17T07:09:02.266000+00:00",
+    "body": "Lost & Found 29.09.26\n\nDear parents,\n\nTomorrow, September 29th, all lost and found items will be placed at the front entrance. Please take a moment during drop-off or pick-up to check if any of these items belong to your child. Any unclaimed items will be donated to charity.\nThank you very much!\n\nKind regards,\nThe Kindergarten Team",
+    "urgency": "high",
+    "has_translation": false,
+    "title_it": null,
+    "body_it": null
+  },
+  {
+    "type": "alert",
     "ticket": {
       "status": "none",
-      "due_date": null,
       "owner": "unassigned",
-      "required": false
+      "required": false,
+      "due_date": null
     },
-    "crawled_at": "2026-10-17T09:08:44.279032",
-    "body": "Liebe Eltern\n\nWir freuen uns sehr darauf, gemeinsam mit den Kindergarten- und Pre-School-Kindern am Dienstag, 3. November 2026, um 17.15 Uhr R\u00e4beliechtli zu feiern. Wir werden den Anlass mit einem kleinen Laternenumzug und einem gem\u00fctlichen Beisammensein gestalten.\n\nDamit wir alles gut planen k\u00f6nnen, bitten wir Sie,\n\ndieses Formular\n\nauszuf\u00fcllen und uns mitzuteilen, ob Sie und Ihr Kind teilnehmen werden.\n\nDer Anlass findet ausserhalb der regul\u00e4ren Unterrichtszeit statt. Wir treffen uns um 17.15 Uhr auf dem Spielplatz des GZ Riesbach, gegen\u00fcber von Tandem.\n\nBitte f\u00fcllen Sie das Formular bis diesen Freitag, 25. September 2026, aus, damit wir gen\u00fcgend Zeit haben, alles Notwendige zu organisieren.\n\nWir freuen uns sehr darauf, diese sch\u00f6ne Tradition gemeinsam mit Ihnen und Ihren Kindern zu feiern!\n\nFreundliche Gr\u00fcsse\n\nXenia Faux und Gaby Rayment\n\nDear parents,\n\nWe are very much looking forward to celebrating R\u00e4beliechtli together with the Kindergarten and Pre-School children on Tuesday, 3 November 2026, at 5:15 p.m. We will celebrate with a small lantern procession and a special evening together.\n\nTo help us with the planning, please fill out\n\nthis form\n\nto let us know whether you and your child will be joining us.\n\nThe event will take place outside regular school hours. We will meet at 5:15 p.m. at the playground of GZ Riesbach, opposite Tandem.\n\nPlease complete the form by this Friday, 25 September 2026, so that we have enough time to make all the necessary arrangements.",
-    "type": "alert",
-    "source_url": "piota://uk.co.piota.schools/alerts/r\u00e4beliechtli-umzug-3112026",
-    "date_text": null,
-    "updated_at": "2026-10-17T07:08:44.417000+00:00",
+    "source_url": "piota://uk.co.piota.schools/alerts/primary-halloween-event",
+    "id": "alert_primary-halloween-event",
     "target_kids": [
       "All"
     ],
+    "created_at": "2026-10-17T07:08:15.953000+00:00",
+    "crawled_at": "2026-10-17T09:08:15.907472",
+    "consumption": {
+      "archived": false,
+      "read_by_riccardo": false,
+      "app_consumed": true,
+      "read_by_kate": false
+    },
+    "date_text": "Last updated date 25 Sep 26 12:01 pm",
     "classes": [
       "All-School"
     ],
-    "title_it": "Corteo delle lanterne di rapa, 3.11.2026",
-    "body_it": "Cari genitori,\n\nSiamo molto lieti di celebrare la festa delle \"R\u00e4beliechtli\" insieme ai bambini dell'asilo e della scuola materna marted\u00ec 3 novembre 2026, alle ore 17:15. L'evento sar\u00e0 caratterizzato da una piccola processione di lanterne e da un piacevole momento conviviale.\n\nAffinch\u00e9 possiamo pianificare al meglio, vi chiediamo di\n\nquesto modulo\n\nper farci sapere se voi e vostro figlio/a parteciperete.\n\nL'evento si svolger\u00e0 al di fuori dell'orario scolastico regolare. Ci incontreremo alle ore 17:15 presso il parco giochi del GZ Riesbach, di fronte a Tandem.\n\nVi preghiamo di compilare il modulo entro questo venerd\u00ec, 25 settembre 2026, in modo da avere tempo sufficiente per organizzare tutto il necessario.\n\nSiamo molto lieti di celebrare questa bella tradizione insieme a voi e ai vostri figli!\n\nCordiali saluti,\n\nXenia Faux e Gaby Rayment",
-    "title_en": "Turnip Lantern Procession, November 3, 2026",
-    "body_en": "Dear Parents,\n\nWe are very much looking forward to celebrating R\u00e4beliechtli together with the Kindergarten and Pre-School children on Tuesday, 3 November 2026, at 5:15 p.m. We will celebrate with a small lantern procession and a special evening together.\n\nTo help us with the planning, please fill out\n\nthis form\n\nto let us know whether you and your child will be joining us.\n\nThe event will take place outside regular school hours. We will meet at 5:15 p.m. at the playground of GZ Riesbach, opposite Tandem.\n\nPlease complete the form by this Friday, 25 September 2026, so that we have enough time to make all the necessary arrangements.\n\nWe are very much looking forward to celebrating this beautiful tradition together with you and your children!\n\nKind regards,\n\nXenia Faux and Gaby Rayment",
-    "has_translation": true
+    "title": "Primary - Halloween Event",
+    "nature": "jfyi",
+    "updated_at": "2026-10-17T07:08:15.953000+00:00",
+    "body": "Dear Parents,\n\nOn Friday 30th of October****we will be celebrating Halloween with a special Halloween party for Primary classes 1-4.\n\nThere will be a costume parade, dancing, spooky decorations, craft activities, and, of course, trick or treating. All activities will take place during the school day (13:45-15:45) and within the school building.\n\nAll the children are invited to dress up on this day (please no super scary costumes, or weapons). Children who do not wish to dress up do not need to, and are also welcome to join all the activities.\n\nIf you have any questions, please contact Ms Rayment (grayment@ŧandem-ims.ch) or Herr Biehl (\n\nmbiehl@tandem-ims.ch\n\n).\n\nWe are looking forward to celebrating together!\n\nUploaded image",
+    "urgency": "normal",
+    "has_translation": false,
+    "title_it": null,
+    "body_it": null
   },
   {
+    "type": "alert",
+    "ticket": {
+      "status": "none",
+      "owner": "unassigned",
+      "required": false,
+      "due_date": null
+    },
+    "source_url": "piota://uk.co.piota.schools/alerts/ptc-french-primary-1-4",
+    "id": "alert_ptc-french-primary-1-4",
+    "target_kids": [
+      "Seby",
+      "Ale"
+    ],
+    "created_at": "2026-10-17T07:08:21.760000+00:00",
+    "crawled_at": "2026-10-17T09:08:21.719357",
+    "consumption": {
+      "archived": false,
+      "read_by_riccardo": false,
+      "app_consumed": true,
+      "read_by_kate": false
+    },
+    "date_text": "Last updated date 24 Sep 26 1:37 pm",
+    "classes": [
+      "P1"
+    ],
+    "title": "PTC - French (Primary 1-4)",
+    "nature": "jfyi",
+    "updated_at": "2026-10-17T07:08:21.760000+00:00",
+    "body": "Dear parents,\n\nHere is the link to book an appointment for the parent meetings, where we can discuss how your children are progressing and how they are doing in French.\n\nhttps://calendar.app.google/91sbBo7EAsoLJezU8\n\nThank you, and I look forward to seeing you!\n\nBest wishes,\n\nAmaia Conde",
+    "urgency": "normal",
+    "has_translation": false,
+    "title_it": null,
+    "body_it": null
+  },
+  {
+    "type": "alert",
+    "ticket": {
+      "status": "none",
+      "owner": "unassigned",
+      "required": false,
+      "due_date": null
+    },
+    "source_url": "piota://uk.co.piota.schools/alerts/räbeliechtli-umzug-3112026",
+    "id": "alert_räbeliechtli-umzug-3112026",
+    "target_kids": [
+      "All"
+    ],
+    "created_at": "2026-10-17T07:08:44.417000+00:00",
+    "crawled_at": "2026-10-17T09:08:44.279032",
+    "consumption": {
+      "archived": false,
+      "read_by_riccardo": false,
+      "app_consumed": true,
+      "read_by_kate": false
+    },
+    "date_text": null,
+    "classes": [
+      "All-School"
+    ],
+    "title": "Räbeliechtli-Umzug, 3.11.2026",
+    "nature": "jfyi",
+    "updated_at": "2026-10-17T07:08:44.417000+00:00",
+    "body": "Liebe Eltern\n\nWir freuen uns sehr darauf, gemeinsam mit den Kindergarten- und Pre-School-Kindern am Dienstag, 3. November 2026, um 17.15 Uhr Räbeliechtli zu feiern. Wir werden den Anlass mit einem kleinen Laternenumzug und einem gemütlichen Beisammensein gestalten.\n\nDamit wir alles gut planen können, bitten wir Sie,\n\ndieses Formular\n\nauszufüllen und uns mitzuteilen, ob Sie und Ihr Kind teilnehmen werden.\n\nDer Anlass findet ausserhalb der regulären Unterrichtszeit statt. Wir treffen uns um 17.15 Uhr auf dem Spielplatz des GZ Riesbach, gegenüber von Tandem.\n\nBitte füllen Sie das Formular bis diesen Freitag, 25. September 2026, aus, damit wir genügend Zeit haben, alles Notwendige zu organisieren.\n\nWir freuen uns sehr darauf, diese schöne Tradition gemeinsam mit Ihnen und Ihren Kindern zu feiern!\n\nFreundliche Grüsse\n\nXenia Faux und Gaby Rayment\n\nDear parents,\n\nWe are very much looking forward to celebrating Räbeliechtli together with the Kindergarten and Pre-School children on Tuesday, 3 November 2026, at 5:15 p.m. We will celebrate with a small lantern procession and a special evening together.\n\nTo help us with the planning, please fill out\n\nthis form\n\nto let us know whether you and your child will be joining us.\n\nThe event will take place outside regular school hours. We will meet at 5:15 p.m. at the playground of GZ Riesbach, opposite Tandem.\n\nPlease complete the form by this Friday, 25 September 2026, so that we have enough time to make all the necessary arrangements.",
+    "urgency": "normal",
+    "has_translation": true,
+    "title_it": "Corteo delle lanterne di rapa, 3.11.2026",
+    "body_it": "Cari genitori,\n\nSiamo molto lieti di celebrare la festa delle \"Räbeliechtli\" insieme ai bambini dell'asilo e della scuola materna martedì 3 novembre 2026, alle ore 17:15. L'evento sarà caratterizzato da una piccola processione di lanterne e da un piacevole momento conviviale.\n\nAffinché possiamo pianificare al meglio, vi chiediamo di\n\nquesto modulo\n\nper farci sapere se voi e vostro figlio/a parteciperete.\n\nL'evento si svolgerà al di fuori dell'orario scolastico regolare. Ci incontreremo alle ore 17:15 presso il parco giochi del GZ Riesbach, di fronte a Tandem.\n\nVi preghiamo di compilare il modulo entro questo venerdì, 25 settembre 2026, in modo da avere tempo sufficiente per organizzare tutto il necessario.\n\nSiamo molto lieti di celebrare questa bella tradizione insieme a voi e ai vostri figli!\n\nCordiali saluti,\n\nXenia Faux e Gaby Rayment"
+  },
+  {
+    "type": "menu",
     "ticket": {
       "status": "none",
       "owner": "unassigned",
       "required": false
     },
     "title": "Weekly Lunch Menu (Tandem IMS)",
-    "crawled_at": "2026-10-17T09:09:44.314292",
-    "body": "Weekly Lunch Menu options:\n",
-    "id": "menu_weekly_lunch_current",
-    "consumption": {
-      "read_by_kate": false,
-      "archived": false,
-      "read_by_riccardo": false,
-      "app_consumed": true
-    },
-    "urgency": "normal",
     "source_url": "piota://uk.co.piota.schools/menu",
-    "type": "menu",
-    "updated_at": "2026-10-17T07:09:44.356000+00:00",
-    "nature": "menu",
-    "created_at": "2026-10-17T07:09:44.356000+00:00",
-    "target_kids": [
-      "Ale",
-      "Seby"
-    ],
     "classes": [
       "P1",
       "P3",
       "KG"
     ],
-    "has_translation": false
+    "id": "menu_weekly_lunch_current",
+    "target_kids": [
+      "Ale",
+      "Seby"
+    ],
+    "nature": "menu",
+    "created_at": "2026-10-17T07:09:44.356000+00:00",
+    "body": "Weekly Lunch Menu options:\n",
+    "consumption": {
+      "archived": false,
+      "read_by_riccardo": false,
+      "app_consumed": true,
+      "read_by_kate": false
+    },
+    "urgency": "normal",
+    "crawled_at": "2026-10-17T09:09:44.314292",
+    "updated_at": "2026-10-17T07:09:44.356000+00:00",
+    "has_translation": false,
+    "title_it": null,
+    "body_it": null
   }
 ]

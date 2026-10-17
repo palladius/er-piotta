@@ -7,6 +7,7 @@
     "dev": "astro dev --host",
     "start": "astro dev --host",
     "build": "astro build",
+    "postbuild": "ln -sfn . dist/er-piotta",
     "preview": "astro preview"
   },
   "dependencies": {
