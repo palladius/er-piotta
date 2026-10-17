@@ -55,13 +55,13 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
 
       <!-- Quick Switcher Tabs -->
       <div class="flex items-center gap-2">
-        <a href={`${baseUrl}/ale`} class={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition no-underline ${activeTab === 'ale' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30 ring-2 ring-blue-400' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-800'}`}>
-          <span class="text-sm">👦</span>
+        <a href={`${baseUrl}/ale`} class={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-extrabold transition no-underline ${activeTab === 'ale' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30 ring-2 ring-blue-400' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-800'}`}>
+          <img src={`${baseUrl}/avatars/avatar_ale_school.jpg`} alt="Ale" class="w-5 h-5 rounded-full object-cover ring-1 ring-white/50" />
           <span>Alessandro (P3)</span>
         </a>
 
-        <a href={`${baseUrl}/sebi`} class={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition no-underline ${activeTab === 'sebi' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30 ring-2 ring-emerald-400' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-800'}`}>
-          <span class="text-sm">🧒</span>
+        <a href={`${baseUrl}/sebi`} class={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-extrabold transition no-underline ${activeTab === 'sebi' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30 ring-2 ring-emerald-400' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-800'}`}>
+          <img src={`${baseUrl}/avatars/avatar_sebi_school.jpg`} alt="Seby" class="w-5 h-5 rounded-full object-cover ring-1 ring-white/50" />
           <span>Sebastian (P1)</span>
         </a>
 

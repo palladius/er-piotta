@@ -115,11 +115,13 @@ const actionCount = items.filter(t => t.nature === 'action_required').length;
       <button data-filter="all" class="filter-btn active px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-emerald-500 text-slate-950 shadow-md">
         🏫 Tutti ({totalCount})
       </button>
-      <button data-filter="seby" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60">
-        🧒 Sebastian (P1)
+      <button data-filter="seby" class="filter-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60">
+        <img src={`${baseUrl}/avatars/avatar_sebi_school.jpg`} alt="Seby" class="w-5 h-5 rounded-full object-cover ring-1 ring-emerald-400" />
+        <span>Sebastian (P1)</span>
       </button>
-      <button data-filter="ale" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60">
-        👦 Alessandro (P3)
+      <button data-filter="ale" class="filter-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60">
+        <img src={`${baseUrl}/avatars/avatar_ale_school.jpg`} alt="Ale" class="w-5 h-5 rounded-full object-cover ring-1 ring-blue-400" />
+        <span>Alessandro (P3)</span>
       </button>
     </div>
 
