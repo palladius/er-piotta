@@ -501,12 +501,14 @@ const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArc
         <p class="text-[11px] text-slate-400 leading-relaxed">
           Comandi diretti da eseguire su pupurabbux o da prompt AI:
         </p>
-        <div class="bg-slate-950/90 p-2.5 rounded-lg border border-slate-800 text-[10px] font-mono text-emerald-400 space-y-1">
-          <div>$ piota-cli status</div>
-          <div>$ piota-cli list --kid seby</div>
-          <div>$ piota-cli read &lt;id&gt; --as riccardo</div>
-          <div>$ piota-cli archive &lt;id&gt; --as riccardo</div>
-          <div>$ piota-cli claim &lt;id&gt; --owner kate</div>
+        <div class="bg-slate-950/90 p-2.5 rounded-lg border border-slate-800 text-[10px] font-mono text-emerald-400 space-y-1 select-all">
+          <div>piota-cli status</div>
+          <div>piota-cli sync</div>
+          <div>piota-cli llm</div>
+          <div>piota-cli list --kid seby</div>
+          <div>piota-cli read &lt;id&gt; --as riccardo</div>
+          <div>piota-cli archive &lt;id&gt; --as riccardo</div>
+          <div>piota-cli claim &lt;id&gt; --owner kate</div>
         </div>
       </div>
 
