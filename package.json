@@ -1,7 +1,7 @@
 {
   "name": "er-piotta",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Er Piotta: Calendario & Guida Scolastica Tandem IMS per Alessandro (P3) e Sebastian (P1)",
   "scripts": {
     "dev": "astro dev --host",

@@ -1,829 +1,1990 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import rawFeed from '../data/piota_feed.json';
+import feedData from '../data/piota_feed.json';
 
-const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
+function renderSimpleMarkdown(md: string): string {
+  if (!md) return '';
+  const escaped = md
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return escaped
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+    .replace(/(^|\s)(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>')
+    .split(/\n{2,}/)
+    .map(p => `<p>${p.replace(/\n/g, '<br/>')}</p>`)
+    .join('');
+}
 
-function formatDisplayDate(dateText?: string | null, title?: string, createdAt?: string): string {
-  if (dateText) {
-    const m = dateText.match(/(\d{1,2}\s+[A-Za-z]{3})/i);
-    if (m) return m[1];
-  }
-  if (title) {
-    const mTitle = title.match(/(\d{1,2})[./](\d{1,2})(?:[./](\d{2,4}))?/);
-    if (mTitle) {
-      const day = parseInt(mTitle[1], 10);
-      const mo = parseInt(mTitle[2], 10);
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      if (mo >= 1 && mo <= 12) {
-        return `${day} ${months[mo - 1]}`;
-      }
+// Filter out Küsnacht / school bus noise and other parents' booked PTC slots
+const cleanFeed = feedData.filter((item: any) => {
+  const text = `${item.title || ''} ${item.body || ''}`.toLowerCase();
+  const isBusOrKusnacht = text.includes('küsnacht') || text.includes('kusnacht') || text.includes('school bus') || text.includes('bus service');
+  if (isBusOrKusnacht) return false;
+  const titleL = (item.title || '').toLowerCase();
+  if (titleL.includes('ptc') && titleL.includes('(') && titleL.includes(')')) {
+    if (!['carlesso', 'riccardo', 'kate', 'knight', 'palladius'].some(f => text.includes(f))) {
+      return false;
     }
   }
-  if (createdAt) {
-    try {
-      const d = new Date(createdAt);
-      if (!isNaN(d.getTime())) {
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        return `${d.getDate()} ${months[d.getMonth()]}`;
-      }
-    } catch (e) {}
+  // Skip manual Fwd duplicates if original email is present
+  if (String(item.id || '').startsWith('alert_gmail_') && String(item.title || '').startsWith('Fwd: [')) {
+    return false;
   }
-  return '';
+  // Skip legacy Piota SQLite events since Google Classroom iCal events (event_gcal_) are canonical
+  if (item.type === 'event' && String(item.id || '').startsWith('event_') && !String(item.id || '').startsWith('event_gcal_')) {
+    return false;
+  }
+  return true;
+});
+
+const todayIso = new Date().toISOString().slice(0, 10);
+const maxFutureDate = new Date(Date.now() + 21 * 86400000).toISOString().slice(0, 10);
+const weekdaysIt = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+
+function formatYmdDay(isoStr: string): string {
+  if (!isoStr || isoStr.length < 10) return '--------(---)';
+  const dStr = isoStr.slice(0, 10);
+  const ymd = dStr.replace(/-/g, '');
+  const dObj = new Date(dStr + 'T12:00:00Z');
+  if (isNaN(dObj.getTime())) return `${ymd}(---)`;
+  const wd = weekdaysIt[dObj.getUTCDay()];
+  return `${ymd}(${wd})`;
 }
 
-function extractLinks(body: string) {
-  let photosUrl: string | null = null;
-  let calendarUrl: string | null = null;
-
-  const photosMatch = body.match(/https?:\/\/(?:photos\.app\.goo\.gl\/[a-zA-Z0-9_-]+|photos\.google\.com\/[^\s\)]+)/i);
-  if (photosMatch) {
-    photosUrl = photosMatch[0].replace(/[).,;]+$/, '');
-  }
-
-  const calMatch = body.match(/https?:\/\/(?:calendar\.app\.google\/[a-zA-Z0-9_-]+|calendar\.google\.com\/[^\s\)]+)/i);
-  if (calMatch) {
-    calendarUrl = calMatch[0].replace(/[).,;]+$/, '');
-  }
-
-  return { photosUrl, calendarUrl };
+function formatYmdRel(isoStr: string): { text: string; daysLeft: number } {
+  if (!isoStr || isoStr.length < 10) return { text: '--------(---)', daysLeft: 7 };
+  const dStr = isoStr.slice(0, 10);
+  const ymd = dStr.replace(/-/g, '');
+  const dObj = new Date(dStr + 'T12:00:00Z');
+  const tObj = new Date(todayIso + 'T12:00:00Z');
+  const diffDays = Math.round((dObj.getTime() - tObj.getTime()) / 86400000);
+  const rel = diffDays >= 0 ? `+${diffDays}g` : `${diffDays}g`;
+  return { text: `${ymd}(${rel})`, daysLeft: diffDays };
 }
 
-// Format feed items into unified cards (Filtered for Seefeld Tandem IMS, no Kusnacht, no bus)
-const items = rawFeed
-  .filter(it => {
-    const text = `${it.title} ${it.body || ''}`.toLowerCase();
-    if (text.includes('küsnacht') || text.includes('kusnacht')) return false;
-    if (text.includes('school bus') || text.includes('bus service')) return false;
-    return true;
-  })
-  .map(it => {
-    const c = it.consumption || {};
-    const tk = it.ticket || {};
-    const owner = (tk.owner || 'unassigned').toLowerCase();
-    
-    const kids = it.target_kids || ['All'];
-    const isAle = kids.some((k: string) => k.toLowerCase() === 'ale' || k.toLowerCase() === 'alessandro');
-    const isSeby = kids.some((k: string) => k.toLowerCase() === 'seby' || k.toLowerCase() === 'sebastian');
-    const isAll = kids.some((k: string) => k.toLowerCase() === 'all') || (!isAle && !isSeby);
+function inferSender(item: any) {
+  const text = `${item.sender_name || ''} ${item.sender_email || ''} ${item.title || ''} ${item.body || ''}`.toLowerCase();
+  const kids = (item.target_kids || []).map((k: string) => k.toLowerCase());
+  const hasAle = kids.some((k: string) => ['ale', 'alessandro', 'p3'].includes(k));
+  const hasSeb = kids.some((k: string) => ['seby', 'sebastian', 'seb', 'p1'].includes(k));
+  const kidCode = (hasAle && hasSeb) || kids.includes('all') || kids.length === 0 ? 'A+S' : (hasAle ? 'Ale' : 'Seb');
 
-    const bodyText = it.body || '';
-    const fullText = `${it.title} ${bodyText}`.toLowerCase();
+  if (text.includes('mbiehl') || text.includes('biehl') || (kidCode === 'Ale' && ['deutsch', 'mathe', 'schreibheft', 'lzk'].some(w => text.includes(w)))) {
+    return {
+      key: 'biehl',
+      name: 'Herr Marvin Biehl',
+      shortName: 'M. Biehl',
+      email: 'mbiehl@tandem-ims.ch',
+      emoji: '🇩🇪🧮',
+      flag: '🇩🇪',
+      subjectEmoji: '🧮',
+      role: 'Deutsch & Mathe · P3',
+      initials: 'MB',
+      bgGradient: 'linear-gradient(135deg, #1e293b 0%, #dc2626 55%, #f59e0b 100%)',
+      kidCode: 'Ale',
+    };
+  }
+  if (text.includes('jpenrose') || text.includes('penrose') || (kidCode === 'Ale' && ['english', 'spelling', 'music', 'diwali', 'french'].some(w => text.includes(w)))) {
+    return {
+      key: 'penrose',
+      name: 'Miss Jessica Penrose',
+      shortName: 'J. Penrose',
+      email: 'jpenrose@tandem-ims.ch',
+      emoji: '🇬🇧🎵',
+      flag: '🇬🇧',
+      subjectEmoji: '🎵',
+      role: 'English & Music · P3',
+      initials: 'JP',
+      bgGradient: 'linear-gradient(135deg, #1d4ed8 0%, #7c3aed 100%)',
+      kidCode: 'Ale',
+    };
+  }
+  if (text.includes('grayment') || text.includes('rayment') || (kidCode === 'Seb' && ['english', 'reading', 'raz kids', 'phonics'].some(w => text.includes(w)))) {
+    return {
+      key: 'rayment',
+      name: 'Miss Gaby Rayment',
+      shortName: 'G. Rayment',
+      email: 'grayment@tandem-ims.ch',
+      emoji: '🇬🇧📚',
+      flag: '🇬🇧',
+      subjectEmoji: '📚',
+      role: 'English · P1',
+      initials: 'GR',
+      bgGradient: 'linear-gradient(135deg, #0369a1 0%, #ec4899 100%)',
+      kidCode: 'Seb',
+    };
+  }
+  if (text.includes('xfaux') || text.includes('faux') || (kidCode === 'Seb' && ['deutsch', 'ziffern', 'schreibheft', 'bibliothek', 'räbeliechtli', 'turnhalle'].some(w => text.includes(w)))) {
+    return {
+      key: 'faux',
+      name: 'Frau Xenia Faux',
+      shortName: 'X. Faux',
+      email: 'xfaux@tandem-ims.ch',
+      emoji: '🇩🇪🎨',
+      flag: '🇩🇪',
+      subjectEmoji: '🎨',
+      role: 'Deutsch & Mathe · P1',
+      initials: 'XF',
+      bgGradient: 'linear-gradient(135deg, #b91c1c 0%, #d97706 100%)',
+      kidCode: 'Seb',
+    };
+  }
+  return {
+    key: 'tandem',
+    name: 'Tandem IMS Seefeld',
+    shortName: 'Tandem IMS',
+    email: 'zurich@tandem-ims.ch',
+    emoji: '🇨🇭🏫',
+    flag: '🇨🇭',
+    subjectEmoji: '🏫',
+    role: 'Scuola & Admin',
+    initials: 'TI',
+    bgGradient: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
+    kidCode,
+  };
+}
 
-    // Auto-archive expired routine notices (older than 7 days mentioning tomorrow/morgen/lost&found)
-    const isExpiredRoutine = (
-      (fullText.includes('tomorrow') || fullText.includes('morgen') || fullText.includes('lost & found') || fullText.includes('bring the books') || fullText.includes('bücher mitbringen')) &&
-      (it.date_text?.includes('Sep') || it.title?.includes('.09.') || it.title?.includes('.9.'))
-    );
+function inferCategory(item: any) {
+  const titleL = String(item.title || '').toLowerCase();
+  const text = `${titleL} ${String(item.body || '').toLowerCase()}`;
 
-    const isArchived = Boolean(c.archived || c.archived_by_riccardo || isExpiredRoutine);
-    const displayDate = formatDisplayDate(it.date_text, it.title, it.created_at);
-    const { photosUrl, calendarUrl } = extractLinks(bodyText);
+  if (['test', 'lzk', 'lernzielkontrolle', 'diktat', 'exam', 'prüfung'].some(k => titleL.includes(k))) {
+    return {
+      nature: 'action_required',
+      natureEmoji: '⚡',
+      natureCode: 'ACT',
+      catKey: 'test',
+      catEmoji: '🎯',
+      catCode: 'TST',
+      catLabel: 'Test / Verifica',
+    };
+  }
+  if (['homework', 'hausaufgabe', 'hausaufgaben', 'raz kids', 'matheplan', 'schreibheft', 'ziffern'].some(k => titleL.includes(k))) {
+    return {
+      nature: 'action_required',
+      natureEmoji: '⚡',
+      natureCode: 'ACT',
+      catKey: 'homework',
+      catEmoji: '📝',
+      catCode: 'HW',
+      catLabel: 'Homework',
+    };
+  }
+  if (['bibliothek', 'library', 'bücher', 'reading book'].some(k => titleL.includes(k))) {
+    return {
+      nature: 'action_required',
+      natureEmoji: '⚡',
+      natureCode: 'ACT',
+      catKey: 'library',
+      catEmoji: '📚',
+      catCode: 'LIB',
+      catLabel: 'Biblioteca',
+    };
+  }
+  if (['photo', 'photos', 'album', 'pictures', 'tawanga', 'behind the scenes'].some(k => titleL.includes(k))) {
+    return {
+      nature: 'info',
+      natureEmoji: '💡',
+      natureCode: 'FYI',
+      catKey: 'photos',
+      catEmoji: '📸',
+      catCode: 'PIC',
+      catLabel: 'Foto & Album',
+    };
+  }
+  if (['timetable', 'kalender', 'calendar', 'stundenplan'].some(k => titleL.includes(k))) {
+    return {
+      nature: 'info',
+      natureEmoji: '💡',
+      natureCode: 'FYI',
+      catKey: 'admin',
+      catEmoji: '📅',
+      catCode: 'ADM',
+      catLabel: 'Orari & Admin',
+    };
+  }
+  if (['umzug', 'räbeliechtli', 'excursion', 'ausflug', 'trip', 'wald', 'forest', 'swimming', 'schwimmbad', 'turnhalle', 'diwali', 'concert', 'christmas', 'bäckerei', 'museum'].some(k => text.includes(k))) {
+    const isAct = item.nature === 'action_required' || ['bring', 'mitnehmen', 'permission', 'sign', 'anmeldung'].some(w => text.includes(w));
+    return {
+      nature: isAct ? 'action_required' : 'info',
+      natureEmoji: isAct ? '⚡' : '💡',
+      natureCode: isAct ? 'ACT' : 'FYI',
+      catKey: 'trip',
+      catEmoji: '🎒',
+      catCode: 'TRP',
+      catLabel: 'Gita / Evento',
+    };
+  }
+  const isAct = item.nature === 'action_required' && !['timetable', 'kalender link', 'class calendar'].some(k => titleL.includes(k));
+  return {
+    nature: isAct ? 'action_required' : 'info',
+    natureEmoji: isAct ? '⚡' : '💡',
+    natureCode: isAct ? 'ACT' : 'FYI',
+    catKey: 'admin',
+    catEmoji: '📅',
+    catCode: 'ADM',
+    catLabel: 'Orari & Admin',
+  };
+}
+
+// Enrich and deduplicate items
+const seenDedup = new Set<string>();
+const enrichedItems = cleanFeed
+  .map((item: any) => {
+    const rawCreated = String(item.created_date || item.created_at || item.crawled_at || item.datestart || todayIso).slice(0, 10);
+    const rawEvent = String(item.event_date || item.datestart || item.ticket?.due_date || rawCreated).slice(0, 10);
+    let autoArchiveIso = String(item.auto_archive_at || '').slice(0, 10);
+    if (!autoArchiveIso) {
+      const ttlDays = item.type === 'event' || item.ticket?.due_date ? 7 : 14;
+      const baseD = new Date((item.type === 'event' ? rawEvent : rawCreated) + 'T12:00:00Z');
+      autoArchiveIso = isNaN(baseD.getTime())
+        ? new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
+        : new Date(baseD.getTime() + ttlDays * 86400000).toISOString().slice(0, 10);
+    }
+    const primaryDate = item.type === 'event' ? rawEvent : rawCreated;
+    const ymdCreated = formatYmdDay(primaryDate);
+    const aaInfo = formatYmdRel(autoArchiveIso);
+    const isAutoExpired = autoArchiveIso < todayIso;
+    const isManuallyArchived = Boolean(item.consumption?.archived);
+    const sender = inferSender(item);
+    const cat = inferCategory(item);
+
+    // Clean title prefix
+    let cleanTitle = String(item.title || 'Untitled').trim();
+    for (const pref of ['[P1 Seby] ', '[P3 Ale] ', '[P1] ', '[P3] ']) {
+      if (cleanTitle.startsWith(pref)) cleanTitle = cleanTitle.slice(pref.length);
+    }
+
+    // Build snippet
+    const rawBody = String(item.body || '')
+      .replace(/^\*\*From:\*\*.*$/gm, '')
+      .replace(/^\*\*Date:\*\*.*$/gm, '')
+      .replace(/^Class calendar event.*$/gm, '')
+      .trim();
+    const snippet = rawBody.replace(/\s+/g, ' ').slice(0, 140);
 
     return {
-      id: it.id,
-      title: it.title,
-      body: bodyText,
-      titleIt: it.title_it || it.title,
-      bodyIt: it.body_it || it.body || '',
-      titleEn: it.title_en || it.title,
-      bodyEn: it.body_en || it.body || '',
-      hasTranslation: !!it.has_translation,
-      nature: it.nature || 'jfyi',
-      urgency: it.urgency || 'normal',
-      targetKids: kids,
-      classes: it.classes || [],
-      isAle,
-      isSeby,
-      isAll,
-      readRiccardo: !!c.read_by_riccardo,
-      readKate: !!c.read_by_kate,
-      isArchived,
-      owner: owner === 'riccardo' ? 'riccardo' : (owner === 'kate' ? 'kate' : 'unassigned'),
-      status: tk.status || 'open',
-      dateText: it.date_text || '',
-      displayDate,
-      photosUrl,
-      calendarUrl
+      ...item,
+      nature: cat.nature,
+      cat,
+      cleanTitle,
+      snippet,
+      primaryDate,
+      autoArchiveIso,
+      ymdCreated,
+      ymdAutoArchive: aaInfo.text,
+      daysUntilArchive: aaInfo.daysLeft,
+      isAutoExpired,
+      isManuallyArchived,
+      isArchivedDefault: isAutoExpired || isManuallyArchived,
+      sender,
+      kidCode: item.kid_code || sender.kidCode,
+      renderedBody: renderSimpleMarkdown(item.body || ''),
     };
+  })
+  .filter((item: any) => {
+    // Hide far-future recurring events > 21 days out so the inbox stays crisp
+    if (item.type === 'event' && item.primaryDate > maxFutureDate) return false;
+    const dedupKey = `${item.primaryDate}|${item.kidCode}|${item.cleanTitle.toLowerCase()}`;
+    if (seenDedup.has(dedupKey)) return false;
+    seenDedup.add(dedupKey);
+    return true;
+  })
+  .sort((a: any, b: any) => {
+    // Alerts/Emails first (newest first), then upcoming events (chronological)
+    const aAlert = a.type === 'alert' ? 0 : 1;
+    const bAlert = b.type === 'alert' ? 0 : 1;
+    if (aAlert !== bAlert) return aAlert - bAlert;
+    if (aAlert === 0) return b.primaryDate.localeCompare(a.primaryDate);
+    return a.primaryDate.localeCompare(b.primaryDate);
   });
-
-// Stats
-const totalCount = items.length;
-const riccCount = items.filter(t => t.owner === 'riccardo').length;
-const kateCount = items.filter(t => t.owner === 'kate').length;
-const unassignedCount = items.filter(t => t.owner === 'unassigned').length;
-const actionCount = items.filter(t => t.nature === 'action_required' && !t.isArchived).length;
 ---
 
-<Layout title="Tandem IMS Seefeld · Smart Agenda & OKF Feed" activeTab="tickets">
-  
-  <!-- Header Bar -->
-  <div class="glass-panel p-4 md:p-5 mb-5">
-    <div class="flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center space-x-3.5">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/30 ring-2 ring-amber-300/40 text-slate-950">
-          🎒
+<Layout title="Inbox & Action Tickets — Tandem IMS (Ale & Seby)" activeTab="tickets">
+  <div class="gmail-shell">
+    <!-- Top Header with Parent Identity & Sync Info -->
+    <header class="inbox-topbar">
+      <div class="inbox-brand">
+        <div class="brand-title-row">
+          <span class="gmail-logo-icon" aria-hidden="true">📬</span>
+          <h1>Piota Gmail View</h1>
+          <span class="version-pill">Post-Piota v0.5 · Auto-Archive +7g</span>
         </div>
-        <div>
-          <div class="flex items-center space-x-2">
-            <h1 class="text-lg md:text-xl font-black text-white">Tandem IMS Seefeld · Feed & Action Items</h1>
-            <span class="text-[10px] uppercase font-mono font-bold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30 flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              Live OKF
-            </span>
-          </div>
-          <p class="text-xs text-slate-300 mt-0.5">
-            Inbox per <b>Alessandro (P3)</b> e <b>Sebastian (P1)</b> · Tandem IMS Seefeld. Clicca su qualsiasi messaggio per aprirlo.
-          </p>
-        </div>
+        <p class="brand-subtitle">
+          Inbox unificata <code>tandemims30@gmail.com</code> + Calendari Classi <strong>🐉 Ale (P3)</strong> &amp; <strong>🚗 Seb (P1)</strong>
+        </p>
       </div>
 
-      <!-- Quick Owner Distribution Legend -->
-      <div class="flex flex-wrap items-center gap-2.5">
-        <!-- Riccardo Pill -->
-        <div class="flex items-center space-x-2 bg-slate-900/90 border border-amber-400/40 px-3 py-1 rounded-xl shadow-sm">
-          <img 
-            src={`${baseUrl}/avatars/avatar_riccardo.png`} 
-            alt="Riccardo" 
-            class="w-6 h-6 rounded-full object-cover ring-2 ring-amber-400"
+      <!-- Active Parent Switcher -->
+      <div class="parent-identity-bar">
+        <fieldset class="identity-fieldset">
+          <legend class="sr-only">Seleziona chi sta usando l'app</legend>
+          <span class="identity-label">Sono:</span>
+          <label class="identity-radio-label" id="lbl-user-riccardo">
+            <input type="radio" name="active-parent-user" value="riccardo" checked />
+            <img src="/er-piotta/images/family/riccardo.jpg" alt="" class="parent-mini-avatar" />
+            <span>Ricc</span>
+          </label>
+          <label class="identity-radio-label" id="lbl-user-kate">
+            <input type="radio" name="active-parent-user" value="kate" />
+            <img src="/er-piotta/images/family/kate.jpg" alt="" class="parent-mini-avatar" />
+            <span>Kate</span>
+          </label>
+        </fieldset>
+      </div>
+    </header>
+
+    <!-- Teacher Legend Strip -->
+    <section class="teacher-legend" aria-label="Insegnanti e Filtri Rapidi Mittente">
+      <button type="button" class="teacher-chip active" data-sender-filter="all">
+        <span>✨ Tutti i Mittenti</span>
+      </button>
+      <button type="button" class="teacher-chip" data-sender-filter="biehl">
+        <span class="t-avatar" style="background: linear-gradient(135deg, #1e293b, #dc2626);">MB</span>
+        <span>🇩🇪🧮 Herr Biehl <small>(🐉 Ale P3)</small></span>
+      </button>
+      <button type="button" class="teacher-chip" data-sender-filter="penrose">
+        <span class="t-avatar" style="background: linear-gradient(135deg, #1d4ed8, #7c3aed);">JP</span>
+        <span>🇬🇧🎵 Miss Penrose <small>(🐉 Ale P3)</small></span>
+      </button>
+      <button type="button" class="teacher-chip" data-sender-filter="rayment">
+        <span class="t-avatar" style="background: linear-gradient(135deg, #0369a1, #ec4899);">GR</span>
+        <span>🇬🇧📚 Miss Rayment <small>(🚗 Seb P1)</small></span>
+      </button>
+      <button type="button" class="teacher-chip" data-sender-filter="faux">
+        <span class="t-avatar" style="background: linear-gradient(135deg, #b91c1c, #d97706);">XF</span>
+        <span>🇩🇪🎨 Frau Faux <small>(🚗 Seb P1)</small></span>
+      </button>
+      <button type="button" class="teacher-chip" data-sender-filter="tandem">
+        <span class="t-avatar" style="background: linear-gradient(135deg, #dc2626, #991b1b);">TI</span>
+        <span>🇨🇭🏫 Tandem Admin <small>(🐉🚗 A+S)</small></span>
+      </button>
+    </section>
+
+    <!-- Semantic <search> landmark per Modern Web Guidance -->
+    <search class="gmail-toolbar" aria-label="Filtra e cerca comunicazioni scolastiche">
+      <div class="tab-strip" role="tablist" aria-label="Viste Inbox">
+        <button type="button" class="inbox-tab active" data-tab="inbox">
+          📥 Attivi <span class="tab-badge" id="count-inbox">0</span>
+        </button>
+        <button type="button" class="inbox-tab" data-tab="action">
+          ⚡ Richiede Azione <span class="tab-badge badge-urgent" id="count-action">0</span>
+        </button>
+        <button type="button" class="inbox-tab" data-tab="notes">
+          📝 Con Nota <span class="tab-badge badge-note" id="count-notes">0</span>
+        </button>
+        <button type="button" class="inbox-tab" data-tab="mine">
+          🙋🏻‍♂️ Miei Ticket <span class="tab-badge" id="count-mine">0</span>
+        </button>
+        <button type="button" class="inbox-tab" data-tab="archived">
+          🗄️ Auto-Archiviati (+7g) <span class="tab-badge" id="count-archived">0</span>
+        </button>
+      </div>
+
+      <div class="toolbar-right">
+        <!-- Category Filter Strip (Homework vs Test vs Biblio vs Trip vs Foto vs Admin) -->
+        <div class="cat-filter-group" role="group" aria-label="Filtra per categoria">
+          <button type="button" class="cat-pill-btn active" data-cat="all">Tutte</button>
+          <button type="button" class="cat-pill-btn" data-cat="homework" title="Compiti a casa">📝 HW</button>
+          <button type="button" class="cat-pill-btn" data-cat="test" title="Test e Verifiche">🎯 Test</button>
+          <button type="button" class="cat-pill-btn" data-cat="library" title="Biblioteca">📚 Biblio</button>
+          <button type="button" class="cat-pill-btn" data-cat="trip" title="Gite, Sport ed Eventi">🎒 Eventi</button>
+          <button type="button" class="cat-pill-btn" data-cat="photos" title="Album Foto">📸 Foto</button>
+          <button type="button" class="cat-pill-btn" data-cat="admin" title="Orari, Calendari e Admin">📅 Admin</button>
+        </div>
+
+        <!-- 3-char Kid Filter with 🐉 (Ale) and 🚗 (Seby) -->
+        <div class="kid-filter-group" role="group" aria-label="Filtra per figlio">
+          <button type="button" class="kid-pill-btn active" data-kid="all">Tutti</button>
+          <button type="button" class="kid-pill-btn kid-ale" data-kid="Ale">🐉 Ale</button>
+          <button type="button" class="kid-pill-btn kid-seb" data-kid="Seb">🚗 Seb</button>
+          <button type="button" class="kid-pill-btn kid-both" data-kid="A+S">🐉🚗 A+S</button>
+        </div>
+
+        <div class="search-input-wrap">
+          <label for="gmail-search-input" class="sr-only">Cerca per titolo, nota o insegnante</label>
+          <input
+            type="search"
+            id="gmail-search-input"
+            placeholder="🔍 Cerca email, compiti, note..."
+            autocomplete="off"
           />
-          <div class="text-xs">
-            <span class="text-amber-400 font-extrabold">Papà (Riccardo):</span>
-            <span class="text-white font-mono font-bold ml-1">{riccCount}</span>
-          </div>
-        </div>
-
-        <!-- Kate Pill -->
-        <div class="flex items-center space-x-2 bg-slate-900/90 border border-purple-500/40 px-3 py-1 rounded-xl shadow-sm">
-          <img 
-            src={`${baseUrl}/avatars/avatar_kate.png`} 
-            alt="Kate" 
-            class="w-6 h-6 rounded-full object-cover ring-2 ring-purple-500"
-          />
-          <div class="text-xs">
-            <span class="text-purple-400 font-extrabold">Mamma (Kate):</span>
-            <span class="text-white font-mono font-bold ml-1">{kateCount}</span>
-          </div>
-        </div>
-
-        <!-- Unassigned Pill -->
-        <div class="flex items-center space-x-1.5 bg-slate-900/60 border border-slate-700/50 px-2.5 py-1 rounded-xl text-xs text-slate-400">
-          <span class="font-semibold">Da assegnare:</span>
-          <span class="text-slate-200 font-mono font-bold">{unassignedCount}</span>
         </div>
       </div>
-    </div>
-  </div>
+    </search>
 
-  <!-- Interactive Filter Controls (Client Side) -->
-  <div class="glass-panel p-3 mb-5 flex flex-wrap items-center justify-between gap-3">
-    <!-- Kid Selection Tabs -->
-    <div class="flex items-center space-x-2" id="kid-filters">
-      <button data-filter="all" class="filter-btn active px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-emerald-500 text-slate-950 shadow-md">
-        🏫 Tutti
-      </button>
-      <button data-filter="seby" class="filter-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60">
-        <img src={`${baseUrl}/avatars/avatar_sebi_school.jpg`} alt="Seby" class="w-5 h-5 rounded-full object-cover ring-2 ring-emerald-400" />
-        <span class="text-emerald-400">Sebastian (P1)</span>
-      </button>
-      <button data-filter="ale" class="filter-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60">
-        <img src={`${baseUrl}/avatars/avatar_ale_school.jpg`} alt="Ale" class="w-5 h-5 rounded-full object-cover ring-2 ring-blue-400" />
-        <span class="text-blue-400">Alessandro (P3)</span>
-      </button>
+    <!-- Column Header Legend (Fixed-width style matching piota-cli) -->
+    <div class="gmail-list-header" aria-hidden="true">
+      <div class="col-hdr-sender">MITTENTE &amp; MATERIA</div>
+      <div class="col-hdr-kid">KID</div>
+      <div class="col-hdr-dates">CREATO/DATA · AUTO-ARCHIVE</div>
+      <div class="col-hdr-subject">NATURA · CAT · OGGETTO, DETTAGLIO &amp; NOTE</div>
+      <div class="col-hdr-right">OWNER (RICC / KATE / —) &amp; NOTA</div>
     </div>
 
-    <!-- Nature & Archive Filters -->
-    <div class="flex items-center space-x-2" id="type-filters">
-      <button data-type="active" class="type-btn active px-3 py-1 rounded-md text-xs font-semibold bg-slate-700 text-white">
-        Attivi
-      </button>
-      <button data-type="action" class="type-btn px-3 py-1 rounded-md text-xs font-semibold bg-slate-800/80 text-amber-300 hover:bg-slate-700 border border-amber-500/30">
-        ⚡ Azioni ({actionCount})
-      </button>
-      <button data-type="unread-ricc" class="type-btn px-3 py-1 rounded-md text-xs font-semibold bg-slate-800/80 text-emerald-300 hover:bg-slate-700 border border-emerald-500/30">
-        📬 Non letti Riccardo
-      </button>
-      <button data-type="archived" class="type-btn px-3 py-1 rounded-md text-xs font-semibold bg-slate-800/80 text-slate-400 hover:bg-slate-700 border border-slate-700">
-        📁 Archiviati
-      </button>
-    </div>
-  </div>
+    <!-- Gmail Rows Container -->
+    <div class="gmail-list" id="gmail-list-container" role="list">
+      {enrichedItems.map((item: any) => {
+        const initOwner = String(item.ticket?.owner || 'unassigned').toLowerCase();
+        const normOwner = initOwner.startsWith('ric') ? 'riccardo' : (initOwner.startsWith('kat') ? 'kate' : 'unassigned');
+        const initNote = String(item.ticket?.note || '').trim();
+        const isAction = item.nature === 'action_required';
 
-  <!-- Main Multi-Column Layout: Feed Stream (2-3 cards per row) + Sidebar -->
-  <div class="grid grid-cols-1 xl:grid-cols-4 gap-5">
-    
-    <!-- LEFT 3 COLS: Feed Stream in Responsive Grid (2 to 3 cards per row) -->
-    <div class="xl:col-span-3 space-y-3">
-      <div class="flex items-center justify-between px-1">
-        <h2 class="text-sm font-black text-white flex items-center gap-2">
-          <span>📬</span>
-          <span>Feed Comunicazioni & Compiti</span>
-          <span class="text-xs font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700" id="visible-count">{totalCount}</span>
-        </h2>
-        <span class="text-[11px] text-slate-400">Clicca su una card per visualizzare il contenuto completo</span>
-      </div>
+        return (
+          <article
+            class={`gmail-row ${isAction ? 'row-action' : ''} ${initNote ? 'has-note' : ''}`}
+            role="listitem"
+            data-id={item.id}
+            data-type={item.type}
+            data-kid={item.kidCode}
+            data-sender={item.sender.key}
+            data-nature={item.nature}
+            data-cat={item.cat.catKey}
+            data-owner={normOwner}
+            data-note={initNote}
+            data-auto-expired={item.isAutoExpired ? 'true' : 'false'}
+            data-archived={item.isManuallyArchived ? 'true' : 'false'}
+            data-read-riccardo={item.consumption?.read_by_riccardo ? 'true' : 'false'}
+            data-read-kate={item.consumption?.read_by_kate ? 'true' : 'false'}
+            data-title={item.cleanTitle}
+            data-sender-label={`${item.sender.emoji} ${item.sender.name} (${item.sender.role})`}
+            data-dates-label={`${item.cat.natureEmoji} ${item.cat.natureCode} · ${item.cat.catEmoji} ${item.cat.catLabel} · Data: ${item.ymdCreated} · Auto-Archive: ${item.ymdAutoArchive}`}
+            data-source-url={item.source_url || ''}
+          >
+            <!-- 1. Sender Avatar + Country/Subject Emoji + Name -->
+            <div class="cell-sender">
+              <button
+                type="button"
+                class="read-dot-btn"
+                data-action="toggle-read"
+                title="Segna come letto / da leggere"
+                aria-label={`Segna ${item.cleanTitle} come letto o non letto`}
+              >
+                <span class="unread-dot"></span>
+              </button>
 
-      <!-- 2-3 Cards per Row Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5" id="items-container">
-        {items.map(item => {
-          const isRicc = item.owner === 'riccardo';
-          const isKate = item.owner === 'kate';
-
-          const cardBorder = isRicc 
-            ? 'border-amber-400/40 hover:border-amber-400/80 bg-gradient-to-br from-amber-950/20 via-slate-900/85 to-slate-900/95 shadow-amber-950/20' 
-            : (isKate 
-                ? 'border-purple-500/40 hover:border-purple-500/80 bg-gradient-to-br from-purple-950/20 via-slate-900/85 to-slate-900/95 shadow-purple-950/20' 
-                : (item.isAle && !item.isSeby
-                    ? 'border-slate-800/90 hover:border-blue-500/50 bg-slate-900/75'
-                    : (item.isSeby && !item.isAle
-                        ? 'border-slate-800/90 hover:border-emerald-500/50 bg-slate-900/75'
-                        : 'border-slate-800/90 hover:border-slate-700 bg-slate-900/75'
-                      )
-                  )
-              );
-
-          return (
-            <div 
-              class={`glass-panel p-3.5 rounded-xl border transition-all duration-150 shadow-md item-card hover:bg-slate-850 cursor-pointer flex flex-col justify-between ${cardBorder}`}
-              id={`card-${item.id}`}
-              data-id={item.id}
-              data-title={item.title}
-              data-body={item.body}
-              data-title-it={item.titleIt}
-              data-body-it={item.bodyIt}
-              data-date={item.displayDate}
-              data-date-full={item.dateText}
-              data-kids={item.targetKids.join(', ')}
-              data-nature={item.nature}
-              data-owner={item.owner}
-              data-is-ale={item.isAle || item.isAll ? "true" : "false"}
-              data-is-seby={item.isSeby || item.isAll ? "true" : "false"}
-              data-read-ricc={item.readRiccardo ? "true" : "false"}
-              data-archived={item.isArchived ? "true" : "false"}
-              data-photos-url={item.photosUrl || ''}
-              data-calendar-url={item.calendarUrl || ''}
-            >
-              <div>
-                <!-- Top Row: Kid Avatars on Left; Prominent Date (DD MMM) + Owner Avatar on Right -->
-                <div class="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-slate-800/60">
-                  
-                  <!-- Left: Avatars & Zen Nature -->
-                  <div class="flex items-center gap-1.5 flex-wrap">
-                    
-                    {/* Ale only: Blue ring + P3 micro badge */}
-                    {item.isAle && !item.isSeby && !item.isAll && (
-                      <div class="relative inline-flex items-center shrink-0 group/kid" title="Alessandro · Primary 3">
-                        <img 
-                          src={`${baseUrl}/avatars/avatar_ale_school.jpg`} 
-                          alt="Ale (P3)" 
-                          class="w-7 h-7 rounded-full object-cover ring-2 ring-blue-500 shadow-md bg-blue-950"
-                        />
-                        <span class="absolute -bottom-1 -right-1 text-[8px] font-black font-mono bg-blue-600 text-white px-1 rounded-full border border-slate-900 shadow">
-                          P3
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Seby only: Emerald ring + P1 micro badge */}
-                    {item.isSeby && !item.isAle && !item.isAll && (
-                      <div class="relative inline-flex items-center shrink-0 group/kid" title="Sebastian · Primary 1">
-                        <img 
-                          src={`${baseUrl}/avatars/avatar_sebi_school.jpg`} 
-                          alt="Seby (P1)" 
-                          class="w-7 h-7 rounded-full object-cover ring-2 ring-emerald-500 shadow-md bg-emerald-950"
-                        />
-                        <span class="absolute -bottom-1 -right-1 text-[8px] font-black font-mono bg-emerald-600 text-white px-1 rounded-full border border-slate-900 shadow">
-                          P1
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Both / All: Both avatars with micro tags */}
-                    {(item.isAll || (item.isAle && item.isSeby)) && (
-                      <div class="flex items-center -space-x-1.5 shrink-0 group/kid" title="Alessandro (P3) & Sebastian (P1)">
-                        <div class="relative inline-flex items-center">
-                          <img 
-                            src={`${baseUrl}/avatars/avatar_sebi_school.jpg`} 
-                            alt="Seby (P1)" 
-                            class="w-6 h-6 rounded-full object-cover ring-2 ring-emerald-500 shadow-md z-10 bg-emerald-950"
-                          />
-                          <span class="absolute -bottom-1 -right-1 text-[7px] font-black font-mono bg-emerald-600 text-white px-0.5 rounded-full border border-slate-900 shadow z-20">
-                            P1
-                          </span>
-                        </div>
-                        <div class="relative inline-flex items-center">
-                          <img 
-                            src={`${baseUrl}/avatars/avatar_ale_school.jpg`} 
-                            alt="Ale (P3)" 
-                            class="w-6 h-6 rounded-full object-cover ring-2 ring-blue-500 shadow-md z-0 bg-blue-950"
-                          />
-                          <span class="absolute -bottom-1 -right-1 text-[7px] font-black font-mono bg-blue-600 text-white px-0.5 rounded-full border border-slate-900 shadow z-10">
-                            P3
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Nature Zen Tag */}
-                    {item.nature === 'action_required' && (
-                      <span class="w-5 h-5 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-[10px] font-bold shrink-0" title="Azione Richiesta">
-                        ⚡
-                      </span>
-                    )}
-                    {item.nature === 'jfyi' && (
-                      <span class="w-5 h-5 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-[10px] font-bold shrink-0" title="Info / JFYI">
-                        🌿
-                      </span>
-                    )}
-                    {item.nature === 'menu' && (
-                      <span class="w-5 h-5 rounded-md bg-blue-500/20 border border-blue-500/40 text-blue-400 flex items-center justify-center text-[10px] font-bold shrink-0" title="Menù">
-                        🍱
-                      </span>
-                    )}
-
-                    {item.isArchived && (
-                      <span class="text-[9px] font-mono bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700" title="Archiviato">
-                        📁
-                      </span>
-                    )}
-
-                    {item.hasTranslation && (
-                      <span class="text-[9px] font-mono bg-blue-950/80 text-blue-300 border border-blue-500/30 px-1 py-0.5 rounded" title="Originale in Tedesco">
-                        DE
-                      </span>
-                    )}
-                  </div>
-
-                  <!-- Right: Prominent Date (DD MMM) + Owner Avatar (Only if claimed!) -->
-                  <div class="flex items-center gap-1.5 shrink-0">
-                    {item.displayDate && (
-                      <span class="text-[11px] font-black font-mono text-amber-300 bg-slate-950/90 px-2 py-0.5 rounded border border-slate-700/80 shadow-inner">
-                        {item.displayDate}
-                      </span>
-                    )}
-
-                    {/* Papà (Riccardo) - Yellow ring */}
-                    {isRicc && (
-                      <div class="relative group shrink-0" title="Assegnato a Papà (Riccardo)">
-                        <img 
-                          src={`${baseUrl}/avatars/avatar_riccardo.png`} 
-                          alt="Papà" 
-                          class="w-6 h-6 rounded-full object-cover ring-2 ring-amber-400 shadow-sm"
-                        />
-                      </div>
-                    )}
-
-                    {/* Mamma (Kate) - Purple ring */}
-                    {isKate && (
-                      <div class="relative group shrink-0" title="Assegnato a Mamma (Kate)">
-                        <img 
-                          src={`${baseUrl}/avatars/avatar_kate.png`} 
-                          alt="Mamma" 
-                          class="w-6 h-6 rounded-full object-cover ring-2 ring-purple-500 shadow-sm"
-                        />
-                      </div>
-                    )}
-
-                    {/* Unassigned ("Nessuno"): Completely omitted from view! */}
-                  </div>
-
+              <div class="sender-avatar-wrap" title={`${item.sender.name} (${item.sender.email}) — ${item.sender.role}`}>
+                <div class="sender-avatar" style={`background: ${item.sender.bgGradient};`}>
+                  <span class="sender-initials">{item.sender.initials}</span>
                 </div>
-
-                <!-- Title (Clickable) -->
-                <h3 class="text-xs md:text-sm font-bold text-white hover:text-amber-300 transition line-clamp-2 leading-snug card-title-clickable">
-                  {item.title}
-                </h3>
-
-                <!-- Excerpt (Truncated) -->
-                <p class="text-[11px] text-slate-300/90 mt-1 line-clamp-2 leading-relaxed card-body-clickable">
-                  {item.body}
-                </p>
-
-                <!-- Dedicated Action Button for Photos or Calendar -->
-                {item.photosUrl && (
-                  <div class="mt-2.5" onclick="event.stopPropagation()">
-                    <a 
-                      href={item.photosUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] shadow transition active:scale-95"
-                    >
-                      <span>📸</span>
-                      <span>Apri Foto Google</span>
-                      <span>↗</span>
-                    </a>
-                  </div>
-                )}
-
-                {item.calendarUrl && (
-                  <div class="mt-2.5" onclick="event.stopPropagation()">
-                    <a 
-                      href={item.calendarUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] shadow transition active:scale-95"
-                    >
-                      <span>📅</span>
-                      <span>Prenota Colloquio</span>
-                      <span>↗</span>
-                    </a>
-                  </div>
-                )}
+                <span class="sender-emoji-badge" aria-hidden="true">{item.sender.emoji}</span>
               </div>
 
-              <!-- Micro Footer: CLI helper + Quick Archive -->
-              <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between gap-1 text-[9px]" onclick="event.stopPropagation()">
-                <code class="font-mono bg-slate-950/90 px-1.5 py-0.5 rounded border border-slate-800 text-emerald-400 truncate max-w-[130px]" title={`piota-cli read ${item.id} --as riccardo`}>
-                  piota-cli read {item.id}
-                </code>
+              <div class="sender-text-meta">
+                <span class="sender-name-line">{item.sender.shortName}</span>
+                <span class="sender-role-line">{item.sender.emoji} {item.sender.role}</span>
+              </div>
+            </div>
 
-                <button 
-                  class="archive-toggle-btn font-mono font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-rose-950 hover:text-rose-300 border border-slate-700 transition shrink-0"
-                  data-id={item.id}
+            <!-- 2. Kid Badge with 🐉 (Ale) / 🚗 (Seb) / 🐉🚗 (A+S) -->
+            <div class="cell-kid">
+              <span class={`kid-badge3 kid-badge-${item.kidCode === 'Ale' ? 'ale' : (item.kidCode === 'Seb' ? 'seb' : 'both')}`}>
+                {item.kidCode === 'Ale' ? '🐉 Ale' : (item.kidCode === 'Seb' ? '🚗 Seb' : '🐉🚗 A+S')}
+              </span>
+            </div>
+
+            <!-- 3. Fixed-Width Dates: YYYYMMDD(Ven) + Auto-Archive YYYYMMDD(+Ng) -->
+            <div class="cell-dates">
+              <span class="date-created" title="Data creazione / evento">{item.ymdCreated}</span>
+              <span
+                class={`date-archive ${item.daysUntilArchive <= 2 ? 'archive-soon' : ''}`}
+                title="Scadenza Auto-Archive (+7 giorni dopo il compito/evento)"
+              >
+                ⏳ {item.ymdAutoArchive}
+              </span>
+            </div>
+
+            <!-- 4. Subject + Snippet + Inline Yellow Note Pill (Click opens full reader modal) -->
+            <div class="cell-content" data-action="open-detail" tabindex="0" role="button" aria-label={`Leggi ${item.cleanTitle}`}>
+              <div class="subject-line">
+                <span
+                  class={`nat-badge ${isAction ? 'nat-act' : 'nat-fyi'}`}
+                  title={isAction ? 'Action Required: richiede azione' : 'FYI: solo informativo'}
                 >
-                  {item.isArchived ? 'Ripristina' : 'Archivia'}
-                </button>
+                  {item.cat.natureEmoji} {item.cat.natureCode}
+                </span>
+                <span
+                  class={`cat-badge cat-${item.cat.catKey}`}
+                  title={`Categoria: ${item.cat.catLabel}`}
+                >
+                  {item.cat.catEmoji} {item.cat.catCode}
+                </span>
+                <span class="subject-title">{item.cleanTitle}</span>
+                {item.snippet && <span class="subject-snippet">— {item.snippet}</span>}
               </div>
 
+              <!-- Sticky Note Pill (visible whenever a note is attached) -->
+              <div class={`note-inline-pill ${initNote ? '' : 'hidden'}`} data-role="note-pill">
+                <span class="note-pill-icon">📝</span>
+                <span class="note-pill-text" data-role="note-text">{initNote}</span>
+              </div>
+
+              <!-- Hidden rendered HTML for modal reader -->
+              <template class="item-body-template">
+                <div class="rendered-markdown" set:html={item.renderedBody} />
+              </template>
             </div>
-          );
-        })}
-      </div>
+
+            <!-- 5. Right-side Controls: Owner 3-way Radio (Ricc / Kate / —) + Note Button + Archive -->
+            <div class="cell-controls">
+              <fieldset class="owner-segmented" aria-label={`Owner per ${item.cleanTitle}`}>
+                <legend class="sr-only">Owner</legend>
+                <label class={`owner-opt opt-ricc ${normOwner === 'riccardo' ? 'selected' : ''}`} title="Assegna a Riccardo">
+                  <input
+                    type="radio"
+                    name={`owner-${item.id}`}
+                    value="riccardo"
+                    checked={normOwner === 'riccardo'}
+                    data-action="change-owner"
+                  />
+                  <img src="/er-piotta/images/family/riccardo.jpg" alt="" class="owner-mini-pic" />
+                  <span>Ricc</span>
+                </label>
+
+                <label class={`owner-opt opt-kate ${normOwner === 'kate' ? 'selected' : ''}`} title="Assegna a Kate">
+                  <input
+                    type="radio"
+                    name={`owner-${item.id}`}
+                    value="kate"
+                    checked={normOwner === 'kate'}
+                    data-action="change-owner"
+                  />
+                  <img src="/er-piotta/images/family/kate.jpg" alt="" class="owner-mini-pic" />
+                  <span>Kate</span>
+                </label>
+
+                <label class={`owner-opt opt-none ${normOwner === 'unassigned' ? 'selected' : ''}`} title="Nessun owner">
+                  <input
+                    type="radio"
+                    name={`owner-${item.id}`}
+                    value="unassigned"
+                    checked={normOwner === 'unassigned'}
+                    data-action="change-owner"
+                  />
+                  <span>—</span>
+                </label>
+              </fieldset>
+
+              <button
+                type="button"
+                class={`btn-note ${initNote ? 'has-note-btn' : ''}`}
+                data-action="open-note"
+                title={initNote ? `Modifica nota: ${initNote}` : 'Aggiungi una nota'}
+                aria-label={`Nota per ${item.cleanTitle}`}
+              >
+                📝 <span class="btn-note-label">{initNote ? 'Nota' : '+Nota'}</span>
+              </button>
+
+              <button
+                type="button"
+                class="btn-archive-row"
+                data-action="toggle-archive"
+                title="Archivia / Ripristina"
+                aria-label={`Archivia ${item.cleanTitle}`}
+              >
+                🗄️
+              </button>
+            </div>
+          </article>
+        );
+      })}
     </div>
 
-    <!-- RIGHT 1 COL: Zurich Menu & Tools -->
-    <div class="xl:col-span-1 space-y-4">
-      
-      <!-- Weekly Menu Card (Clickable Modal Trigger!) -->
-      <div 
-        id="menu-card-trigger"
-        class="glass-panel p-4 rounded-xl border border-amber-500/40 bg-gradient-to-br from-amber-950/30 via-slate-900/70 to-slate-900/90 shadow-xl cursor-pointer hover:border-amber-400 transition group"
-      >
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center space-x-2.5">
-            <div class="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-lg text-amber-400">
-              🍱
-            </div>
-            <div>
-              <h3 class="text-xs font-bold text-white group-hover:text-amber-300 transition">Menù della Settimana</h3>
-              <p class="text-[10px] text-amber-300/80">Tandem IMS · Seefeld (Zürich)</p>
-            </div>
-          </div>
-          <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30 font-mono font-bold">KW 43</span>
-        </div>
-
-        <!-- Menu Table Thumbnail Preview -->
-        <div class="rounded-lg overflow-hidden border border-slate-700/80 bg-white/5 relative group-hover:ring-2 ring-amber-400/50 transition">
-          <img 
-            src={`${baseUrl}/menu/menu_zurich_kw43_table.png`} 
-            alt="Menüplan Zürich KW43" 
-            class="w-full object-cover hover:scale-105 transition duration-300"
-          />
-          <div class="absolute inset-0 bg-slate-950/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition backdrop-blur-[1px]">
-            <span class="bg-amber-500 text-slate-950 font-black text-xs px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5">
-              <span>🔍</span>
-              <span>Ingrandisci Menù</span>
-            </span>
-          </div>
-        </div>
-        <p class="text-[10px] text-slate-400 mt-2 text-center italic">
-          Clicca per aprire la tabella completa in alta definizione
-        </p>
-      </div>
-
-      <!-- Quick Action Commands -->
-      <div class="glass-panel p-4 rounded-xl border border-slate-800 space-y-3">
-        <h3 class="text-xs font-black text-white flex items-center gap-1.5">
-          <span>⚡</span>
-          <span>CLI per Riccardo & Agenti</span>
-        </h3>
-        <p class="text-[11px] text-slate-400 leading-relaxed">
-          Comandi diretti da eseguire su pupurabbux o da prompt AI:
-        </p>
-        <div class="bg-slate-950/90 p-2.5 rounded-lg border border-slate-800 text-[10px] font-mono text-emerald-400 space-y-1 select-all">
-          <div>piota-cli status</div>
-          <div>piota-cli sync</div>
-          <div>piota-cli sql [query]</div>
-          <div>piota-cli llm</div>
-          <div>piota-cli list --kid seby</div>
-          <div>piota-cli read &lt;id&gt; --as riccardo</div>
-          <div>piota-cli archive &lt;id&gt; --as riccardo</div>
-          <div>piota-cli claim &lt;id&gt; --owner kate</div>
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- MODAL 1: Detail Modal for Reading Entire Notice / Photos / Links -->
-  <div id="detail-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="glass-panel max-w-2xl w-full max-h-[85vh] rounded-2xl border border-slate-700 shadow-2xl flex flex-col overflow-hidden bg-slate-900" onclick="event.stopPropagation()">
-      <!-- Modal Header -->
-      <div class="p-4 border-b border-slate-800 flex items-start justify-between gap-3 bg-slate-950/60">
-        <div>
-          <div class="flex items-center gap-2 mb-1.5">
-            <span id="modal-badge-kid" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30"></span>
-            <span id="modal-badge-nature" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30"></span>
-            <span id="modal-date" class="text-[11px] text-amber-300 font-mono font-bold bg-slate-950/80 px-2 py-0.5 rounded border border-slate-800"></span>
-          </div>
-          <h2 id="modal-title" class="text-lg md:text-xl font-bold text-white leading-snug"></h2>
-        </div>
-        <button id="modal-close-btn" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-base transition">
-          ✕
-        </button>
-      </div>
-
-      <!-- Modal Toolbar -->
-      <div class="px-4 py-2 bg-slate-950/40 border-b border-slate-800/80 flex items-center justify-between gap-2 text-xs">
-        <button id="modal-translate-btn" class="px-2.5 py-1 rounded bg-blue-950 text-blue-300 hover:bg-blue-900 border border-blue-500/40 text-[11px] font-mono flex items-center gap-1.5">
-          🌐 <span id="modal-translate-label">Traduci in Italiano</span>
-        </button>
-        <div class="text-[11px] text-slate-400 font-mono">
-          Owner: <strong id="modal-owner" class="text-white"></strong>
-        </div>
-      </div>
-
-      <!-- Dedicated Banner for External Links (Photos/Calendar) inside Modal -->
-      <div id="modal-action-banner" class="hidden px-4 pt-3"></div>
-
-      <!-- Modal Body Content -->
-      <div class="p-5 overflow-y-auto space-y-4 text-xs md:text-sm text-slate-200 leading-relaxed whitespace-pre-line font-sans" id="modal-body">
-      </div>
-
-      <!-- Modal Footer -->
-      <div class="p-3.5 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between gap-3">
-        <code id="modal-cli-code" class="text-[10px] font-mono text-emerald-400 bg-slate-950 px-2 py-1 rounded border border-slate-800 select-all"></code>
-        <button id="modal-bottom-close" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition">
-          Chiudi
-        </button>
-      </div>
+    <div id="empty-inbox-banner" class="empty-inbox hidden">
+      <p>🎉 Nessun messaggio o compito in questa vista!</p>
     </div>
   </div>
 
-  <!-- MODAL 2: Full Screen Zoom for Weekly Menu Zürich -->
-  <div id="menu-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="max-w-4xl w-full max-h-[90vh] rounded-2xl border border-amber-500/40 shadow-2xl flex flex-col overflow-hidden bg-slate-900" onclick="event.stopPropagation()">
-      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
-        <div>
-          <h2 class="text-base font-bold text-white flex items-center gap-2">
-            <span>🍱</span>
-            <span>Menüplan Zürich KW43 (Tandem IMS Seefeld)</span>
-          </h2>
-          <p class="text-xs text-amber-400 font-mono">Kindergarten & Primary (P1 - P4)</p>
-        </div>
-        <button id="menu-modal-close" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-base transition">
-          ✕
-        </button>
+  <!-- Native <dialog> for Reading Full Email / Event & Editing Note -->
+  <dialog id="detail-dialog" class="piota-dialog" closedby="any" aria-labelledby="dialog-title">
+    <div class="dialog-header">
+      <div class="dialog-meta-top">
+        <span id="dialog-sender-badge" class="dialog-sender-pill"></span>
+        <span id="dialog-dates-badge" class="dialog-dates-pill"></span>
       </div>
-      <div class="p-4 overflow-auto flex items-center justify-center bg-slate-950/50">
-        <img 
-          src={`${baseUrl}/menu/menu_zurich_kw43_table.png`} 
-          alt="Menüplan Zürich KW43 High-Res" 
-          class="max-w-full rounded-lg shadow-2xl border border-slate-800"
+      <h2 id="dialog-title">Dettaglio Comunicazione</h2>
+      <form method="dialog">
+        <button type="submit" class="dialog-close-btn" aria-label="Chiudi finestra">✕</button>
+      </form>
+    </div>
+
+    <div class="dialog-body" id="dialog-body-content"></div>
+
+    <div class="dialog-note-box">
+      <label for="dialog-note-input" class="dialog-note-label">📝 Nota di Famiglia (Ricc &amp; Kate — salvata su Cloud Firestore):</label>
+      <div class="dialog-note-row">
+        <input
+          type="text"
+          id="dialog-note-input"
+          placeholder="Es. Firmato e messo nello zaino blu, oppure studiare p. 11..."
         />
-      </div>
-      <div class="p-3 bg-slate-950 border-t border-slate-800 flex justify-end">
-        <button id="menu-modal-close-bottom" class="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition">
-          Chiudi Menù
-        </button>
+        <button type="button" id="dialog-save-note-btn" class="btn-primary-save">Salva Nota</button>
       </div>
     </div>
-  </div>
 
+    <div class="dialog-footer">
+      <a id="dialog-source-link" href="#" target="_blank" rel="noopener noreferrer" class="source-ext-link hidden">
+        🔗 Apri in Gmail originale
+      </a>
+      <form method="dialog">
+        <button type="submit" class="btn-secondary-close">Chiudi (Esc)</button>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Quick Note Editor <dialog> when clicking 📝 +Nota directly on a row -->
+  <dialog id="quick-note-dialog" class="piota-dialog note-only-dialog" closedby="any" aria-labelledby="quick-note-heading">
+    <form id="quick-note-form">
+      <div class="dialog-header">
+        <h2 id="quick-note-heading">📝 Nota per questo elemento</h2>
+        <button type="button" id="quick-note-cancel" class="dialog-close-btn" aria-label="Chiudi">✕</button>
+      </div>
+      <p id="quick-note-subtitle" class="quick-note-sub"></p>
+      <div class="dialog-note-box">
+        <label for="quick-note-textarea" class="dialog-note-label">Testo della nota (visibile nella riga Gmail e in <code>piota-cli list</code>):</label>
+        <textarea id="quick-note-textarea" rows="3" placeholder="Scrivi qui un promemoria per Ricc o Kate..."></textarea>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" id="quick-note-clear-btn" class="btn-danger-clear">🗑️ Rimuovi Nota</button>
+        <div class="footer-right-btns">
+          <button type="button" id="quick-note-close-btn" class="btn-secondary-close">Annulla</button>
+          <button type="submit" class="btn-primary-save">💾 Salva Nota</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
 </Layout>
 
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .gmail-shell {
+    max-width: 1440px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  /* Topbar */
+  .inbox-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background: #ffffff;
+    padding: 0.9rem 1.25rem;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  }
+
+  .brand-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .gmail-logo-icon {
+    font-size: 1.5rem;
+  }
+
+  .inbox-brand h1 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+  }
+
+  .version-pill {
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+  }
+
+  .brand-subtitle {
+    margin: 0.2rem 0 0 0;
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+
+  .brand-subtitle code {
+    background: #f1f5f9;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    color: #0f172a;
+  }
+
+  /* Active Parent Switcher */
+  .identity-fieldset {
+    border: none;
+    margin: 0;
+    padding: 0.25rem 0.4rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .identity-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #64748b;
+    padding: 0 0.4rem;
+  }
+
+  .identity-radio-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .identity-radio-label input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .identity-radio-label:has(input:checked) {
+    background: #0f172a;
+    color: #ffffff;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2);
+  }
+
+  .parent-mini-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  /* Teacher Legend Strip */
+  .teacher-legend {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .teacher-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.38rem 0.75rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .teacher-chip:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+  }
+
+  .teacher-chip.active {
+    background: #1e293b;
+    color: #ffffff;
+    border-color: #1e293b;
+  }
+
+  .teacher-chip small {
+    opacity: 0.75;
+    font-weight: 500;
+  }
+
+  .t-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Search & Tabs Toolbar */
+  .gmail-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    background: #ffffff;
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .tab-strip {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+  }
+
+  .inbox-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.8rem;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 0.83rem;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .inbox-tab:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+
+  .inbox-tab.active {
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+
+  .tab-badge {
+    font-size: 0.72rem;
+    padding: 0.08rem 0.42rem;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #334155;
+  }
+
+  .inbox-tab.active .tab-badge {
+    background: #bfdbfe;
+    color: #1e3a8a;
+  }
+
+  .badge-urgent {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .badge-note {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+  }
+
+  .kid-filter-group,
+  .cat-filter-group {
+    display: inline-flex;
+    background: #f1f5f9;
+    padding: 0.2rem;
+    border-radius: 8px;
+    gap: 0.2rem;
+    flex-wrap: wrap;
+  }
+
+  .kid-pill-btn,
+  .cat-pill-btn {
+    border: none;
+    background: transparent;
+    padding: 0.28rem 0.55rem;
+    border-radius: 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: #475569;
+    cursor: pointer;
+  }
+
+  .kid-pill-btn.active,
+  .cat-pill-btn.active {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  }
+
+  .nat-badge,
+  .cat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.69rem;
+    font-weight: 800;
+    padding: 0.1rem 0.38rem;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+
+  .nat-act {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  }
+
+  .nat-fyi {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+  }
+
+  .cat-homework {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+  }
+
+  .cat-test {
+    background: #fce7f3;
+    color: #9d174d;
+    border: 1px solid #fbcfe8;
+  }
+
+  .cat-library {
+    background: #e0f2fe;
+    color: #075985;
+    border: 1px solid #bae6fd;
+  }
+
+  .cat-trip {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+  }
+
+  .cat-photos {
+    background: #f3e8ff;
+    color: #6b21a8;
+    border: 1px solid #e9d5ff;
+  }
+
+  .cat-admin {
+    background: #f8fafc;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+  }
+
+  #gmail-search-input {
+    padding: 0.42rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 0.83rem;
+    min-width: 230px;
+    background: #f8fafc;
+  }
+
+  #gmail-search-input:focus {
+    outline: 2px solid #3b82f6;
+    background: #ffffff;
+  }
+
+  /* Column Header Bar */
+  .gmail-list-header {
+    display: grid;
+    grid-template-columns: 205px 86px 148px 1fr 290px;
+    gap: 0.65rem;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #64748b;
+    text-transform: uppercase;
+  }
+
+  /* Gmail List & Row */
+  .gmail-list {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  }
+
+  .gmail-row {
+    display: grid;
+    grid-template-columns: 205px 86px 148px 1fr 290px;
+    gap: 0.65rem;
+    align-items: center;
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.12s ease;
+    font-size: 0.86rem;
+  }
+
+  .gmail-row:last-child {
+    border-bottom: none;
+  }
+
+  .gmail-row:hover {
+    background: #f8fafc;
+  }
+
+  .gmail-row.is-unread {
+    background: #ffffff;
+  }
+
+  .gmail-row.is-read {
+    background: #f8fafc;
+    opacity: 0.86;
+  }
+
+  .gmail-row.is-read .subject-title {
+    font-weight: 500;
+    color: #475569;
+  }
+
+  .gmail-row.has-note {
+    background: #fffdf5;
+  }
+
+  .gmail-row.hidden {
+    display: none !important;
+  }
+
+  /* Cell 1: Sender Avatar + Emoji */
+  .cell-sender {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .read-dot-btn {
+    border: none;
+    background: transparent;
+    padding: 0.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .unread-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #2563eb;
+    display: inline-block;
+    transition: all 0.15s ease;
+  }
+
+  .gmail-row.is-read .unread-dot {
+    background: transparent;
+    border: 1.5px solid #cbd5e1;
+  }
+
+  .sender-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .sender-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.78rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+  }
+
+  .sender-emoji-badge {
+    position: absolute;
+    bottom: -4px;
+    right: -6px;
+    background: #ffffff;
+    border-radius: 999px;
+    padding: 0 3px;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  }
+
+  .sender-text-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .sender-name-line {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sender-role-line {
+    font-size: 0.7rem;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Cell 2: 3-char Kid Badge */
+  .cell-kid {
+    display: flex;
+    justify-content: center;
+  }
+
+  .kid-badge3 {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.76rem;
+    font-weight: 800;
+    padding: 0.18rem 0.45rem;
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+  }
+
+  .kid-badge-ale {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+  }
+
+  .kid-badge-seb {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+  }
+
+  .kid-badge-both {
+    background: #f3e8ff;
+    color: #6b21a8;
+    border: 1px solid #e9d5ff;
+  }
+
+  /* Cell 3: Fixed-width YYYYMMDD(Ven) & Auto-Archive */
+  .cell-dates {
+    display: flex;
+    flex-direction: column;
+    gap: 0.12rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.73rem;
+  }
+
+  .date-created {
+    color: #0f172a;
+    font-weight: 700;
+  }
+
+  .date-archive {
+    color: #64748b;
+    font-size: 0.69rem;
+  }
+
+  .date-archive.archive-soon {
+    color: #b45309;
+    font-weight: 700;
+  }
+
+  /* Cell 4: Subject + Snippet + Note Pill */
+  .cell-content {
+    min-width: 0;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.15rem 0;
+  }
+
+  .cell-content:focus-visible {
+    outline: 2px solid #2563eb;
+    border-radius: 6px;
+  }
+
+  .subject-line {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .action-lightning {
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .subject-title {
+    font-weight: 700;
+    color: #0f172a;
+    flex-shrink: 0;
+  }
+
+  .subject-snippet {
+    color: #64748b;
+    font-weight: 400;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .note-inline-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: #fef08a;
+    color: #713f12;
+    border: 1px solid #fde047;
+    padding: 0.15rem 0.55rem;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .note-inline-pill.hidden {
+    display: none;
+  }
+
+  .note-pill-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Cell 5: Right-side Owner Segmented Radios + Note Button */
+  .cell-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.4rem;
+  }
+
+  .owner-segmented {
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 0.15rem;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+  }
+
+  .owner-opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 6px;
+    font-size: 0.73rem;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.12s ease;
+  }
+
+  .owner-opt input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .owner-opt:hover {
+    color: #0f172a;
+    background: #e2e8f0;
+  }
+
+  .owner-opt.opt-ricc:has(input:checked),
+  .owner-opt.opt-ricc.selected {
+    background: #dbeafe;
+    color: #1e40af;
+    box-shadow: 0 1px 2px rgba(30, 64, 175, 0.15);
+  }
+
+  .owner-opt.opt-kate:has(input:checked),
+  .owner-opt.opt-kate.selected {
+    background: #fce7f3;
+    color: #9d174d;
+    box-shadow: 0 1px 2px rgba(157, 23, 77, 0.15);
+  }
+
+  .owner-opt.opt-none:has(input:checked),
+  .owner-opt.opt-none.selected {
+    background: #ffffff;
+    color: #475569;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+
+  .owner-mini-pic {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .btn-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.28rem 0.55rem;
+    border-radius: 7px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.12s ease;
+  }
+
+  .btn-note:hover {
+    background: #fef9c3;
+    border-color: #facc15;
+    color: #713f12;
+  }
+
+  .btn-note.has-note-btn {
+    background: #fef08a;
+    border-color: #eab308;
+    color: #713f12;
+  }
+
+  .btn-archive-row {
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 0.25rem 0.35rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    opacity: 0.55;
+  }
+
+  .btn-archive-row:hover {
+    opacity: 1;
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+
+  .empty-inbox {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px dashed #cbd5e1;
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  .empty-inbox.hidden {
+    display: none;
+  }
+
+  /* Native <dialog> Modals */
+  .piota-dialog {
+    max-width: 680px;
+    width: 92vw;
+    border: none;
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+    background: #ffffff;
+    color: #0f172a;
+  }
+
+  .piota-dialog::backdrop {
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(3px);
+  }
+
+  .note-only-dialog {
+    max-width: 480px;
+  }
+
+  .dialog-header {
+    padding: 1.1rem 1.35rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .dialog-meta-top {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.35rem;
+  }
+
+  .dialog-sender-pill,
+  .dialog-dates-pill {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #334155;
+  }
+
+  .dialog-header h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+  }
+
+  .dialog-close-btn {
+    border: none;
+    background: #f1f5f9;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: 800;
+    color: #475569;
+  }
+
+  .dialog-body {
+    padding: 1.25rem 1.35rem;
+    max-height: 52vh;
+    overflow-y: auto;
+    line-height: 1.6;
+    font-size: 0.92rem;
+  }
+
+  .dialog-note-box {
+    padding: 0.9rem 1.35rem;
+    background: #fefce8;
+    border-top: 1px solid #fef08a;
+    border-bottom: 1px solid #fef08a;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .dialog-note-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #854d0e;
+  }
+
+  .dialog-note-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  #dialog-note-input,
+  #quick-note-textarea {
+    flex: 1;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #fde047;
+    background: #ffffff;
+    font-size: 0.88rem;
+    font-family: inherit;
+  }
+
+  .quick-note-sub {
+    margin: 0;
+    padding: 0.5rem 1.35rem 0;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .dialog-footer {
+    padding: 0.85rem 1.35rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .footer-right-btns {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-primary-save {
+    background: #1d4ed8;
+    color: #ffffff;
+    border: none;
+    padding: 0.48rem 0.95rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.84rem;
+    cursor: pointer;
+  }
+
+  .btn-secondary-close {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 0.48rem 0.9rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.84rem;
+    cursor: pointer;
+  }
+
+  .btn-danger-clear {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    padding: 0.45rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+
+  .source-ext-link {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #2563eb;
+    text-decoration: none;
+  }
+
+  .source-ext-link.hidden {
+    display: none;
+  }
+
+  @media (max-width: 1024px) {
+    .gmail-list-header {
+      display: none;
+    }
+    .gmail-row {
+      grid-template-columns: 1fr auto;
+      gap: 0.45rem;
+      padding: 0.75rem;
+    }
+    .cell-content {
+      grid-column: 1 / -1;
+    }
+    .cell-controls {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+    }
+  }
+</style>
+
 <script>
-  // Filter logic
-  const kidButtons = document.querySelectorAll('#kid-filters .filter-btn');
-  const typeButtons = document.querySelectorAll('#type-filters .type-btn');
-  const cards = document.querySelectorAll('.item-card');
-  const visibleCountEl = document.getElementById('visible-count');
+  // State management: localStorage + live sync with /api/ticket -> Firestore (palladius-genai)
+  const STORAGE_KEY = 'piota_gmail_state_v5';
+  const USER_KEY = 'piota_active_parent_v5';
 
+  interface ItemLocalState {
+    owner?: string;
+    note?: string;
+    archived?: boolean;
+    read_by_riccardo?: boolean;
+    read_by_kate?: boolean;
+  }
+
+  let localStates: Record<string, ItemLocalState> = {};
+  try {
+    localStates = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch {
+    localStates = {};
+  }
+
+  let activeUser = localStorage.getItem(USER_KEY) || 'riccardo';
+  let activeTab = 'inbox';
   let activeKid = 'all';
-  let activeType = 'active';
+  let activeCat = 'all';
+  let activeSender = 'all';
+  let searchQuery = '';
+  let currentModalItemId: string | null = null;
 
-  function applyFilters() {
-    let visible = 0;
-    cards.forEach(card => {
-      const isAle = card.getAttribute('data-is-ale') === 'true';
-      const isSeby = card.getAttribute('data-is-seby') === 'true';
-      const nature = card.getAttribute('data-nature');
-      const readRicc = card.getAttribute('data-read-ricc') === 'true';
-      const isArchived = card.getAttribute('data-archived') === 'true';
+  const rows = Array.from(document.querySelectorAll<HTMLElement>('.gmail-row'));
+  const detailDialog = document.getElementById('detail-dialog') as HTMLDialogElement | null;
+  const quickNoteDialog = document.getElementById('quick-note-dialog') as HTMLDialogElement | null;
 
-      let matchKid = false;
-      if (activeKid === 'all') matchKid = true;
-      else if (activeKid === 'ale') matchKid = isAle;
-      else if (activeKid === 'seby') matchKid = isSeby;
+  function saveLocalStates() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(localStates));
+  }
 
-      let matchType = false;
-      if (activeType === 'active') matchType = (!isArchived);
-      else if (activeType === 'archived') matchType = (isArchived);
-      else if (activeType === 'action') matchType = (!isArchived && nature === 'action_required');
-      else if (activeType === 'unread-ricc') matchType = (!isArchived && !readRicc);
+  async function persistToBackend(itemId: string, patch: ItemLocalState) {
+    localStates[itemId] = { ...(localStates[itemId] || {}), ...patch };
+    saveLocalStates();
+    try {
+      await fetch('/api/ticket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: itemId, user: activeUser, ...patch }),
+      });
+    } catch {
+      // Offline / static fallback: localStorage already has it
+    }
+  }
 
-      if (matchKid && matchType) {
-        (card as HTMLElement).style.display = '';
-        visible++;
+  function applyRowState(row: HTMLElement) {
+    const id = row.dataset.id || '';
+    const st = localStates[id] || {};
+
+    const owner = st.owner !== undefined ? st.owner : (row.dataset.owner || 'unassigned');
+    const note = st.note !== undefined ? st.note : (row.dataset.note || '');
+    const archived = st.archived !== undefined ? st.archived : (row.dataset.archived === 'true');
+    const readR = st.read_by_riccardo !== undefined ? st.read_by_riccardo : (row.dataset.readRiccardo === 'true');
+    const readK = st.read_by_kate !== undefined ? st.read_by_kate : (row.dataset.readKate === 'true');
+
+    row.dataset.owner = owner;
+    row.dataset.note = note;
+    row.dataset.archived = archived ? 'true' : 'false';
+    row.dataset.readRiccardo = readR ? 'true' : 'false';
+    row.dataset.readKate = readK ? 'true' : 'false';
+
+    const isReadForCurrent = activeUser === 'riccardo' ? readR : readK;
+    row.classList.toggle('is-read', isReadForCurrent);
+    row.classList.toggle('is-unread', !isReadForCurrent);
+    row.classList.toggle('has-note', Boolean(note));
+
+    // Sync radio buttons
+    const radios = row.querySelectorAll<HTMLInputElement>('input[type="radio"][data-action="change-owner"]');
+    radios.forEach((r) => {
+      const checked = r.value === owner;
+      r.checked = checked;
+      r.closest('.owner-opt')?.classList.toggle('selected', checked);
+    });
+
+    // Sync inline note pill & button
+    const notePill = row.querySelector<HTMLElement>('[data-role="note-pill"]');
+    const noteText = row.querySelector<HTMLElement>('[data-role="note-text"]');
+    const noteBtn = row.querySelector<HTMLElement>('[data-action="open-note"]');
+    const noteBtnLabel = row.querySelector<HTMLElement>('.btn-note-label');
+    if (notePill && noteText) {
+      noteText.textContent = note;
+      notePill.classList.toggle('hidden', !note);
+    }
+    if (noteBtn && noteBtnLabel) {
+      noteBtn.classList.toggle('has-note-btn', Boolean(note));
+      noteBtnLabel.textContent = note ? 'Nota' : '+Nota';
+      noteBtn.title = note ? `Modifica nota: ${note}` : 'Aggiungi una nota';
+    }
+  }
+
+  function refreshAllAndFilter() {
+    let cInbox = 0;
+    let cAction = 0;
+    let cNotes = 0;
+    let cMine = 0;
+    let cArchived = 0;
+    let visibleCount = 0;
+
+    rows.forEach((row) => {
+      applyRowState(row);
+      const isAutoExpired = row.dataset.autoExpired === 'true';
+      const isManuallyArchived = row.dataset.archived === 'true';
+      const isArchived = isAutoExpired || isManuallyArchived;
+      const isAction = row.dataset.nature === 'action_required';
+      const hasNote = Boolean(row.dataset.note);
+      const owner = row.dataset.owner || 'unassigned';
+      const kid = row.dataset.kid || 'A+S';
+      const sender = row.dataset.sender || 'tandem';
+
+      if (isArchived) {
+        cArchived++;
       } else {
-        (card as HTMLElement).style.display = 'none';
-      }
-    });
-
-    if (visibleCountEl) visibleCountEl.textContent = visible.toString();
-  }
-
-  kidButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      kidButtons.forEach(b => {
-        b.classList.remove('active', 'bg-emerald-500', 'text-slate-950');
-        b.classList.add('bg-slate-800/80', 'text-slate-300');
-      });
-      btn.classList.add('active', 'bg-emerald-500', 'text-slate-950');
-      btn.classList.remove('bg-slate-800/80', 'text-slate-300');
-      activeKid = btn.getAttribute('data-filter') || 'all';
-      applyFilters();
-    });
-  });
-
-  typeButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      typeButtons.forEach(b => {
-        b.classList.remove('active', 'bg-slate-700', 'text-white');
-        b.classList.add('bg-slate-800/80');
-      });
-      btn.classList.add('active', 'bg-slate-700', 'text-white');
-      btn.classList.remove('bg-slate-800/80');
-      activeType = btn.getAttribute('data-type') || 'active';
-      applyFilters();
-    });
-  });
-
-  // Archive Click Handler
-  document.querySelectorAll('.archive-toggle-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const card = btn.closest('.item-card');
-      if (!card) return;
-      const isArchived = card.getAttribute('data-archived') === 'true';
-      const newArchived = !isArchived;
-      card.setAttribute('data-archived', newArchived ? 'true' : 'false');
-      btn.textContent = newArchived ? 'Ripristina' : 'Archivia';
-      applyFilters();
-    });
-  });
-
-  // Notice Detail Modal Popup
-  const detailModal = document.getElementById('detail-modal');
-  const modalTitle = document.getElementById('modal-title');
-  const modalBody = document.getElementById('modal-body');
-  const modalDate = document.getElementById('modal-date');
-  const modalBadgeKid = document.getElementById('modal-badge-kid');
-  const modalBadgeNature = document.getElementById('modal-badge-nature');
-  const modalOwner = document.getElementById('modal-owner');
-  const modalCliCode = document.getElementById('modal-cli-code');
-  const modalTranslateBtn = document.getElementById('modal-translate-btn');
-  const modalTranslateLabel = document.getElementById('modal-translate-label');
-  const modalActionBanner = document.getElementById('modal-action-banner');
-
-  let currentModalItem: any = null;
-  let isTranslated = false;
-
-  function makeLinksClickable(text: string) {
-    // 1. Convert markdown links [label](url) cleanly without trailing brackets
-    let html = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, (match, label, url) => {
-      const cleanUrl = url.replace(/[).,;]+$/, '');
-      return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-amber-400 hover:text-amber-300 font-bold underline transition">${label} ↗</a>`;
-    });
-    // 2. Convert remaining raw URLs not preceded by href="
-    html = html.replace(/(?<!href=")(https?:\/\/[^\s<>"'\)]+)/g, (match, url) => {
-      const cleanUrl = url.replace(/[).,;]+$/, '');
-      return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 font-semibold underline break-all transition">${cleanUrl} ↗</a>`;
-    });
-    return html;
-  }
-
-  cards.forEach(card => {
-    card.addEventListener('click', () => {
-      const photosUrl = card.getAttribute('data-photos-url');
-      const calendarUrl = card.getAttribute('data-calendar-url');
-
-      currentModalItem = {
-        id: card.getAttribute('data-id'),
-        title: card.getAttribute('data-title') || '',
-        body: card.getAttribute('data-body') || '',
-        titleIt: card.getAttribute('data-title-it') || '',
-        bodyIt: card.getAttribute('data-body-it') || '',
-        date: card.getAttribute('data-date') || '',
-        dateFull: card.getAttribute('data-date-full') || '',
-        kids: card.getAttribute('data-kids') || '',
-        nature: card.getAttribute('data-nature') || '',
-        owner: card.getAttribute('data-owner') || '',
-        photosUrl,
-        calendarUrl
-      };
-
-      isTranslated = false;
-      if (modalTranslateLabel) modalTranslateLabel.textContent = 'Traduci in Italiano';
-
-      if (modalTitle) modalTitle.textContent = currentModalItem.title;
-      if (modalBody) modalBody.innerHTML = makeLinksClickable(currentModalItem.body);
-      if (modalDate) modalDate.textContent = currentModalItem.date ? `📅 ${currentModalItem.date}` : '';
-      if (modalBadgeKid) modalBadgeKid.textContent = currentModalItem.kids;
-      if (modalBadgeNature) modalBadgeNature.textContent = currentModalItem.nature === 'action_required' ? '⚡ Action Required' : '🌿 JFYI';
-      
-      if (modalOwner) {
-        const o = currentModalItem.owner.toLowerCase();
-        if (o === 'riccardo') modalOwner.innerHTML = '<span class="text-amber-400 font-bold">Papà (Riccardo)</span>';
-        else if (o === 'kate') modalOwner.innerHTML = '<span class="text-purple-400 font-bold">Mamma (Kate)</span>';
-        else modalOwner.innerHTML = '<span class="text-slate-400 italic">Nessuno (Non assegnato)</span>';
+        cInbox++;
+        if (isAction) cAction++;
+        if (hasNote) cNotes++;
+        if (owner === activeUser) cMine++;
       }
 
-      if (modalCliCode) modalCliCode.textContent = `piota-cli read ${currentModalItem.id} --as riccardo`;
+      // Tab filter
+      let matchTab = false;
+      if (activeTab === 'archived') matchTab = isArchived;
+      else if (activeTab === 'inbox') matchTab = !isArchived;
+      else if (activeTab === 'action') matchTab = !isArchived && isAction;
+      else if (activeTab === 'notes') matchTab = !isArchived && hasNote;
+      else if (activeTab === 'mine') matchTab = !isArchived && owner === activeUser;
 
-      // Dedicated action button in modal
-      if (modalActionBanner) {
-        if (photosUrl) {
-          modalActionBanner.innerHTML = `
-            <a href="${photosUrl}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg transition">
-              <div class="flex items-center gap-2">
-                <span class="text-base">📸</span>
-                <span>Apri l'album fotografico su Google Photos</span>
-              </div>
-              <span class="bg-blue-700/60 px-2.5 py-1 rounded-lg text-[11px]">Apri Album ↗</span>
-            </a>
-          `;
-          modalActionBanner.classList.remove('hidden');
-        } else if (calendarUrl) {
-          modalActionBanner.innerHTML = `
-            <a href="${calendarUrl}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition">
-              <div class="flex items-center gap-2">
-                <span class="text-base">📅</span>
-                <span>Prenota incontro con l'insegnante su Google Calendar</span>
-              </div>
-              <span class="bg-emerald-700/60 px-2.5 py-1 rounded-lg text-[11px]">Prenota Ora ↗</span>
-            </a>
-          `;
-          modalActionBanner.classList.remove('hidden');
-        } else {
-          modalActionBanner.innerHTML = '';
-          modalActionBanner.classList.add('hidden');
+      // Kid filter
+      const matchKid = activeKid === 'all' || kid === activeKid || (activeKid !== 'A+S' && kid === 'A+S');
+      // Category filter
+      const cat = row.dataset.cat || 'admin';
+      const matchCat = activeCat === 'all' || cat === activeCat;
+      // Sender filter
+      const matchSender = activeSender === 'all' || sender === activeSender;
+      // Search query
+      const searchable = `${row.dataset.title || ''} ${row.dataset.note || ''} ${row.dataset.senderLabel || ''}`.toLowerCase();
+      const matchSearch = !searchQuery || searchable.includes(searchQuery);
+
+      const show = matchTab && matchKid && matchCat && matchSender && matchSearch;
+      row.classList.toggle('hidden', !show);
+      if (show) visibleCount++;
+    });
+
+    const setBadge = (id: string, n: number) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(n);
+    };
+    setBadge('count-inbox', cInbox);
+    setBadge('count-action', cAction);
+    setBadge('count-notes', cNotes);
+    setBadge('count-mine', cMine);
+    setBadge('count-archived', cArchived);
+
+    const emptyBanner = document.getElementById('empty-inbox-banner');
+    if (emptyBanner) emptyBanner.classList.toggle('hidden', visibleCount > 0);
+  }
+
+  // Pull fresh state from /api/tickets-state on load
+  async function syncFromServer() {
+    try {
+      const res = await fetch('/api/tickets-state');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data && data.states) {
+        for (const [id, s] of Object.entries<any>(data.states)) {
+          const t = s.ticket || {};
+          const c = s.consumption || {};
+          const rawOwner = String(t.owner || 'unassigned').toLowerCase();
+          const normOwner = rawOwner.startsWith('ric') ? 'riccardo' : (rawOwner.startsWith('kat') ? 'kate' : 'unassigned');
+          localStates[id] = {
+            ...(localStates[id] || {}),
+            owner: normOwner,
+            note: t.note ?? localStates[id]?.note ?? '',
+            archived: Boolean(c.archived),
+            read_by_riccardo: Boolean(c.read_by_riccardo),
+            read_by_kate: Boolean(c.read_by_kate),
+          };
         }
+        saveLocalStates();
+        refreshAllAndFilter();
       }
+    } catch {
+      // Ignore if offline
+    }
+  }
 
-      if (detailModal) detailModal.classList.remove('hidden');
+  // Wire up Active Parent User radio buttons
+  document.querySelectorAll<HTMLInputElement>('input[name="active-parent-user"]').forEach((radio) => {
+    radio.checked = radio.value === activeUser;
+    radio.addEventListener('change', () => {
+      if (radio.checked) {
+        activeUser = radio.value;
+        localStorage.setItem(USER_KEY, activeUser);
+        refreshAllAndFilter();
+      }
     });
   });
 
-  function closeDetailModal() {
-    if (detailModal) detailModal.classList.add('hidden');
-  }
-
-  document.getElementById('modal-close-btn')?.addEventListener('click', closeDetailModal);
-  document.getElementById('modal-bottom-close')?.addEventListener('click', closeDetailModal);
-  detailModal?.addEventListener('click', closeDetailModal);
-
-  // Modal translation toggle
-  modalTranslateBtn?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (!currentModalItem) return;
-    isTranslated = !isTranslated;
-    if (isTranslated) {
-      if (modalTitle) modalTitle.textContent = currentModalItem.titleIt || currentModalItem.title;
-      if (modalBody) modalBody.innerHTML = makeLinksClickable(currentModalItem.bodyIt || currentModalItem.body);
-      if (modalTranslateLabel) modalTranslateLabel.textContent = 'Mostra Originale';
-    } else {
-      if (modalTitle) modalTitle.textContent = currentModalItem.title;
-      if (modalBody) modalBody.innerHTML = makeLinksClickable(currentModalItem.body);
-      if (modalTranslateLabel) modalTranslateLabel.textContent = 'Traduci in Italiano';
-    }
+  // Wire up Teacher filter chips
+  document.querySelectorAll<HTMLButtonElement>('.teacher-chip').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.teacher-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeSender = btn.dataset.senderFilter || 'all';
+      refreshAllAndFilter();
+    });
   });
 
-  // Menu Modal Zoom
-  const menuModal = document.getElementById('menu-modal');
-  const menuTrigger = document.getElementById('menu-card-trigger');
-
-  function openMenuModal() {
-    if (menuModal) menuModal.classList.remove('hidden');
-  }
-  function closeMenuModal() {
-    if (menuModal) menuModal.classList.add('hidden');
-  }
-
-  menuTrigger?.addEventListener('click', openMenuModal);
-  document.getElementById('menu-modal-close')?.addEventListener('click', closeMenuModal);
-  document.getElementById('menu-modal-close-bottom')?.addEventListener('click', closeMenuModal);
-  menuModal?.addEventListener('click', closeMenuModal);
-
-  // Keyboard escape
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      closeDetailModal();
-      closeMenuModal();
-    }
+  // Wire up Inbox Tabs
+  document.querySelectorAll<HTMLButtonElement>('.inbox-tab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.inbox-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeTab = btn.dataset.tab || 'inbox';
+      refreshAllAndFilter();
+    });
   });
 
-  applyFilters();
+  // Wire up 3-char Kid filter buttons
+  document.querySelectorAll<HTMLButtonElement>('.kid-pill-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.kid-pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeKid = btn.dataset.kid || 'all';
+      refreshAllAndFilter();
+    });
+  });
+
+  // Wire up Category filter buttons
+  document.querySelectorAll<HTMLButtonElement>('.cat-pill-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cat-pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCat = btn.dataset.cat || 'all';
+      refreshAllAndFilter();
+    });
+  });
+
+  // Wire up Search input
+  const searchInput = document.getElementById('gmail-search-input') as HTMLInputElement | null;
+  searchInput?.addEventListener('input', () => {
+    searchQuery = searchInput.value.trim().toLowerCase();
+    refreshAllAndFilter();
+  });
+
+  // Open Detail Modal
+  function openDetailModal(row: HTMLElement) {
+    const id = row.dataset.id || '';
+    currentModalItemId = id;
+
+    // Mark as read for active user
+    const readPatch = activeUser === 'riccardo' ? { read_by_riccardo: true } : { read_by_kate: true };
+    persistToBackend(id, readPatch);
+    refreshAllAndFilter();
+
+    const titleEl = document.getElementById('dialog-title');
+    const senderBadge = document.getElementById('dialog-sender-badge');
+    const datesBadge = document.getElementById('dialog-dates-badge');
+    const bodyEl = document.getElementById('dialog-body-content');
+    const noteInput = document.getElementById('dialog-note-input') as HTMLInputElement | null;
+    const srcLink = document.getElementById('dialog-source-link') as HTMLAnchorElement | null;
+
+    if (titleEl) titleEl.textContent = row.dataset.title || '';
+    if (senderBadge) senderBadge.textContent = row.dataset.senderLabel || '';
+    if (datesBadge) datesBadge.textContent = row.dataset.datesLabel || '';
+    if (noteInput) noteInput.value = row.dataset.note || '';
+
+    const tpl = row.querySelector<HTMLTemplateElement>('.item-body-template');
+    if (bodyEl && tpl) {
+      bodyEl.innerHTML = '';
+      bodyEl.appendChild(tpl.content.cloneNode(true));
+    }
+
+    if (srcLink) {
+      const url = row.dataset.sourceUrl || '';
+      if (url) {
+        srcLink.href = url;
+        srcLink.classList.remove('hidden');
+      } else {
+        srcLink.classList.add('hidden');
+      }
+    }
+
+    detailDialog?.showModal();
+  }
+
+  // Open Quick Note Modal
+  function openQuickNoteModal(row: HTMLElement) {
+    const id = row.dataset.id || '';
+    currentModalItemId = id;
+    const sub = document.getElementById('quick-note-subtitle');
+    const ta = document.getElementById('quick-note-textarea') as HTMLTextAreaElement | null;
+    if (sub) sub.textContent = `${row.dataset.senderLabel} — ${row.dataset.title}`;
+    if (ta) ta.value = row.dataset.note || '';
+    quickNoteDialog?.showModal();
+    ta?.focus();
+  }
+
+  // Delegate Row Actions using addEventListener (zero inline onclick handlers)
+  rows.forEach((row) => {
+    const id = row.dataset.id || '';
+
+    // 1. Toggle Read dot
+    row.querySelector('[data-action="toggle-read"]')?.addEventListener('click', () => {
+      const curRead = activeUser === 'riccardo' ? row.dataset.readRiccardo === 'true' : row.dataset.readKate === 'true';
+      const patch = activeUser === 'riccardo' ? { read_by_riccardo: !curRead } : { read_by_kate: !curRead };
+      persistToBackend(id, patch);
+      refreshAllAndFilter();
+    });
+
+    // 2. Click Subject/Content to open reader modal
+    const contentCell = row.querySelector<HTMLElement>('[data-action="open-detail"]');
+    contentCell?.addEventListener('click', () => openDetailModal(row));
+    contentCell?.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        openDetailModal(row);
+      }
+    });
+
+    // 3. Owner Radio Buttons (Ricc / Kate / —)
+    row.querySelectorAll<HTMLInputElement>('input[type="radio"][data-action="change-owner"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        if (radio.checked) {
+          persistToBackend(id, { owner: radio.value });
+          refreshAllAndFilter();
+        }
+      });
+    });
+
+    // 4. Open Quick Note Dialog
+    row.querySelector('[data-action="open-note"]')?.addEventListener('click', () => {
+      openQuickNoteModal(row);
+    });
+
+    // 5. Toggle Archive
+    row.querySelector('[data-action="toggle-archive"]')?.addEventListener('click', () => {
+      const curArch = row.dataset.archived === 'true';
+      persistToBackend(id, { archived: !curArch });
+      refreshAllAndFilter();
+    });
+  });
+
+  // Save Note inside Detail Modal
+  document.getElementById('dialog-save-note-btn')?.addEventListener('click', () => {
+    if (!currentModalItemId) return;
+    const noteInput = document.getElementById('dialog-note-input') as HTMLInputElement | null;
+    const val = (noteInput?.value || '').trim();
+    persistToBackend(currentModalItemId, { note: val });
+    refreshAllAndFilter();
+  });
+
+  // Quick Note Form Submit / Clear / Close
+  document.getElementById('quick-note-form')?.addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    if (!currentModalItemId) return;
+    const ta = document.getElementById('quick-note-textarea') as HTMLTextAreaElement | null;
+    const val = (ta?.value || '').trim();
+    persistToBackend(currentModalItemId, { note: val });
+    refreshAllAndFilter();
+    quickNoteDialog?.close();
+  });
+
+  document.getElementById('quick-note-clear-btn')?.addEventListener('click', () => {
+    if (!currentModalItemId) return;
+    persistToBackend(currentModalItemId, { note: '' });
+    refreshAllAndFilter();
+    quickNoteDialog?.close();
+  });
+
+  document.getElementById('quick-note-cancel')?.addEventListener('click', () => quickNoteDialog?.close());
+  document.getElementById('quick-note-close-btn')?.addEventListener('click', () => quickNoteDialog?.close());
+
+  // Initial render + fetch server state
+  refreshAllAndFilter();
+  syncFromServer();
 </script>
