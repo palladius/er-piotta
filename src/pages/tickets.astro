@@ -71,6 +71,21 @@ function inferSender(item: any) {
   const hasSeb = kids.some((k: string) => ['seby', 'sebastian', 'seb', 'p1'].includes(k));
   const kidCode = (hasAle && hasSeb) || kids.includes('all') || kids.length === 0 ? 'A+S' : (hasAle ? 'Ale' : 'Seb');
 
+  if (text.includes('pianoforte') || text.includes('lezione di piano')) {
+    return {
+      key: 'penrose',
+      name: 'Lezione di Pianoforte',
+      shortName: 'Pianoforte',
+      email: 'jpenrose@tandem-ims.ch',
+      emoji: '🎹🎶',
+      flag: '🎹',
+      subjectEmoji: '🎶',
+      role: `Musica · Lunedì (${kidCode})`,
+      initials: 'PF',
+      bgGradient: 'linear-gradient(135deg, #4f46e5 0%, #9333ea 100%)',
+      kidCode,
+    };
+  }
   if (text.includes('mbiehl') || text.includes('biehl') || (kidCode === 'Ale' && ['deutsch', 'mathe', 'schreibheft', 'lzk'].some(w => text.includes(w)))) {
     return {
       key: 'biehl',
@@ -161,15 +176,16 @@ function inferCategory(item: any) {
       catLabel: 'Test / Verifica',
     };
   }
-  if (['homework', 'hausaufgabe', 'hausaufgaben', 'raz kids', 'matheplan', 'schreibheft', 'ziffern'].some(k => titleL.includes(k))) {
+  if (['homework', 'hausaufgabe', 'hausaufgaben', 'raz kids', 'matheplan', 'schreibheft', 'ziffern', 'pianoforte', 'piano'].some(k => titleL.includes(k))) {
+    const isPiano = titleL.includes('piano');
     return {
       nature: 'action_required',
       natureEmoji: '⚡',
       natureCode: 'ACT',
       catKey: 'homework',
-      catEmoji: '📝',
+      catEmoji: isPiano ? '🎹' : '📝',
       catCode: 'HW',
-      catLabel: 'Homework',
+      catLabel: isPiano ? 'Pianoforte & Compiti' : 'Homework',
     };
   }
   if (['bibliothek', 'library', 'bücher', 'reading book'].some(k => titleL.includes(k))) {
@@ -257,13 +273,17 @@ const enrichedItems = cleanFeed
       if (cleanTitle.startsWith(pref)) cleanTitle = cleanTitle.slice(pref.length);
     }
 
-    // Build snippet
+    // Build snippet (strip Dear Parents / Liebe Eltern / Piota transition boilerplate)
     const rawBody = String(item.body || '')
       .replace(/^\*\*From:\*\*.*$/gm, '')
       .replace(/^\*\*Date:\*\*.*$/gm, '')
       .replace(/^Class calendar event.*$/gm, '')
+      .replace(/^(Dear Parents,|Liebe Eltern,)\s*/gim, '')
+      .replace(/^(Kind regards,|Mit freundlichen Grüssen|Freundliche Grüsse|Warmly,)[\s\S]*$/gim, '')
+      .replace(/Da Piota leider nicht mehr nutzbar ist,\s*teile ich Ihnen nun per Mail mit,\s*dass\s*/gi, '')
+      .replace(/As you may be aware,\s*the Piota app is unfortunately no longer available\.\s*/gi, '')
       .trim();
-    const snippet = rawBody.replace(/\s+/g, ' ').slice(0, 140);
+    const snippet = rawBody.replace(/\s+/g, ' ').slice(0, 150);
 
     return {
       ...item,
@@ -293,12 +313,24 @@ const enrichedItems = cleanFeed
     return true;
   })
   .sort((a: any, b: any) => {
-    // Alerts/Emails first (newest first), then upcoming events (chronological)
-    const aAlert = a.type === 'alert' ? 0 : 1;
-    const bAlert = b.type === 'alert' ? 0 : 1;
-    if (aAlert !== bAlert) return aAlert - bAlert;
-    if (aAlert === 0) return b.primaryDate.localeCompare(a.primaryDate);
-    return a.primaryDate.localeCompare(b.primaryDate);
+    // Tier 0: Upcoming events (>= todayIso) in chronological order (next 7 days first!)
+    // Tier 1: Action-required emails (newest first)
+    // Tier 2: FYI emails (newest first)
+    // Tier 3: Past events (< todayIso, not yet auto-archived)
+    const tierOf = (x: any) => {
+      if (x.type === 'event' && x.primaryDate >= todayIso && x.primaryDate <= new Date(Date.now() + 8 * 86400000).toISOString().slice(0, 10)) {
+        return 0;
+      }
+      if (x.type === 'alert' && x.nature === 'action_required') return 1;
+      if (x.type === 'event' && x.primaryDate >= todayIso) return 2;
+      if (x.type === 'alert') return 3;
+      return 4;
+    };
+    const ta = tierOf(a);
+    const tb = tierOf(b);
+    if (ta !== tb) return ta - tb;
+    if (ta === 0 || ta === 2) return a.primaryDate.localeCompare(b.primaryDate);
+    return b.primaryDate.localeCompare(a.primaryDate);
   });
 ---
 
@@ -1984,7 +2016,22 @@ const enrichedItems = cleanFeed
   document.getElementById('quick-note-cancel')?.addEventListener('click', () => quickNoteDialog?.close());
   document.getElementById('quick-note-close-btn')?.addEventListener('click', () => quickNoteDialog?.close());
 
-  // Initial render + fetch server state
+  // Initial render + URL query params (?tab=mine|notes|action, ?kid=Ale|Seb) + fetch server state
+  const urlParams = new URLSearchParams(window.location.search);
+  const qTab = urlParams.get('tab');
+  if (qTab && ['inbox', 'action', 'notes', 'mine', 'archived'].includes(qTab)) {
+    activeTab = qTab;
+    document.querySelectorAll('.inbox-tab').forEach((b) => {
+      b.classList.toggle('active', (b as HTMLElement).dataset.tab === qTab);
+    });
+  }
+  const qKid = urlParams.get('kid');
+  if (qKid && ['all', 'Ale', 'Seb', 'A+S'].includes(qKid)) {
+    activeKid = qKid;
+    document.querySelectorAll('.kid-pill-btn').forEach((b) => {
+      b.classList.toggle('active', (b as HTMLElement).dataset.kid === qKid);
+    });
+  }
   refreshAllAndFilter();
   syncFromServer();
 </script>
