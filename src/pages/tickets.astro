@@ -8,13 +8,164 @@ function renderSimpleMarkdown(md: string): string {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
-  return escaped
+  const inlined = escaped
+    .replace(
+      /\[\[AUTO_TRANSLATED_DE_EN_V1\.2\.3\]\]/g,
+      '<div class="de-trans-banner">auto-translated from DE to EN from Er Piotta v1.2.3</div>'
+    )
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-    .replace(/(^|\s)(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>')
+    .replace(/(^|\n)\*([^*\n]+)\*(?=\n|$)/g, '$1<em class="de-italic-line">$2</em>')
+    .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+    .replace(/\[([^\]]+)\]\(#item:([^\s)]+)\)/g, '<a href="#item:$2" data-open-item="$2" class="magic-item-link">$1</a>')
+    .replace(
+      /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(?<!["'=])(https?:\/\/[^\s<*)]+)/g,
+      (_match, label, mdUrl, bareUrl) => {
+        const url = (mdUrl || bareUrl || '').replace(/[.,;]+$/, '');
+        const text = (label || url).trim();
+        const isPhoto = url.includes('photos.app.goo.gl') || url.includes('photos.google.com') || url.includes('drive.google.com/drive/folders');
+        const cls = isPhoto ? 'ext-photo-link' : 'ext-normal-link';
+        const prefix = isPhoto && !text.includes('📸') ? '📸 ' : '';
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="${cls}">${prefix}${text} ↗</a>`;
+      }
+    )
+    .replace(/(^|\n)---(?=\n|$)/g, '$1<hr class="de-trans-divider" />');
+
+  return inlined
     .split(/\n{2,}/)
-    .map(p => `<p>${p.replace(/\n/g, '<br/>')}</p>`)
+    .map((block) => {
+      const lines = block.split('\n').filter(l => l.trim().length > 0);
+      if (lines.length > 0 && lines.every(l => l.trim().startsWith('- '))) {
+        const lis = lines.map(l => `<li>${l.trim().slice(2)}</li>`).join('');
+        return `<ul class="md-bullet-list">${lis}</ul>`;
+      }
+      return `<p>${block.replace(/\n/g, '<br/>')}</p>`;
+    })
     .join('');
+}
+
+interface PhotoAlbumEntry {
+  url: string;
+  provider: 'Google Photos' | 'Google Drive';
+  providerIcon: string;
+  kidCode: string;
+  kidLabel: string;
+  activityKey: string;
+  activityEmoji: string;
+  activityLabel: string;
+  activityColor: string;
+  emailId: string;
+  emailTitle: string;
+  ymdDate: string;
+  primaryDate: string;
+  teacherName: string;
+  teacherEmoji: string;
+  description: string;
+}
+
+function classifyPhotoActivity(title: string, body: string, sender: any): { key: string; emoji: string; label: string; color: string; desc: string } {
+  const t = `${title} ${body}`.toLowerCase();
+  if (t.includes('sport') || t.includes('dodgeball') || t.includes('turnhalle') || t.includes('swimming') || t.includes('ice-skating')) {
+    return {
+      key: 'sport',
+      emoji: '🤸',
+      label: 'Sport & Educazione Fisica',
+      color: 'act-sport',
+      desc: 'Lezione di sport in palestra (partita di Dodgeball a squadre)',
+    };
+  }
+  if (t.includes('tawanga') || t.includes('christmas card')) {
+    return {
+      key: 'natale',
+      emoji: '🎄',
+      label: 'Natale & Progetto Tawanga',
+      color: 'act-natale',
+      desc: 'Dietro le quinte: creazione delle cartoline di Natale personalizzate con Mrs Schmid',
+    };
+  }
+  if (t.includes('diwali') || t.includes('räbeliechtli') || t.includes('celebration') || t.includes('festival')) {
+    return {
+      key: 'feste',
+      emoji: '🪔',
+      label: 'Feste, Tradizioni & Cultura',
+      color: 'act-feste',
+      desc: 'Festa di Diwali in classe con attività culturali e lanterne',
+    };
+  }
+  if (t.includes('art') || sender.key === 'schmid') {
+    return {
+      key: 'arte',
+      emoji: '🎨',
+      label: 'Arte & Creatività (Art Class)',
+      color: 'act-arte',
+      desc: 'Album settimanale dei lavori artistici realizzati nel laboratorio di Mrs Schmid',
+    };
+  }
+  if (t.includes('excursion') || t.includes('ausflug') || t.includes('museum') || t.includes('technorama') || t.includes('wald') || t.includes('forest')) {
+    return {
+      key: 'gita',
+      emoji: '🎒',
+      label: 'Gita Scolastica & Escursioni',
+      color: 'act-gita',
+      desc: 'Foto dell\'escursione / uscita didattica della classe',
+    };
+  }
+  if (t.includes('music') || t.includes('concert') || t.includes('piano')) {
+    return {
+      key: 'musica',
+      emoji: '🎵',
+      label: 'Musica & Spettacoli',
+      color: 'act-musica',
+      desc: 'Attività musicale e prove di classe',
+    };
+  }
+  return {
+    key: 'classe',
+    emoji: '📸',
+    label: 'Vita di Classe Settimanale',
+    color: 'act-classe',
+    desc: 'Cartella Google Drive aggiornata ogni settimana con le foto delle attività in classe',
+  };
+}
+
+function extractPhotoLinksForItem(item: any, sender: any, cleanTitle: string, ymdCreated: string, primaryDate: string, kidCode: string): PhotoAlbumEntry[] {
+  const body = String(item.body || '');
+  const regex = /https?:\/\/(?:photos\.app\.goo\.gl|photos\.google\.com|drive\.google\.com\/drive\/folders)\/[^\s)\]"'*>]+/gi;
+  const matches = body.match(regex) || [];
+  const uniqueUrls = Array.from(new Set(matches.map(u => u.replace(/[.,;*]+$/, ''))));
+  if (uniqueUrls.length === 0) return [];
+
+  const act = classifyPhotoActivity(cleanTitle, body, sender);
+  const kidLabel = kidCode === 'Ale' ? '🐉 Ale (P3)' : (kidCode === 'Seb' ? '🚗 Seby (P1)' : '🐉🚗 Ale & Seby');
+
+  const isDotW = (iso: string) => {
+    const dObj = new Date(iso.slice(0, 10) + 'T12:00:00Z');
+    return isNaN(dObj.getTime()) ? '---' : weekdaysIt[dObj.getUTCDay()];
+  };
+
+  return uniqueUrls.map((url) => {
+    const isDrive = url.includes('drive.google.com');
+    const shortUrl = url.replace(/^https?:\/\//, '').slice(0, 34) + (url.length > 42 ? '…' : '');
+    return {
+      url,
+      shortUrl,
+      provider: isDrive ? 'Google Drive' : 'Google Photos',
+      providerIcon: isDrive ? '📁' : '📸',
+      kidCode,
+      kidLabel,
+      activityKey: act.key,
+      activityEmoji: act.emoji,
+      activityLabel: act.label,
+      activityColor: act.color,
+      emailId: item.id,
+      emailTitle: cleanTitle,
+      ymdDate: ymdCreated,
+      dow: isDotW(primaryDate),
+      primaryDate,
+      teacherName: sender.shortName,
+      teacherEmoji: sender.emoji,
+      description: act.desc,
+    };
+  });
 }
 
 // Filter out Küsnacht / school bus noise and other parents' booked PTC slots
@@ -28,8 +179,13 @@ const cleanFeed = feedData.filter((item: any) => {
       return false;
     }
   }
-  // Skip manual Fwd duplicates if original email is present
-  if (String(item.id || '').startsWith('alert_gmail_') && String(item.title || '').startsWith('Fwd: [')) {
+  // Skip manual Fwd duplicates and outgoing automated Briefing emails if original email is present
+  if (
+    String(item.id || '').startsWith('alert_gmail_') &&
+    (String(item.title || '').startsWith('Fwd: [') ||
+      String(item.title || '').includes('Briefing Settimana') ||
+      String(item.title || '').includes('Piota AI Agent: Weekly Digest'))
+  ) {
     return false;
   }
   // Skip legacy Piota SQLite events since Google Classroom iCal events (event_gcal_) are canonical
@@ -42,38 +198,56 @@ const cleanFeed = feedData.filter((item: any) => {
 const todayIso = new Date().toISOString().slice(0, 10);
 const maxFutureDate = new Date(Date.now() + 21 * 86400000).toISOString().slice(0, 10);
 const weekdaysIt = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+const monthsIt = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+
+// Compute initial lastSyncedIso from feed items' crawled_at
+const initialLastSyncedIso = (() => {
+  let latest = '';
+  for (const it of feedData as any[]) {
+    const ca = String(it.crawled_at || '');
+    if (ca && ca > latest) latest = ca;
+  }
+  return latest || new Date().toISOString();
+})();
 
 function formatYmdDay(isoStr: string): string {
-  if (!isoStr || isoStr.length < 10) return '--------(---)';
+  if (!isoStr || isoStr.length < 10) return '--- -- ---';
   const dStr = isoStr.slice(0, 10);
-  const ymd = dStr.replace(/-/g, '');
   const dObj = new Date(dStr + 'T12:00:00Z');
-  if (isNaN(dObj.getTime())) return `${ymd}(---)`;
+  if (isNaN(dObj.getTime())) return dStr;
   const wd = weekdaysIt[dObj.getUTCDay()];
-  return `${ymd}(${wd})`;
+  const dayNum = String(dObj.getUTCDate()).padStart(2, '0');
+  const mon = monthsIt[dObj.getUTCMonth()];
+  return `${wd} ${dayNum} ${mon}`;
 }
 
 function formatYmdRel(isoStr: string): { text: string; daysLeft: number } {
-  if (!isoStr || isoStr.length < 10) return { text: '--------(---)', daysLeft: 7 };
+  if (!isoStr || isoStr.length < 10) return { text: '--- -- ---', daysLeft: 7 };
   const dStr = isoStr.slice(0, 10);
-  const ymd = dStr.replace(/-/g, '');
   const dObj = new Date(dStr + 'T12:00:00Z');
   const tObj = new Date(todayIso + 'T12:00:00Z');
+  if (isNaN(dObj.getTime())) return { text: dStr, daysLeft: 7 };
   const diffDays = Math.round((dObj.getTime() - tObj.getTime()) / 86400000);
   const rel = diffDays >= 0 ? `+${diffDays}g` : `${diffDays}g`;
-  return { text: `${ymd}(${rel})`, daysLeft: diffDays };
+  const wd = weekdaysIt[dObj.getUTCDay()];
+  const dayNum = String(dObj.getUTCDate()).padStart(2, '0');
+  const mon = monthsIt[dObj.getUTCMonth()];
+  return { text: `${wd} ${dayNum} ${mon} (${rel})`, daysLeft: diffDays };
 }
 
 function inferSender(item: any) {
+  const titleLow = String(item.title || '').toLowerCase();
   const text = `${item.sender_name || ''} ${item.sender_email || ''} ${item.title || ''} ${item.body || ''}`.toLowerCase();
   const kids = (item.target_kids || []).map((k: string) => k.toLowerCase());
-  const hasAle = kids.some((k: string) => ['ale', 'alessandro', 'p3'].includes(k));
-  const hasSeb = kids.some((k: string) => ['seby', 'sebastian', 'seb', 'p1'].includes(k));
-  const kidCode = (hasAle && hasSeb) || kids.includes('all') || kids.length === 0 ? 'A+S' : (hasAle ? 'Ale' : 'Seb');
+  const titleHasP3 = /\b(p3|pr3|primary 3)\b/.test(titleLow);
+  const titleHasP1 = /\b(p1|pr1|primary 1)\b/.test(titleLow);
+  const hasAle = titleHasP3 || (!titleHasP1 && kids.some((k: string) => ['ale', 'alessandro', 'p3'].includes(k)));
+  const hasSeb = titleHasP1 || (!titleHasP3 && kids.some((k: string) => ['seby', 'sebastian', 'seb', 'p1'].includes(k)));
+  const kidCode = (hasAle && hasSeb) || (!hasAle && !hasSeb) ? 'A+S' : (hasAle ? 'Ale' : 'Seb');
 
   if (text.includes('pianoforte') || text.includes('lezione di piano')) {
     return {
-      key: 'penrose',
+      key: 'piano',
       name: 'Lezione di Pianoforte',
       shortName: 'Pianoforte',
       email: 'jpenrose@tandem-ims.ch',
@@ -83,6 +257,36 @@ function inferSender(item: any) {
       role: `Musica · Lunedì (${kidCode})`,
       initials: 'PF',
       bgGradient: 'linear-gradient(135deg, #4f46e5 0%, #9333ea 100%)',
+      kidCode,
+    };
+  }
+  if (text.includes('aconde') || text.includes('amaia conde') || ['hw: french', 'french test', 'leçon', 'mon emploi du temps', 'homework for next week - french'].some(w => text.includes(w))) {
+    return {
+      key: 'conde',
+      name: 'Mme Amaia Conde',
+      shortName: 'A. Conde',
+      email: 'aconde@tandem-ims.ch',
+      emoji: '🇫🇷🥐',
+      flag: '🇫🇷',
+      subjectEmoji: '🥐',
+      role: `Français · ${kidCode === 'Ale' ? 'P3' : (kidCode === 'Seb' ? 'P1' : 'P1 & P3')}`,
+      initials: 'AC',
+      bgGradient: 'linear-gradient(135deg, #1d4ed8 0%, #ef4444 100%)',
+      kidCode,
+    };
+  }
+  if (text.includes('christina schmid') || text.includes('mrs. christina schmid') || text.includes('art class album') || text.includes('art history')) {
+    return {
+      key: 'schmid',
+      name: 'Mrs Christina Schmid',
+      shortName: 'C. Schmid',
+      email: 'zurich@tandem-ims.ch',
+      emoji: '🎨🖼️',
+      flag: '🎨',
+      subjectEmoji: '🖼️',
+      role: 'Art & Art History',
+      initials: 'CS',
+      bgGradient: 'linear-gradient(135deg, #d97706 0%, #db2777 100%)',
       kidCode,
     };
   }
@@ -101,7 +305,7 @@ function inferSender(item: any) {
       kidCode: 'Ale',
     };
   }
-  if (text.includes('jpenrose') || text.includes('penrose') || (kidCode === 'Ale' && ['english', 'spelling', 'music', 'diwali', 'french'].some(w => text.includes(w)))) {
+  if (text.includes('jpenrose') || text.includes('penrose') || (kidCode === 'Ale' && ['english', 'spelling', 'music', 'diwali', 'sats'].some(w => text.includes(w)))) {
     return {
       key: 'penrose',
       name: 'Miss Jessica Penrose',
@@ -176,7 +380,7 @@ function inferCategory(item: any) {
       catLabel: 'Test / Verifica',
     };
   }
-  if (['homework', 'hausaufgabe', 'hausaufgaben', 'raz kids', 'matheplan', 'schreibheft', 'ziffern', 'pianoforte', 'piano'].some(k => titleL.includes(k))) {
+  if (['homework', 'hw:', 'hausaufgabe', 'hausaufgaben', 'raz kids', 'matheplan', 'schreibheft', 'ziffern', 'pianoforte', 'piano'].some(k => titleL.includes(k))) {
     const isPiano = titleL.includes('piano');
     return {
       nature: 'action_required',
@@ -245,6 +449,214 @@ function inferCategory(item: any) {
   };
 }
 
+function inferSubjects(item: any, sender: any, cat: any): string[] {
+  const titleL = String(item.title || '').toLowerCase();
+  const bodyL = String(item.body || '').toLowerCase();
+  const text = `${titleL} ${bodyL}`;
+  const subjs = new Set<string>();
+
+  // 1. Photos
+  if (
+    cat.catKey === 'photos' ||
+    ['photo', 'photos', 'album', 'behind the scenes', 'photos.app.goo.gl', 'weekly photo'].some(k => text.includes(k))
+  ) {
+    subjs.add('photos');
+  }
+
+  // 2. Piano
+  if (['pianoforte', 'lezione di piano', 'spartiti'].some(k => text.includes(k))) {
+    subjs.add('piano');
+  }
+
+  // 3. French (FR)
+  if (
+    sender.key === 'conde' ||
+    ['french', 'français', 'leçon', 'mon emploi du temps', 'aconde', 'amaia conde', 'matériel scolaire'].some(k => text.includes(k))
+  ) {
+    subjs.add('fr');
+  }
+
+  // 4. German (DE)
+  if (
+    ['deutsch', 'übungsheft', 'schreibheft', 'diktat', 'lesung'].some(k => text.includes(k))
+  ) {
+    subjs.add('de');
+  }
+
+  // 5. Math
+  if (
+    ['mathe', 'mathematik', 'lzk', 'lernzielkontrolle', 'ziffern schreiben', 'matheplan', 'arbeitsblatt', 'mathetest', 'ordnen / zerlegen'].some(k => text.includes(k))
+  ) {
+    subjs.add('math');
+  }
+
+  // 6. English (EN)
+  if (
+    ['english', 'gps', 'grammar', 'punctuation', 'spelling', 'reading comprehension', 'reading book', 'raz kids', 'raz-kids', 'sats', 'phonics', 'reading journals'].some(k => text.includes(k))
+  ) {
+    subjs.add('en');
+  }
+
+  // 7. Everything else (or admin/library/trips/billing) -> misc
+  if (subjs.size === 0) {
+    subjs.add('misc');
+  }
+
+  return Array.from(subjs);
+}
+
+interface ProvenanceInfo {
+  kind: 'email' | 'gcal' | 'ai_auto' | 'piota_legacy';
+  shortTag: string;
+  badgeLabel: string;
+  originDesc: string;
+  fromLine: string;
+  subjectLine: string;
+  timestampYmdHm: string;
+  extLabel: string;
+  extUrl: string;
+}
+
+function formatYmdHmZurich(isoOrDate: string): string {
+  const raw = String(isoOrDate || '').trim();
+  if (!raw) return '—';
+  // Date-only string YYYY-MM-DD -> YYYYMMDD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw.replace(/-/g, '');
+  }
+  const d = new Date(raw);
+  if (isNaN(d.getTime())) {
+    return raw.slice(0, 10).replace(/-/g, '');
+  }
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Zurich',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(d);
+  const get = (t: string) => parts.find(p => p.type === t)?.value || '00';
+  return `${get('year')}${get('month')}${get('day')} ${get('hour')}:${get('minute')}`;
+}
+
+function inferProvenance(item: any, sender: any, cleanTitle: string, primaryDate: string, effKidCode: string): ProvenanceInfo {
+  const id = String(item.id || '');
+  const body = String(item.body || '');
+  const srcUrl = String(item.source_url || '');
+  const mFrom = body.match(/^\*\*From:\*\*\s*(.+)$/m);
+  const rawFrom = mFrom ? mFrom[1].trim() : `${sender.name}${sender.email ? ` <${sender.email}>` : ''}`;
+  const mDate = body.match(/^\*\*Date:\*\*\s*(.+)$/m);
+  const rawTimestamp = mDate ? mDate[1].trim() : String(item.created_at || primaryDate || '');
+  const ymdHm = formatYmdHmZurich(rawTimestamp);
+
+  // 1. Auto-generated / AI synthetic messages
+  const isPianoAuto = id.includes('piano');
+  const isAiEvent = id.startsWith('event_ai_') || item.source === 'piotta_ai_gcal';
+  const isAiBriefingEmail = id.startsWith('alert_gmail_') && (
+    rawFrom.toLowerCase().includes('tandemims30@gmail.com') ||
+    cleanTitle.toLowerCase().includes('briefing settimana')
+  );
+
+  if (isPianoAuto) {
+    return {
+      kind: 'ai_auto',
+      shortTag: 'AUTO',
+      badgeLabel: 'Auto-generato · Er Piotta',
+      originDesc: 'Regola ricorrente locale (Pianoforte ogni lunedì) — non deriva da un\'email della scuola',
+      fromLine: 'Er Piotta · Regola automatica',
+      subjectLine: cleanTitle,
+      timestampYmdHm: primaryDate.replace(/-/g, ''),
+      extLabel: '',
+      extUrl: '',
+    };
+  }
+
+  if (isAiEvent) {
+    return {
+      kind: 'ai_auto',
+      shortTag: 'AI',
+      badgeLabel: 'AI · Piotta AI GCal',
+      originDesc: 'Promemoria generato dall\'AI (Piotta AI GCal) a partire da email e calendario classe',
+      fromLine: 'Er Piotta AI · Piotta AI GCal',
+      subjectLine: cleanTitle,
+      timestampYmdHm: primaryDate.replace(/-/g, ''),
+      extLabel: srcUrl.startsWith('http') ? 'Apri su Piotta AI GCal' : '',
+      extUrl: srcUrl.startsWith('http') ? srcUrl : '',
+    };
+  }
+
+  if (isAiBriefingEmail) {
+    return {
+      kind: 'ai_auto',
+      shortTag: 'AI',
+      badgeLabel: 'AI Briefing · Er Piotta',
+      originDesc: 'Riassunto settimanale generato automaticamente dall\'AI e inviato a tandemims30@gmail.com',
+      fromLine: rawFrom,
+      subjectLine: String(item.title || cleanTitle),
+      timestampYmdHm: ymdHm,
+      extLabel: srcUrl.startsWith('http') ? 'Apri in Gmail' : '',
+      extUrl: srcUrl.startsWith('http') ? srcUrl : '',
+    };
+  }
+
+  // 2. Real Gmail email
+  if (id.startsWith('alert_gmail_') || srcUrl.includes('mail.google.com')) {
+    return {
+      kind: 'email',
+      shortTag: 'EMAIL',
+      badgeLabel: 'Email · Gmail',
+      originDesc: 'Email reale ricevuta su tandemims30@gmail.com',
+      fromLine: rawFrom,
+      subjectLine: String(item.title || cleanTitle),
+      timestampYmdHm: ymdHm,
+      extLabel: srcUrl.startsWith('http') ? 'Apri in Gmail' : '',
+      extUrl: srcUrl.startsWith('http') ? srcUrl : '',
+    };
+  }
+
+  // 3. Google Classroom / School Calendar event
+  if (item.type === 'event') {
+    const isP3 = effKidCode === 'Ale' || id.includes('_p3_');
+    const isP1 = effKidCode === 'Seb' || id.includes('_p1_');
+    const calName = isP3
+      ? 'Google Calendar Primary 3 (Ale)'
+      : isP1
+        ? 'Google Calendar Primary 1 (Seby)'
+        : 'Calendario Scuola Tandem IMS';
+    const calEmbed = isP3
+      ? 'https://calendar.google.com/calendar/embed?src=c_classrooma99337a8%40group.calendar.google.com&ctz=Europe%2FZurich'
+      : isP1
+        ? 'https://calendar.google.com/calendar/embed?src=c_classroomc12e3a05%40group.calendar.google.com&ctz=Europe%2FZurich'
+        : '';
+    return {
+      kind: 'gcal',
+      shortTag: 'GCAL',
+      badgeLabel: isP3 ? 'Calendario · P3' : isP1 ? 'Calendario · P1' : 'Calendario Scuola',
+      originDesc: `Evento importato dal ${calName}`,
+      fromLine: calName,
+      subjectLine: cleanTitle,
+      timestampYmdHm: primaryDate.replace(/-/g, ''),
+      extLabel: (srcUrl.startsWith('http') || calEmbed) ? 'Apri Calendario' : '',
+      extUrl: srcUrl.startsWith('http') ? srcUrl : calEmbed,
+    };
+  }
+
+  // 4. Legacy Piota app alert
+  return {
+    kind: 'piota_legacy',
+    shortTag: 'PIOTA',
+    badgeLabel: 'Archivio · App Piota',
+    originDesc: 'Comunicazione scolastica importata dalla vecchia app Piota (dismessa)',
+    fromLine: rawFrom,
+    subjectLine: String(item.title || cleanTitle),
+    timestampYmdHm: ymdHm,
+    extLabel: '',
+    extUrl: '',
+  };
+}
+
 // Enrich and deduplicate items
 const seenDedup = new Set<string>();
 const enrichedItems = cleanFeed
@@ -266,6 +678,8 @@ const enrichedItems = cleanFeed
     const isManuallyArchived = Boolean(item.consumption?.archived);
     const sender = inferSender(item);
     const cat = inferCategory(item);
+    const subjects = inferSubjects(item, sender, cat);
+    const effKidCode = sender.kidCode || item.kid_code || 'A+S';
 
     // Clean title prefix
     let cleanTitle = String(item.title || 'Untitled').trim();
@@ -273,8 +687,23 @@ const enrichedItems = cleanFeed
       if (cleanTitle.startsWith(pref)) cleanTitle = cleanTitle.slice(pref.length);
     }
 
-    // Build snippet (strip Dear Parents / Liebe Eltern / Piota transition boilerplate)
+    const photoAlbums = extractPhotoLinksForItem(item, sender, cleanTitle, ymdCreated, primaryDate, effKidCode);
+    if (photoAlbums.length > 0 && !subjects.includes('photos')) {
+      subjects.push('photos');
+    }
+
+    const provenance = inferProvenance(item, sender, cleanTitle, primaryDate, effKidCode);
+
+    // Strip redundant leading **From:** / **Date:** lines from modal body since provenance bar displays them cleanly
+    const modalRawBody = String(item.body || '')
+      .replace(/^\*\*From:\*\*.*\n?/gm, '')
+      .replace(/^\*\*Date:\*\*.*\n?/gm, '')
+      .trim();
+
+    // Build snippet (strip Dear Parents / Liebe Eltern / Piota transition boilerplate & DE->EN marker)
     const rawBody = String(item.body || '')
+      .replace(/\[\[AUTO_TRANSLATED_DE_EN_V1\.2\.3\]\]/g, '')
+      .replace(/\n---[\s\S]*$/m, '')
       .replace(/^\*\*From:\*\*.*$/gm, '')
       .replace(/^\*\*Date:\*\*.*$/gm, '')
       .replace(/^Class calendar event.*$/gm, '')
@@ -282,6 +711,7 @@ const enrichedItems = cleanFeed
       .replace(/^(Kind regards,|Mit freundlichen Grüssen|Freundliche Grüsse|Warmly,)[\s\S]*$/gim, '')
       .replace(/Da Piota leider nicht mehr nutzbar ist,\s*teile ich Ihnen nun per Mail mit,\s*dass\s*/gi, '')
       .replace(/As you may be aware,\s*the Piota app is unfortunately no longer available\.\s*/gi, '')
+      .replace(/\[([^\]]+)\]\(https?:\/\/[^\s)]+\)/g, '$1')
       .trim();
     const snippet = rawBody.replace(/\s+/g, ' ').slice(0, 150);
 
@@ -289,6 +719,7 @@ const enrichedItems = cleanFeed
       ...item,
       nature: cat.nature,
       cat,
+      provenance,
       cleanTitle,
       snippet,
       primaryDate,
@@ -300,8 +731,10 @@ const enrichedItems = cleanFeed
       isManuallyArchived,
       isArchivedDefault: isAutoExpired || isManuallyArchived,
       sender,
-      kidCode: item.kid_code || sender.kidCode,
-      renderedBody: renderSimpleMarkdown(item.body || ''),
+      subjects,
+      photoAlbums,
+      kidCode: effKidCode,
+      renderedBody: renderSimpleMarkdown(modalRawBody),
     };
   })
   .filter((item: any) => {
@@ -332,6 +765,57 @@ const enrichedItems = cleanFeed
     if (ta === 0 || ta === 2) return a.primaryDate.localeCompare(b.primaryDate);
     return b.primaryDate.localeCompare(a.primaryDate);
   });
+
+// Collect and deduplicate all parsed Google Photos & Google Drive albums across all school emails
+const seenAlbumUrls = new Set<string>();
+const allPhotoAlbums: PhotoAlbumEntry[] = [];
+for (const it of enrichedItems) {
+  for (const pa of (it.photoAlbums || [])) {
+    if (!seenAlbumUrls.has(pa.url)) {
+      seenAlbumUrls.add(pa.url);
+      allPhotoAlbums.push(pa);
+    }
+  }
+}
+allPhotoAlbums.sort((a, b) => b.primaryDate.localeCompare(a.primaryDate));
+
+// Daily Mini-RAG: Build "Top of Mind" Next-Week Markdown Summary with Local Magic Links (#item:<id>)
+function findItemIdByHint(hint: string, kidHint?: string): string {
+  const h = hint.toLowerCase();
+  const match = enrichedItems.find((it: any) => {
+    if (kidHint && it.kidCode !== kidHint && it.kidCode !== 'A+S') return false;
+    const t = `${it.id} ${it.cleanTitle} ${it.snippet}`.toLowerCase();
+    return t.includes(h);
+  });
+  return match ? match.id : '';
+}
+
+function magicLink(label: string, hint: string, kidHint?: string): string {
+  const id = findItemIdByHint(hint, kidHint);
+  return id ? `[${label}](#item:${id})` : `**${label}**`;
+}
+
+// Also dynamically include any upcoming events in the next 8 days not covered by the main highlights
+const nextWeekEndIso = new Date(Date.now() + 8 * 86400000).toISOString().slice(0, 10);
+const upcomingEventsNextWeek = enrichedItems.filter(
+  (it: any) => it.type === 'event' && !it.isArchivedDefault && it.primaryDate >= todayIso && it.primaryDate <= nextWeekEndIso
+);
+
+const topOfMindRiccardoMd = [
+  `- 🇫🇷 **🐉 Ale · Francese (Lun 23 & Gio 26 Nov)**: Per **Lun 23 Nov** ripassare le 4 domande orali (*Comment tu t'appelles ? Quelles langues tu parles ? Quelle est ta nationalité ? Où habites-tu ?*) e nazionalità **blu** (M) / **arancione** (F) → ${magicLink('Test FR Leçon 4 (Lun 23)', '0goelbv3', 'Ale')}. Per **Gio 26 Nov** finire **es. 2 p. 47** + scheda *"Mon emploi du temps"* → ${magicLink('HW FR & EN (Gio 26)', '5cocuufs', 'Ale')}.`,
+  `- 🇩🇪🧮 **🐉 Ale · Tedesco & Mate (Mar 24 & Ven 27 Nov)**: Per **Mar 24 Nov** completare **Deutsch Übungsheft pp. 42–44** e preparazione verifica → ${magicLink('HW DE & Mathe (Mar 24)', '1qlmnttu', 'Ale')}, in vista del **Mathe Test di Ven 27 Nov** con Herr Biehl → ${magicLink('Mathe Test P3 (Ven 27)', '017ch2ju', 'Ale')}.`,
+  `- 🇫🇷🇩🇪 **🚗 Seby · Francese, Tedesco & Mate (Mar 24 – Gio 26 Nov)**: Ripassare oggetti scuola (*le matériel scolaire*) e colori M/F (*un crayon vert / une gomme verte*) nella cartellina da portare **ogni Gio** → ${magicLink('Email Mme Conde FR P1', '1a1e371252', 'Seb')}; **Mar 24 Nov** **Schreibheft** → ${magicLink('Deutsch P1 (Mar 24)', '20261124_4ldo6j2u', 'Seb')}; **Mer 25 Nov** **Ziffern schreiben** → ${magicLink('Mathe P1 (Mer 25)', '20261125_10shm6vk', 'Seb')}.`,
+  `- 🎹⛸️ **Pianoforte, Pattinaggio & Colloqui (PTC)**: **Lun 23 Nov** spartiti piano nello zaino → ${magicLink('Piano Ale', '20261123_piano03a', 'Ale')} · ${magicLink('Piano Seby', '20261123_piano01s', 'Seb')}; compilare numero scarpe pattinaggio P3 → ${magicLink('Schlittschuhfahren P3', '1a1f3885fe', 'Ale')}; colloqui PTC: **🚗 Seby Mar 24** → ${magicLink('PTC Seby', 'gc0n5qdt', 'Seb')} e **🐉 Ale Gio 26** → ${magicLink('PTC Ale', 'aoou41cm', 'Ale')}.`,
+].join('\n');
+
+const topOfMindKateMd = [
+  `- 🇬🇧🇫🇷 **🐉 Ale · English, SATs & French (Mon 23 & Thu 26 Nov)**: **Mon 23 Nov** **French Test Leçon 4** (4 speaking questions + blue/orange nationalities) → ${magicLink('FR Test Leçon 4 (Mon 23)', '0goelbv3', 'Ale')}. **Thu 26 Nov** **English GPS pp. 90–91** + **Reading ("Bill\'s New Frock") pp. 26–27** + French p. 47 ex. 2 & *"Mon emploi du temps"* → ${magicLink('HW FR & EN (Thu 26)', '5cocuufs', 'Ale')} + **Library books** → ${magicLink('P3 Library (Thu 26)', '05pgkjtc', 'Ale')} + **GPS SATs (Mon 30)** → ${magicLink('SATs Dates', '1a1e8ff3e3', 'Ale')}.`,
+  `- 🇬🇧🇫🇷 **🚗 Seby · English, French, DE & Maths (Tue 24 – Fri 27 Nov)**: Practise **French Unit 2** (school supplies & M/F colours) and pack plastic folder + book every **Thu** → ${magicLink('Mme Conde FR P1', '1a1e371252', 'Seb')}; **Tue 24 Nov** **Schreibheft** → ${magicLink('P1 Deutsch (Tue 24)', '20261124_4ldo6j2u', 'Seb')}; **Wed 25 Nov** **Ziffern schreiben** → ${magicLink('P1 Maths (Wed 25)', '20261125_10shm6vk', 'Seb')}; **Fri 27 Nov** return **reading book & spelling folder** → ${magicLink('P1 English (Fri 27)', '20261127_6e4r44ih', 'Seb')}.`,
+  `- 🗓️⛸️ **1st Semester PTCs & P3 Ice Skating**: Booked PTCs: **🚗 Seby on Tue 24 Nov** → ${magicLink('P1 PTC (Tue 24)', 'gc0n5qdt', 'Seb')} and **🐉 Ale on Thu 26 Nov** → ${magicLink('P3 PTC (Thu 26)', 'aoou41cm', 'Ale')}. Fill in Ale's shoe size for P3 ice skating → ${magicLink('P3 Ice Skating', '1a1f3885fe', 'Ale')} and see Christmas play update (Dec 17, 08:30–09:30) → ${magicLink('P3 Christmas Play', '1a1f2c5e61', 'Ale')}.`,
+].join('\n');
+
+const topOfMindRiccardoHtml = renderSimpleMarkdown(topOfMindRiccardoMd);
+const topOfMindKateHtml = renderSimpleMarkdown(topOfMindKateMd);
 ---
 
 <Layout title="Inbox & Action Tickets — Tandem IMS (Ale & Seby)" activeTab="tickets">
@@ -342,97 +826,145 @@ const enrichedItems = cleanFeed
         <div class="brand-title-row">
           <span class="gmail-logo-icon" aria-hidden="true">📬</span>
           <h1>Piota Gmail View</h1>
-          <span class="version-pill">Post-Piota v0.5 · Auto-Archive +7g</span>
+          <span class="version-pill">Post-Piota v0.6 · Auto-Archive +7g</span>
+          <!-- Last Synced Indicator + Red Reload Button if > 3 days -->
+          <div class="sync-status-wrap" id="sync-status-wrap" data-last-synced={initialLastSyncedIso}>
+            <span class="sync-status-badge" id="sync-status-badge" title={`Ultimo sync: ${initialLastSyncedIso}`}>
+              🟢 Last synced: appena aggiornato
+            </span>
+            <button
+              type="button"
+              id="btn-reload-sync"
+              class="btn-reload-sync"
+              title="Esegui subito piota-cli sync da tandemims30@gmail.com e Google Calendar"
+            >
+              🔄 Reload Sync
+            </button>
+          </div>
         </div>
         <p class="brand-subtitle">
           Inbox unificata <code>tandemims30@gmail.com</code> + Calendari Classi <strong>🐉 Ale (P3)</strong> &amp; <strong>🚗 Seb (P1)</strong>
         </p>
       </div>
 
-      <!-- Active Parent Switcher -->
-      <div class="parent-identity-bar">
-        <fieldset class="identity-fieldset">
-          <legend class="sr-only">Seleziona chi sta usando l'app</legend>
-          <span class="identity-label">Sono:</span>
-          <label class="identity-radio-label" id="lbl-user-riccardo">
-            <input type="radio" name="active-parent-user" value="riccardo" checked />
-            <img src="/er-piotta/images/family/riccardo.jpg" alt="" class="parent-mini-avatar" />
-            <span>Ricc</span>
-          </label>
-          <label class="identity-radio-label" id="lbl-user-kate">
-            <input type="radio" name="active-parent-user" value="kate" />
-            <img src="/er-piotta/images/family/kate.jpg" alt="" class="parent-mini-avatar" />
-            <span>Kate</span>
-          </label>
-        </fieldset>
+      <div class="topbar-right-actions">
+        <button
+          type="button"
+          id="btn-toggle-photo-map"
+          class="btn-photo-map-hero"
+          aria-expanded="false"
+          aria-controls="photo-albums-map-view"
+          title="Vedi la mappa di tutti i link Google Photos & Drive classificati per Bimbo, Attività ed Email"
+        >
+          📸 Mappa Foto ({allPhotoAlbums.length} Album)
+        </button>
+
+        <button
+          type="button"
+          id="btn-toggle-ai-panel"
+          class="btn-ask-ai-hero"
+          aria-expanded="false"
+          aria-controls="ai-assistant-panel"
+          title="Fai una domanda a Vertex AI / Gemini sulle email e i compiti"
+        >
+          ✨ Chiedi all'AI
+        </button>
       </div>
     </header>
 
-    <!-- Teacher Legend Strip -->
-    <section class="teacher-legend" aria-label="Insegnanti e Filtri Rapidi Mittente">
-      <button type="button" class="teacher-chip active" data-sender-filter="all">
-        <span>✨ Tutti i Mittenti</span>
-      </button>
-      <button type="button" class="teacher-chip" data-sender-filter="biehl">
-        <span class="t-avatar" style="background: linear-gradient(135deg, #1e293b, #dc2626);">MB</span>
-        <span>🇩🇪🧮 Herr Biehl <small>(🐉 Ale P3)</small></span>
-      </button>
-      <button type="button" class="teacher-chip" data-sender-filter="penrose">
-        <span class="t-avatar" style="background: linear-gradient(135deg, #1d4ed8, #7c3aed);">JP</span>
-        <span>🇬🇧🎵 Miss Penrose <small>(🐉 Ale P3)</small></span>
-      </button>
-      <button type="button" class="teacher-chip" data-sender-filter="rayment">
-        <span class="t-avatar" style="background: linear-gradient(135deg, #0369a1, #ec4899);">GR</span>
-        <span>🇬🇧📚 Miss Rayment <small>(🚗 Seb P1)</small></span>
-      </button>
-      <button type="button" class="teacher-chip" data-sender-filter="faux">
-        <span class="t-avatar" style="background: linear-gradient(135deg, #b91c1c, #d97706);">XF</span>
-        <span>🇩🇪🎨 Frau Faux <small>(🚗 Seb P1)</small></span>
-      </button>
-      <button type="button" class="teacher-chip" data-sender-filter="tandem">
-        <span class="t-avatar" style="background: linear-gradient(135deg, #dc2626, #991b1b);">TI</span>
-        <span>🇨🇭🏫 Tandem Admin <small>(🐉🚗 A+S)</small></span>
-      </button>
-    </section>
-
-    <!-- Semantic <search> landmark per Modern Web Guidance -->
-    <search class="gmail-toolbar" aria-label="Filtra e cerca comunicazioni scolastiche">
-      <div class="tab-strip" role="tablist" aria-label="Viste Inbox">
-        <button type="button" class="inbox-tab active" data-tab="inbox">
-          📥 Attivi <span class="tab-badge" id="count-inbox">0</span>
-        </button>
-        <button type="button" class="inbox-tab" data-tab="action">
-          ⚡ Richiede Azione <span class="tab-badge badge-urgent" id="count-action">0</span>
-        </button>
-        <button type="button" class="inbox-tab" data-tab="notes">
-          📝 Con Nota <span class="tab-badge badge-note" id="count-notes">0</span>
-        </button>
-        <button type="button" class="inbox-tab" data-tab="mine">
-          🙋🏻‍♂️ Miei Ticket <span class="tab-badge" id="count-mine">0</span>
-        </button>
-        <button type="button" class="inbox-tab" data-tab="archived">
-          🗄️ Auto-Archiviati (+7g) <span class="tab-badge" id="count-archived">0</span>
-        </button>
-      </div>
-
-      <div class="toolbar-right">
-        <!-- Category Filter Strip (Homework vs Test vs Biblio vs Trip vs Foto vs Admin) -->
-        <div class="cat-filter-group" role="group" aria-label="Filtra per categoria">
-          <button type="button" class="cat-pill-btn active" data-cat="all">Tutte</button>
-          <button type="button" class="cat-pill-btn" data-cat="homework" title="Compiti a casa">📝 HW</button>
-          <button type="button" class="cat-pill-btn" data-cat="test" title="Test e Verifiche">🎯 Test</button>
-          <button type="button" class="cat-pill-btn" data-cat="library" title="Biblioteca">📚 Biblio</button>
-          <button type="button" class="cat-pill-btn" data-cat="trip" title="Gite, Sport ed Eventi">🎒 Eventi</button>
-          <button type="button" class="cat-pill-btn" data-cat="photos" title="Album Foto">📸 Foto</button>
-          <button type="button" class="cat-pill-btn" data-cat="admin" title="Orari, Calendari e Admin">📅 Admin</button>
+    <!-- 🧠 TOP OF MIND — Compact Daily AI Mini-RAG Bullet List (Riccardo default / Kate on click) -->
+    <section class="top-of-mind-card" aria-label="Top of Mind">
+      <div class="tom-header">
+        <div class="tom-title-line">
+          <h2>Top of Mind</h2>
+          <span class="tom-rag-badge">{upcomingEventsNextWeek.length} scadenze · 7g</span>
         </div>
 
-        <!-- 3-char Kid Filter with 🐉 (Ale) and 🚗 (Seby) -->
-        <div class="kid-filter-group" role="group" aria-label="Filtra per figlio">
-          <button type="button" class="kid-pill-btn active" data-kid="all">Tutti</button>
-          <button type="button" class="kid-pill-btn kid-ale" data-kid="Ale">🐉 Ale</button>
-          <button type="button" class="kid-pill-btn kid-seb" data-kid="Seb">🚗 Seb</button>
-          <button type="button" class="kid-pill-btn kid-both" data-kid="A+S">🐉🚗 A+S</button>
+        <!-- Focus Parent Switcher with Working Avatars (/er-piotta/avatars/avatar_riccardo.png & avatar_kate.png) -->
+        <div class="tom-parent-switcher" role="tablist" aria-label="Focalizza Top of Mind su Riccardo o Kate">
+          <button
+            type="button"
+            class="tom-parent-btn active"
+            data-tom-parent="riccardo"
+            role="tab"
+            aria-selected="true"
+          >
+            <img src="/er-piotta/avatars/avatar_riccardo.png" alt="Riccardo" class="tom-parent-avatar" />
+            <span>Riccardo</span>
+          </button>
+          <button
+            type="button"
+            class="tom-parent-btn"
+            data-tom-parent="kate"
+            role="tab"
+            aria-selected="false"
+          >
+            <img src="/er-piotta/avatars/avatar_kate.png" alt="Kate" class="tom-parent-avatar" />
+            <span>Kate</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Compact Bullet List Panes with Local Magic Links (#item:<id>) -->
+      <div class="tom-body" id="tom-pane-riccardo" set:html={topOfMindRiccardoHtml} />
+      <div class="tom-body hidden" id="tom-pane-kate" set:html={topOfMindKateHtml} />
+    </section>
+
+    <!-- Collapsible Vertex AI / Gemini Q&A Drawer with Clickable Email Links -->
+    <section id="ai-assistant-panel" class="ai-panel hidden" aria-label="Assistente AI Scuola">
+      <form id="ai-question-form" class="ai-form-row">
+        <span class="ai-sparkle-icon" aria-hidden="true">🤖</span>
+        <input
+          type="text"
+          id="ai-question-input"
+          placeholder="Chiedi a Piota AI (es. 'Ci sono compiti di francese per Sebi?' o 'Cosa deve studiare Ale per lunedì?')..."
+          autocomplete="off"
+        />
+        <button type="submit" id="ai-submit-btn" class="btn-ai-submit">Chiedi a Gemini ✨</button>
+        <button type="button" id="ai-close-btn" class="btn-ai-close" title="Chiudi pannello AI">✕</button>
+      </form>
+
+      <div class="ai-quick-prompts">
+        <span class="ai-quick-label">Domande rapide:</span>
+        <button type="button" class="ai-chip-btn" data-ai-q="Ci sono compiti di francese per Sebi?">🇫🇷🚗 Seby Francese?</button>
+        <button type="button" class="ai-chip-btn" data-ai-q="Quali compiti o test di francese ha Ale?">🇫🇷🐉 Ale Francese?</button>
+        <button type="button" class="ai-chip-btn" data-ai-q="Ci sono compiti di tedesco per Ale e Sebi?">🇩🇪 Compiti Tedesco?</button>
+        <button type="button" class="ai-chip-btn" data-ai-q="Quali test o verifiche di matematica ci sono in arrivo?">🧮 Verifiche Mate?</button>
+        <button type="button" class="ai-chip-btn" data-ai-q="Cosa dobbiamo mettere nello zaino per lunedì?">🎒 Zaino Lunedì?</button>
+      </div>
+
+      <div id="ai-response-box" class="ai-response-box hidden">
+        <div id="ai-answer-text" class="ai-answer-text"></div>
+        <div class="ai-matched-header">
+          <span>📎 Email e Compiti citati (clicca per aprire l'email completa):</span>
+          <button type="button" id="ai-filter-table-btn" class="btn-ai-filter-table">
+            🔍 Filtra queste righe nella tabella
+          </button>
+        </div>
+        <div id="ai-matched-links" class="ai-matched-links"></div>
+      </div>
+    </section>
+
+    <!-- Unified 2x5 Subject Matrix (Ale/Seby x EN/DE/FR/Math/Piano + Photos & Misc) -->
+    <search class="gmail-toolbar" aria-label="Pulsantiera rapida 2x5 Figli per Materia e ricerca">
+      <!-- Top Bar: Inbox Views & Search -->
+      <div class="toolbar-top-row">
+        <div class="tab-strip" role="tablist" aria-label="Viste Inbox">
+          <button type="button" class="inbox-tab active" data-tab="inbox">
+            📥 Inbox Attivi <span class="tab-badge" id="count-inbox">0</span>
+          </button>
+          <button type="button" class="inbox-tab" data-tab="action">
+            ⚡ Richiede Azione <span class="tab-badge badge-urgent" id="count-action">0</span>
+          </button>
+          <button type="button" class="inbox-tab" data-tab="notes">
+            📝 Con Nota <span class="tab-badge badge-note" id="count-notes">0</span>
+          </button>
+          <button type="button" class="inbox-tab" data-tab="snoozed">
+            ⏰ Snoozed (7g) <span class="tab-badge" id="count-snoozed">0</span>
+          </button>
+          <button type="button" class="inbox-tab" data-tab="archived">
+            🗄️ Archiviati <span class="tab-badge" id="count-archived">0</span>
+          </button>
         </div>
 
         <div class="search-input-wrap">
@@ -445,23 +977,285 @@ const enrichedItems = cleanFeed
           />
         </div>
       </div>
+
+      <!-- Bottom Row: 2x5 Grid (Ale / Seby x EN / DE / FR / Math / Piano) + Photos & Misc -->
+      <div class="matrix-shell">
+        <div class="matrix-grid-2x5" role="group" aria-label="Tabella 2x5 Figli per Materia">
+          <!-- Header Row: Reset All + 5 Subject Columns -->
+          <button
+            type="button"
+            class="matrix-btn matrix-reset active"
+            data-matrix-kid="all"
+            data-matrix-subj="all"
+            title="Mostra tutte le materie di Ale e Seby"
+          >
+            ✨ Tutto
+          </button>
+          <button type="button" class="matrix-btn matrix-col-hdr" data-matrix-kid="all" data-matrix-subj="en" title="Filtra Inglese (Ale + Seby)">
+            🇬🇧 EN
+          </button>
+          <button type="button" class="matrix-btn matrix-col-hdr" data-matrix-kid="all" data-matrix-subj="de" title="Filtra Tedesco (Ale + Seby)">
+            🇩🇪 DE
+          </button>
+          <button type="button" class="matrix-btn matrix-col-hdr" data-matrix-kid="all" data-matrix-subj="fr" title="Filtra Francese (Ale + Seby)">
+            🇫🇷 FR
+          </button>
+          <button type="button" class="matrix-btn matrix-col-hdr" data-matrix-kid="all" data-matrix-subj="math" title="Filtra Matematica (Ale + Seby)">
+            🧮 Math
+          </button>
+          <button type="button" class="matrix-btn matrix-col-hdr" data-matrix-kid="all" data-matrix-subj="piano" title="Filtra Pianoforte (Ale + Seby)">
+            🎹 Piano
+          </button>
+
+          <!-- Row 1: 🐉 Ale (Primary 3) x 5 Subjects -->
+          <button
+            type="button"
+            class="matrix-btn matrix-row-hdr row-hdr-ale"
+            data-matrix-kid="Ale"
+            data-matrix-subj="all"
+            title="Tutti gli elementi di Alessandro (Primary 3)"
+          >
+            <span class="row-kid-title">🐉 Ale <small>P3</small></span>
+            <span class="matrix-count" data-mcount="Ale:all">0</span>
+          </button>
+          <button type="button" class="matrix-btn matrix-cell cell-ale" data-matrix-kid="Ale" data-matrix-subj="en" title="Ale · English (Miss Penrose)">
+            <span class="cell-main">🇬🇧 EN</span>
+            <span class="cell-sub">Penrose</span>
+            <span class="matrix-count" data-mcount="Ale:en">0</span>
+          </button>
+          <button type="button" class="matrix-btn matrix-cell cell-ale" data-matrix-kid="Ale" data-matrix-subj="de" title="Ale · Deutsch (Herr Biehl)">
+            <span class="cell-main">🇩🇪 DE</span>
+            <span class="cell-sub">Biehl</span>
+            <span class="matrix-count" data-mcount="Ale:de">0</span>
+          </button>
+          <button type="button" class="matrix-btn matrix-cell cell-ale" data-matrix-kid="Ale" data-matrix-subj="fr" title="Ale · Français (Mme Conde)">
+            <span class="cell-main">🇫🇷 FR</span>
+            <span class="cell-sub">Conde</span>
+            <span class="matrix-count" data-mcount="Ale:fr">0</span>
+          </button>
+          <button type="button" class="matrix-btn matrix-cell cell-ale" data-matrix-kid="Ale" data-matrix-subj="math" title="Ale · Mathe (Herr Biehl)">
+            <span class="cell-main">🧮 Math</span>
+            <span class="cell-sub">Biehl</span>
+            <span class="matrix-count" data-mcount="Ale:math">0</span>
+          </button>
+          <button type="button" class="matrix-btn matrix-cell cell-ale" data-matrix-kid="Ale" data-matrix-subj="piano" title="Ale · Pianoforte (Lunedì)">
+            <span class="cell-main">🎹 Piano</span>
+            <span class="cell-sub">Lunedì</span>
+            <span class="matrix-count" data-mcount="Ale:piano">0</span>
+          </button>
+
+          <!-- Row 2: 🚗 Seby (Primary 1) x 5 Subjects -->
+          <button
+            type="button"
+            class="matrix-btn matrix-row-hdr row-hdr-seb"
+            data-matrix-kid="Seb"
+            data-matrix-subj="all"
+            title="Tutti gli elementi di Sebastian (Primary 1)"
+          >
+            <span class="row-kid-title">🚗 Seby <small>P1</small></span>
+            <span class="matrix-count" data-mcount="Seb:all">0</span>
+          </button>
+          <button type="button" class="matrix-btn matrix-cell cell-seb" data-matrix-kid="Seb" data-matrix-subj="en" title="Seby · English (Miss Rayment)">
+            <span class="cell-main">🇬🇧 EN</span>
+            <span class="cell-sub">Rayment</span>
+            <span class="matrix-count" data-mcount="Seb:en">0</span>
+          </button>
+          <button type="button" class="matrix-btn matrix-cell cell-seb" data-matrix-kid="Seb" data-matrix-subj="de" title="Seby · Deutsch (Frau Faux)">
+            <span class="cell-main">🇩🇪 DE</span>
+            <span class="cell-sub">Faux</span>
+            <span class="matrix-count" data-mcount="Seb:de">0</span>
+          </button>
+          <button type="button" class="matrix-btn matrix-cell cell-seb" data-matrix-kid="Seb" data-matrix-subj="fr" title="Seby · Français (Mme Conde)">
+            <span class="cell-main">🇫🇷 FR</span>
+            <span class="cell-sub">Conde</span>
+            <span class="matrix-count" data-mcount="Seb:fr">0</span>
+          </button>
+          <button type="button" class="matrix-btn matrix-cell cell-seb" data-matrix-kid="Seb" data-matrix-subj="math" title="Seby · Mathematik (Frau Faux)">
+            <span class="cell-main">🧮 Math</span>
+            <span class="cell-sub">Faux</span>
+            <span class="matrix-count" data-mcount="Seb:math">0</span>
+          </button>
+          <button type="button" class="matrix-btn matrix-cell cell-seb" data-matrix-kid="Seb" data-matrix-subj="piano" title="Seby · Pianoforte (Lunedì)">
+            <span class="cell-main">🎹 Piano</span>
+            <span class="cell-sub">Lunedì</span>
+            <span class="matrix-count" data-mcount="Seb:piano">0</span>
+          </button>
+        </div>
+
+        <!-- Side Extra Buttons: 📸 Photos & 📦 Misc -->
+        <div class="matrix-extras" role="group" aria-label="Foto e Varie">
+          <button
+            type="button"
+            class="matrix-btn matrix-extra-btn extra-photos"
+            data-matrix-kid="all"
+            data-matrix-subj="photos"
+            title="Album Foto Settimanali, Arte, Diwali, Tawanga"
+          >
+            <div class="extra-label-wrap">
+              <span class="extra-title">📸 Photos</span>
+              <span class="extra-sub">Drive, Arte &amp; Album</span>
+            </div>
+            <span class="matrix-count" data-mcount="all:photos">0</span>
+          </button>
+
+          <button
+            type="button"
+            class="matrix-btn matrix-extra-btn extra-misc"
+            data-matrix-kid="all"
+            data-matrix-subj="misc"
+            title="Gite, Biblioteca, Pattinaggio, Silvesterlauf, Orari & Admin"
+          >
+            <div class="extra-label-wrap">
+              <span class="extra-title">📦 Misc</span>
+              <span class="extra-sub">Gite, Biblio &amp; Scuola</span>
+            </div>
+            <span class="matrix-count" data-mcount="all:misc">0</span>
+          </button>
+        </div>
+      </div>
     </search>
 
-    <!-- Column Header Legend (Fixed-width style matching piota-cli) -->
+    <!-- 📸 TABELLA SINOTTICA L1 ALBUM FOTO (webapp-that-riccardo-likes: Chi · Cosa · Data · Link) -->
+    <section id="photo-albums-map-view" class="photo-map-section hidden" aria-label="Album Foto">
+      <div class="photo-map-header">
+        <div class="photo-map-title-row">
+          <h2>Album Foto</h2>
+          <span class="photo-map-count-pill">{allPhotoAlbums.length}</span>
+        </div>
+
+        <!-- Joined Segmented Radio Control (Rule 8: 1-of-N mutually exclusive filter, zero polychrome clutter) -->
+        <div class="photo-act-segmented" role="radiogroup" aria-label="Filtra album per attività">
+          <button type="button" class="photo-act-btn active" data-photo-act="all" role="radio" aria-checked="true">Tutte ({allPhotoAlbums.length})</button>
+          <button type="button" class="photo-act-btn" data-photo-act="arte" role="radio" aria-checked="false">Arte</button>
+          <button type="button" class="photo-act-btn" data-photo-act="sport" role="radio" aria-checked="false">Sport</button>
+          <button type="button" class="photo-act-btn" data-photo-act="feste" role="radio" aria-checked="false">Feste</button>
+          <button type="button" class="photo-act-btn" data-photo-act="natale" role="radio" aria-checked="false">Natale</button>
+          <button type="button" class="photo-act-btn" data-photo-act="classe" role="radio" aria-checked="false">Classe</button>
+        </div>
+
+        <button type="button" id="btn-close-photo-map" class="photo-map-close-btn" title="Chiudi tabella foto">✕</button>
+      </div>
+
+      <div class="photo-table-wrap">
+        <table class="photo-synoptic-table">
+          <thead>
+            <tr>
+              <th class="col-pt-who">CHI</th>
+              <th class="col-pt-what">COSA (ATTIVITÀ &amp; OGGETTO)</th>
+              <th class="col-pt-date">DATA</th>
+              <th class="col-pt-link">LINK ALBUM &amp; EMAIL</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allPhotoAlbums.map((pa) => (
+              <tr
+                class="photo-album-row"
+                data-photo-kid={pa.kidCode}
+                data-photo-activity={pa.activityKey}
+                title={`${pa.description} — Inviato da ${pa.teacherName} (${pa.ymdDate})`}
+              >
+                <!-- 1. CHI: Stylized Cartoon Avatar with Red/Blue Carlesso Ring + Compact Kid Label -->
+                <td class="cell-pt-who">
+                  <div class="pt-who-wrap">
+                    {pa.kidCode === 'Ale' && (
+                      <>
+                        <img src="/er-piotta/avatars/avatar_ale_circle_transparent.png" alt="Ale" class="pt-kid-avatar ring-ale" />
+                        <span class="pt-kid-name">Ale <small>P3</small></span>
+                      </>
+                    )}
+                    {pa.kidCode === 'Seb' && (
+                      <>
+                        <img src="/er-piotta/avatars/avatar_sebi_circle_transparent.png" alt="Seby" class="pt-kid-avatar ring-seb" />
+                        <span class="pt-kid-name">Seby <small>P1</small></span>
+                      </>
+                    )}
+                    {pa.kidCode !== 'Ale' && pa.kidCode !== 'Seb' && (
+                      <>
+                        <div class="pt-dual-avatars">
+                          <img src="/er-piotta/avatars/avatar_ale_circle_transparent.png" alt="Ale" class="pt-kid-avatar ring-ale" />
+                          <img src="/er-piotta/avatars/avatar_sebi_circle_transparent.png" alt="Seby" class="pt-kid-avatar ring-seb overlap" />
+                        </div>
+                        <span class="pt-kid-name">Ale + Seby</span>
+                      </>
+                    )}
+                  </div>
+                </td>
+
+                <!-- 2. COSA: Soft-tinted Activity Micro-Badge + Concise Title + Muted Teacher -->
+                <td class="cell-pt-what">
+                  <span class={`pt-act-chip ${pa.activityColor}`}>{pa.activityLabel}</span>
+                  <span class="pt-what-title">{pa.emailTitle}</span>
+                  <span class="pt-what-teacher">· {pa.teacherName}</span>
+                </td>
+
+                <!-- 3. DATA: Engineering Date Sub-Grid (DoW + Bold YYYY-MM-DD with tabular-nums) -->
+                <td class="cell-pt-date">
+                  <span class="pt-date-grid">
+                    <span class={`pt-dow ${pa.dow === 'Sab' || pa.dow === 'Dom' ? 'pt-dow-wknd' : ''}`}>{pa.dow}</span>
+                    <strong class="pt-iso-date">{pa.primaryDate}</strong>
+                  </span>
+                </td>
+
+                <!-- 4. LINK: Monochrome currentColor SVG + Direct Album Link + Local Magic Link to Email -->
+                <td class="cell-pt-link">
+                  <div class="pt-links-wrap">
+                    <a
+                      href={pa.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="pt-album-link"
+                      title={`Apri su ${pa.provider}: ${pa.url}`}
+                    >
+                      <svg class="pt-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                        <circle cx="9" cy="9" r="2"/>
+                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                      </svg>
+                      <span>{pa.provider}</span>
+                      <code class="pt-short-url">{pa.shortUrl}</code>
+                      <svg class="pt-svg-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                        <path d="M7 7h10v10"/><path d="M7 17 17 7"/>
+                      </svg>
+                    </a>
+
+                    <a
+                      href={`#item:${pa.emailId}`}
+                      data-open-item={pa.emailId}
+                      class="pt-email-magic-link"
+                      title="Apri l'email originale del docente nell'app"
+                    >
+                      <svg class="pt-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                        <rect width="20" height="16" x="2" y="4" rx="2"/>
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                      </svg>
+                      <span>Email</span>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="photo-table-footnote">
+        <em>Passa il mouse su una riga per i dettagli dell'attività; clicca su Google Photos/Drive per l'album o su Email per il messaggio originale.</em>
+      </p>
+    </section>
+
+    <!-- Column Header Legend (Col 1 = KID, Col 2 = MITTENTE, Col 3 = DATA Lun 16 Nov) -->
     <div class="gmail-list-header" aria-hidden="true">
+      <div class="col-hdr-kid">FIGLIO</div>
       <div class="col-hdr-sender">MITTENTE &amp; MATERIA</div>
-      <div class="col-hdr-kid">KID</div>
-      <div class="col-hdr-dates">CREATO/DATA · AUTO-ARCHIVE</div>
+      <div class="col-hdr-dates">DATA · AUTO-ARCHIVE</div>
       <div class="col-hdr-subject">NATURA · CAT · OGGETTO, DETTAGLIO &amp; NOTE</div>
-      <div class="col-hdr-right">OWNER (RICC / KATE / —) &amp; NOTA</div>
+      <div class="col-hdr-right">AZIONI (ARCHIVIA · SNOOZE 7G · NOTA)</div>
     </div>
 
     <!-- Gmail Rows Container -->
     <div class="gmail-list" id="gmail-list-container" role="list">
       {enrichedItems.map((item: any) => {
-        const initOwner = String(item.ticket?.owner || 'unassigned').toLowerCase();
-        const normOwner = initOwner.startsWith('ric') ? 'riccardo' : (initOwner.startsWith('kat') ? 'kate' : 'unassigned');
         const initNote = String(item.ticket?.note || '').trim();
+        const initSnooze = String(item.consumption?.snoozed_until || '');
         const isAction = item.nature === 'action_required';
 
         return (
@@ -472,21 +1266,31 @@ const enrichedItems = cleanFeed
             data-type={item.type}
             data-kid={item.kidCode}
             data-sender={item.sender.key}
+            data-subjects={(item.subjects || ['misc']).join(',')}
             data-nature={item.nature}
             data-cat={item.cat.catKey}
-            data-owner={normOwner}
             data-note={initNote}
+            data-snoozed-until={initSnooze}
             data-auto-expired={item.isAutoExpired ? 'true' : 'false'}
             data-archived={item.isManuallyArchived ? 'true' : 'false'}
             data-read-riccardo={item.consumption?.read_by_riccardo ? 'true' : 'false'}
-            data-read-kate={item.consumption?.read_by_kate ? 'true' : 'false'}
             data-title={item.cleanTitle}
+            data-snippet={item.snippet || ''}
+            data-ymd={item.ymdCreated}
             data-sender-label={`${item.sender.emoji} ${item.sender.name} (${item.sender.role})`}
-            data-dates-label={`${item.cat.natureEmoji} ${item.cat.natureCode} · ${item.cat.catEmoji} ${item.cat.catLabel} · Data: ${item.ymdCreated} · Auto-Archive: ${item.ymdAutoArchive}`}
-            data-source-url={item.source_url || ''}
+            data-dates-label={`${item.cat.natureCode} · ${item.cat.catLabel} · ${item.ymdCreated}`}
+            data-source-url={item.provenance.extUrl || ''}
+            data-source-label={item.provenance.extLabel || ''}
+            data-prov-kind={item.provenance.kind}
+            data-prov-tag={item.provenance.shortTag}
+            data-prov-badge={item.provenance.badgeLabel}
+            data-prov-origin={item.provenance.originDesc}
+            data-prov-from={item.provenance.fromLine}
+            data-prov-subject={item.provenance.subjectLine}
+            data-prov-ts={item.provenance.timestampYmdHm}
           >
-            <!-- 1. Sender Avatar + Country/Subject Emoji + Name -->
-            <div class="cell-sender">
+            <!-- 1. COL 1 (Leftmost!): Kid Badge with 🐉 (Ale) / 🚗 (Seb) / 🐉🚗 (A+S) + Unread Dot -->
+            <div class="cell-kid">
               <button
                 type="button"
                 class="read-dot-btn"
@@ -496,7 +1300,13 @@ const enrichedItems = cleanFeed
               >
                 <span class="unread-dot"></span>
               </button>
+              <span class={`kid-badge3 kid-badge-${item.kidCode === 'Ale' ? 'ale' : (item.kidCode === 'Seb' ? 'seb' : 'both')}`}>
+                {item.kidCode === 'Ale' ? '🐉 Ale' : (item.kidCode === 'Seb' ? '🚗 Seb' : '🐉🚗 A+S')}
+              </span>
+            </div>
 
+            <!-- 2. COL 2: Sender Avatar + Country/Subject Emoji + Name -->
+            <div class="cell-sender">
               <div class="sender-avatar-wrap" title={`${item.sender.name} (${item.sender.email}) — ${item.sender.role}`}>
                 <div class="sender-avatar" style={`background: ${item.sender.bgGradient};`}>
                   <span class="sender-initials">{item.sender.initials}</span>
@@ -510,14 +1320,7 @@ const enrichedItems = cleanFeed
               </div>
             </div>
 
-            <!-- 2. Kid Badge with 🐉 (Ale) / 🚗 (Seb) / 🐉🚗 (A+S) -->
-            <div class="cell-kid">
-              <span class={`kid-badge3 kid-badge-${item.kidCode === 'Ale' ? 'ale' : (item.kidCode === 'Seb' ? 'seb' : 'both')}`}>
-                {item.kidCode === 'Ale' ? '🐉 Ale' : (item.kidCode === 'Seb' ? '🚗 Seb' : '🐉🚗 A+S')}
-              </span>
-            </div>
-
-            <!-- 3. Fixed-Width Dates: YYYYMMDD(Ven) + Auto-Archive YYYYMMDD(+Ng) -->
+            <!-- 3. COL 3: Readable Dates: Lun 16 Nov + Auto-Archive -->
             <div class="cell-dates">
               <span class="date-created" title="Data creazione / evento">{item.ymdCreated}</span>
               <span
@@ -531,6 +1334,12 @@ const enrichedItems = cleanFeed
             <!-- 4. Subject + Snippet + Inline Yellow Note Pill (Click opens full reader modal) -->
             <div class="cell-content" data-action="open-detail" tabindex="0" role="button" aria-label={`Leggi ${item.cleanTitle}`}>
               <div class="subject-line">
+                <span
+                  class={`prov-chip prov-${item.provenance.kind}`}
+                  title={`${item.provenance.badgeLabel} — ${item.provenance.originDesc} (${item.provenance.timestampYmdHm})`}
+                >
+                  {item.provenance.shortTag}
+                </span>
                 <span
                   class={`nat-badge ${isAction ? 'nat-act' : 'nat-fyi'}`}
                   title={isAction ? 'Action Required: richiede azione' : 'FYI: solo informativo'}
@@ -547,57 +1356,75 @@ const enrichedItems = cleanFeed
                 {item.snippet && <span class="subject-snippet">— {item.snippet}</span>}
               </div>
 
+              <!-- Auto-Parsed Google Photos / Drive Direct Chips right on the row! -->
+              {item.photoAlbums && item.photoAlbums.length > 0 && (
+                <div class="row-photo-chips">
+                  {item.photoAlbums.map((pa: PhotoAlbumEntry) => (
+                    <a
+                      href={pa.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="row-gphoto-pill"
+                      title={`Apri direttamente l'album su ${pa.provider}: ${pa.activityLabel}`}
+                    >
+                      {pa.providerIcon} {pa.provider} · {pa.activityEmoji} {pa.activityLabel} ↗
+                    </a>
+                  ))}
+                </div>
+              )}
+
               <!-- Sticky Note Pill (visible whenever a note is attached) -->
               <div class={`note-inline-pill ${initNote ? '' : 'hidden'}`} data-role="note-pill">
                 <span class="note-pill-icon">📝</span>
                 <span class="note-pill-text" data-role="note-text">{initNote}</span>
               </div>
 
-              <!-- Hidden rendered HTML for modal reader -->
+              <!-- Hidden rendered HTML for modal reader (/show/) -->
               <template class="item-body-template">
+                {item.photoAlbums && item.photoAlbums.length > 0 && (
+                  <div class="modal-extracted-photos-box">
+                    <div class="modal-extracted-photos-hdr">
+                      📸 <strong>Album Foto Estratti Automaticamente da questa Email:</strong>
+                    </div>
+                    <div class="modal-extracted-photos-list">
+                      {item.photoAlbums.map((pa: PhotoAlbumEntry) => (
+                        <a
+                          href={pa.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="btn-open-gphotos"
+                        >
+                          {pa.providerIcon} Apri su {pa.provider} ({pa.activityEmoji} {pa.activityLabel}) ↗
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div class="rendered-markdown" set:html={item.renderedBody} />
               </template>
             </div>
 
-            <!-- 5. Right-side Controls: Owner 3-way Radio (Ricc / Kate / —) + Note Button + Archive -->
+            <!-- 5. Right-side Controls: Clean monochrome Archivia · Snooze 7g · Nota -->
             <div class="cell-controls">
-              <fieldset class="owner-segmented" aria-label={`Owner per ${item.cleanTitle}`}>
-                <legend class="sr-only">Owner</legend>
-                <label class={`owner-opt opt-ricc ${normOwner === 'riccardo' ? 'selected' : ''}`} title="Assegna a Riccardo">
-                  <input
-                    type="radio"
-                    name={`owner-${item.id}`}
-                    value="riccardo"
-                    checked={normOwner === 'riccardo'}
-                    data-action="change-owner"
-                  />
-                  <img src="/er-piotta/images/family/riccardo.jpg" alt="" class="owner-mini-pic" />
-                  <span>Ricc</span>
-                </label>
+              <button
+                type="button"
+                class="btn-row-archive"
+                data-action="archive-read"
+                title="Marca come letta e rimuovi dalla Inbox (Archivia)"
+                aria-label={`Archivia ${item.cleanTitle}`}
+              >
+                <span class="btn-archive-label">✓ Archivia</span>
+              </button>
 
-                <label class={`owner-opt opt-kate ${normOwner === 'kate' ? 'selected' : ''}`} title="Assegna a Kate">
-                  <input
-                    type="radio"
-                    name={`owner-${item.id}`}
-                    value="kate"
-                    checked={normOwner === 'kate'}
-                    data-action="change-owner"
-                  />
-                  <img src="/er-piotta/images/family/kate.jpg" alt="" class="owner-mini-pic" />
-                  <span>Kate</span>
-                </label>
-
-                <label class={`owner-opt opt-none ${normOwner === 'unassigned' ? 'selected' : ''}`} title="Nessun owner">
-                  <input
-                    type="radio"
-                    name={`owner-${item.id}`}
-                    value="unassigned"
-                    checked={normOwner === 'unassigned'}
-                    data-action="change-owner"
-                  />
-                  <span>—</span>
-                </label>
-              </fieldset>
+              <button
+                type="button"
+                class="btn-row-snooze"
+                data-action="snooze-7d"
+                title="Snooze per 7 giorni (scompare dalla Inbox e torna tra 7 giorni)"
+                aria-label={`Snooze 7 giorni per ${item.cleanTitle}`}
+              >
+                <span class="btn-snooze-label">Snooze 7g</span>
+              </button>
 
               <button
                 type="button"
@@ -606,17 +1433,7 @@ const enrichedItems = cleanFeed
                 title={initNote ? `Modifica nota: ${initNote}` : 'Aggiungi una nota'}
                 aria-label={`Nota per ${item.cleanTitle}`}
               >
-                📝 <span class="btn-note-label">{initNote ? 'Nota' : '+Nota'}</span>
-              </button>
-
-              <button
-                type="button"
-                class="btn-archive-row"
-                data-action="toggle-archive"
-                title="Archivia / Ripristina"
-                aria-label={`Archivia ${item.cleanTitle}`}
-              >
-                🗄️
+                <span class="btn-note-label">{initNote ? 'Nota' : '+Nota'}</span>
               </button>
             </div>
           </article>
@@ -629,39 +1446,77 @@ const enrichedItems = cleanFeed
     </div>
   </div>
 
-  <!-- Native <dialog> for Reading Full Email / Event & Editing Note -->
+  <!-- Native <dialog> for Reading Full Email / Event (/show/) — Clean Provenance-First Design -->
   <dialog id="detail-dialog" class="piota-dialog" closedby="any" aria-labelledby="dialog-title">
     <div class="dialog-header">
-      <div class="dialog-meta-top">
-        <span id="dialog-sender-badge" class="dialog-sender-pill"></span>
-        <span id="dialog-dates-badge" class="dialog-dates-pill"></span>
+      <div class="dialog-title-stack">
+        <div class="dialog-meta-top">
+          <span id="dialog-prov-badge" class="dialog-prov-pill"></span>
+          <span id="dialog-dates-badge" class="dialog-dates-pill"></span>
+        </div>
+        <h2 id="dialog-title">Dettaglio</h2>
       </div>
-      <h2 id="dialog-title">Dettaglio Comunicazione</h2>
       <form method="dialog">
         <button type="submit" class="dialog-close-btn" aria-label="Chiudi finestra">✕</button>
       </form>
     </div>
 
+    <!-- Structured Provenance Header (Immediate distinction: Email vs Classroom Calendar vs AI/Auto) -->
+    <div id="dialog-provenance-bar" class="dialog-provenance-bar">
+      <div class="prov-grid">
+        <span class="prov-k" id="dialog-prov-k-from">Mittente</span>
+        <span class="prov-v" id="dialog-prov-v-from"></span>
+
+        <span class="prov-k" id="dialog-prov-k-subj">Oggetto</span>
+        <span class="prov-v prov-v-strong" id="dialog-prov-v-subj"></span>
+
+        <span class="prov-k">Data</span>
+        <span class="prov-v prov-v-mono" id="dialog-prov-v-ts"></span>
+
+        <span class="prov-k">Origine</span>
+        <span class="prov-v prov-v-origin" id="dialog-prov-v-origin"></span>
+      </div>
+    </div>
+
     <div class="dialog-body" id="dialog-body-content"></div>
 
+    <!-- Subtle Neutral Inline Note Bar -->
     <div class="dialog-note-box">
-      <label for="dialog-note-input" class="dialog-note-label">📝 Nota di Famiglia (Ricc &amp; Kate — salvata su Cloud Firestore):</label>
+      <label for="dialog-note-input" class="dialog-note-label">Nota</label>
       <div class="dialog-note-row">
         <input
           type="text"
           id="dialog-note-input"
-          placeholder="Es. Firmato e messo nello zaino blu, oppure studiare p. 11..."
+          placeholder="Aggiungi una nota condivisa (es. firmato, nello zaino, ripassare p. 11)..."
         />
-        <button type="button" id="dialog-save-note-btn" class="btn-primary-save">Salva Nota</button>
+        <button type="button" id="dialog-save-note-btn" class="btn-note-save-subtle">Salva</button>
       </div>
     </div>
 
+    <!-- Calm, Non-Pacchiano Single-Row Footer -->
     <div class="dialog-footer">
-      <a id="dialog-source-link" href="#" target="_blank" rel="noopener noreferrer" class="source-ext-link hidden">
-        🔗 Apri in Gmail originale
-      </a>
+      <div class="dialog-footer-actions">
+        <button type="button" id="dialog-ho-letto-btn" class="btn-modal-archive" title="Segna come letto e archivia dalla Inbox">
+          <svg class="btn-svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+          <span>Archivia (letto)</span>
+        </button>
+        <button type="button" id="dialog-snooze-btn" class="btn-modal-ghost" title="Nascondi dalla Inbox per 7 giorni">
+          <svg class="btn-svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+          </svg>
+          <span>Snooze 7g</span>
+        </button>
+        <a id="dialog-source-link" href="#" target="_blank" rel="noopener noreferrer" class="btn-modal-link hidden">
+          <span id="dialog-source-link-text">Apri in Gmail</span>
+          <svg class="btn-svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M7 7h10v10"/><path d="M7 17 17 7"/>
+          </svg>
+        </a>
+      </div>
       <form method="dialog">
-        <button type="submit" class="btn-secondary-close">Chiudi (Esc)</button>
+        <button type="submit" class="btn-secondary-close">Chiudi</button>
       </form>
     </div>
   </dialog>
@@ -818,68 +1673,26 @@ const enrichedItems = cleanFeed
     object-fit: cover;
   }
 
-  /* Teacher Legend Strip */
-  .teacher-legend {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .teacher-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.38rem 0.75rem;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #334155;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-
-  .teacher-chip:hover {
-    border-color: #94a3b8;
-    background: #f8fafc;
-  }
-
-  .teacher-chip.active {
-    background: #1e293b;
-    color: #ffffff;
-    border-color: #1e293b;
-  }
-
-  .teacher-chip small {
-    opacity: 0.75;
-    font-weight: 500;
-  }
-
-  .t-avatar {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    color: #fff;
-    font-size: 0.65rem;
-    font-weight: 800;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* Search & Tabs Toolbar */
+  /* Search, Tabs & 2x5 Matrix Toolbar */
   .gmail-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    background: #ffffff;
+    padding: 0.75rem 1rem;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  }
+
+  .toolbar-top-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.75rem;
-    background: #ffffff;
-    padding: 0.6rem 1rem;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
+    gap: 0.65rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid #f1f5f9;
   }
 
   .tab-strip {
@@ -892,11 +1705,11 @@ const enrichedItems = cleanFeed
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.45rem 0.8rem;
+    padding: 0.42rem 0.78rem;
     border: none;
     background: transparent;
     border-radius: 8px;
-    font-size: 0.83rem;
+    font-size: 0.82rem;
     font-weight: 700;
     color: #475569;
     cursor: pointer;
@@ -936,41 +1749,202 @@ const enrichedItems = cleanFeed
     color: #92400e;
   }
 
-  .toolbar-right {
+  /* 2x5 Matrix Shell (Ale/Seby x EN/DE/FR/Math/Piano + Photos & Misc) */
+  .matrix-shell {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .matrix-grid-2x5 {
+    display: grid;
+    grid-template-columns: 120px repeat(5, minmax(0, 1fr));
+    gap: 0.38rem;
+    background: #f8fafc;
+    padding: 0.45rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .matrix-btn {
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 9px;
+    padding: 0.38rem 0.55rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.14s ease;
     display: flex;
     align-items: center;
-    gap: 0.65rem;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.35rem;
+    color: #1e293b;
   }
 
-  .kid-filter-group,
-  .cat-filter-group {
-    display: inline-flex;
+  .matrix-btn:hover {
+    border-color: #94a3b8;
     background: #f1f5f9;
-    padding: 0.2rem;
-    border-radius: 8px;
-    gap: 0.2rem;
-    flex-wrap: wrap;
+    transform: translateY(-1px);
   }
 
-  .kid-pill-btn,
-  .cat-pill-btn {
-    border: none;
-    background: transparent;
-    padding: 0.28rem 0.55rem;
-    border-radius: 6px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.76rem;
+  .matrix-reset {
+    justify-content: center;
     font-weight: 800;
-    color: #475569;
-    cursor: pointer;
-  }
-
-  .kid-pill-btn.active,
-  .cat-pill-btn.active {
+    font-size: 0.8rem;
     background: #ffffff;
     color: #0f172a;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  }
+
+  .matrix-col-hdr {
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.78rem;
+    background: #f1f5f9;
+    border-color: transparent;
+    color: #334155;
+    padding: 0.28rem 0.4rem;
+  }
+
+  .matrix-row-hdr {
+    font-weight: 800;
+    font-size: 0.82rem;
+    padding: 0.45rem 0.6rem;
+  }
+
+  .row-hdr-ale {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e3a8a;
+  }
+
+  .row-hdr-seb {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #14532d;
+  }
+
+  .row-kid-title small {
+    font-weight: 700;
+    opacity: 0.72;
+    font-size: 0.72rem;
+    margin-left: 0.15rem;
+  }
+
+  .matrix-cell {
+    position: relative;
+    padding: 0.42rem 0.55rem;
+  }
+
+  .cell-main {
+    font-weight: 800;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .cell-sub {
+    font-size: 0.68rem;
+    color: #64748b;
+    font-weight: 600;
+    margin-right: auto;
+    margin-left: 0.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .matrix-count {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 0.08rem 0.38rem;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #334155;
+    flex-shrink: 0;
+  }
+
+  .matrix-btn.zero-items {
+    opacity: 0.52;
+  }
+
+  .matrix-btn.active {
+    background: #0f172a !important;
+    border-color: #0f172a !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.22);
+    opacity: 1 !important;
+  }
+
+  .matrix-btn.active .cell-sub,
+  .matrix-btn.active .extra-sub,
+  .matrix-btn.active small {
+    color: #cbd5e1 !important;
+  }
+
+  .matrix-btn.active .matrix-count {
+    background: #3b82f6;
+    color: #ffffff;
+  }
+
+  /* Side Column: Photos & Misc */
+  .matrix-extras {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    justify-content: stretch;
+  }
+
+  .matrix-extra-btn {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border-radius: 11px;
+  }
+
+  .extra-photos {
+    background: #faf5ff;
+    border-color: #e9d5ff;
+    color: #581c87;
+  }
+
+  .extra-misc {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #1e293b;
+  }
+
+  .extra-label-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 0.08rem;
+  }
+
+  .extra-title {
+    font-weight: 800;
+    font-size: 0.84rem;
+  }
+
+  .extra-sub {
+    font-size: 0.69rem;
+    font-weight: 600;
+    color: #64748b;
+  }
+
+  @media (max-width: 960px) {
+    .matrix-shell {
+      grid-template-columns: 1fr;
+    }
+    .matrix-extras {
+      flex-direction: row;
+    }
+    .matrix-grid-2x5 {
+      grid-template-columns: 95px repeat(5, minmax(0, 1fr));
+    }
+    .cell-sub {
+      display: none;
+    }
   }
 
   .nat-badge,
@@ -1048,10 +2022,885 @@ const enrichedItems = cleanFeed
     background: #ffffff;
   }
 
-  /* Column Header Bar */
+  /* Sync Status Badge + Red Reload Button + AI Panel CSS */
+  .topbar-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+  }
+
+  .sync-status-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .sync-status-badge {
+    font-size: 0.73rem;
+    font-weight: 700;
+    padding: 0.16rem 0.6rem;
+    border-radius: 999px;
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+  }
+
+  .sync-status-badge.is-stale {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+    font-weight: 800;
+  }
+
+  .btn-reload-sync {
+    font-size: 0.73rem;
+    font-weight: 800;
+    padding: 0.18rem 0.62rem;
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.14s ease;
+  }
+
+  .btn-reload-sync:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+
+  .btn-reload-sync.is-stale-btn {
+    background: #dc2626;
+    color: #ffffff;
+    border-color: #b91c1c;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+    animation: pulse-red 2s infinite;
+  }
+
+  @keyframes pulse-red {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+  }
+
+  .btn-photo-map-hero {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.42rem 0.9rem;
+    border-radius: 999px;
+    border: 1.5px solid #d8b4fe;
+    background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+    color: #6b21a8 !important;
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(107, 33, 168, 0.12);
+    transition: all 0.15s ease;
+  }
+
+  .btn-photo-map-hero:hover,
+  .btn-photo-map-hero.active {
+    background: linear-gradient(135deg, #7e22ce 0%, #6b21a8 100%);
+    color: #ffffff !important;
+    border-color: #6b21a8;
+    transform: translateY(-1px);
+  }
+
+  .btn-ask-ai-hero {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.42rem 0.9rem;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    transition: all 0.15s ease;
+  }
+
+  .btn-ask-ai-hero:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+  }
+
+  .ai-panel {
+    background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+    border: 1.5px solid #bfdbfe;
+    border-radius: 14px;
+    padding: 0.85rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+  }
+
+  .ai-panel.hidden {
+    display: none;
+  }
+
+  .ai-form-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .ai-sparkle-icon {
+    font-size: 1.35rem;
+  }
+
+  #ai-question-input {
+    flex: 1;
+    padding: 0.52rem 0.85rem;
+    border-radius: 10px;
+    border: 1px solid #93c5fd;
+    background: #ffffff;
+    font-size: 0.88rem;
+    font-family: inherit;
+    color: #0f172a;
+  }
+
+  .btn-ai-submit {
+    padding: 0.52rem 1rem;
+    border-radius: 10px;
+    border: none;
+    background: #1d4ed8;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.84rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .btn-ai-close {
+    border: none;
+    background: rgba(255, 255, 255, 0.8);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: 800;
+    color: #475569;
+  }
+
+  .ai-quick-prompts {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .ai-quick-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #475569;
+  }
+
+  .ai-chip-btn {
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid #c7d2fe;
+    background: #ffffff;
+    color: #1e3a8a;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.12s ease;
+  }
+
+  .ai-chip-btn:hover {
+    background: #1e3a8a;
+    color: #ffffff;
+  }
+
+  .ai-response-box {
+    background: #ffffff;
+    border: 1px solid #dbeafe;
+    border-radius: 11px;
+    padding: 0.8rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .ai-response-box.hidden {
+    display: none;
+  }
+
+  .ai-answer-text {
+    font-size: 0.88rem;
+    line-height: 1.62;
+    color: #0f172a;
+  }
+
+  .ai-answer-text :global(p) {
+    margin: 0 0 0.55rem 0;
+  }
+
+  .ai-answer-text :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .ai-answer-text :global(ul) {
+    margin: 0.35rem 0;
+    padding-left: 1.25rem;
+  }
+
+  .ai-answer-text :global(li) {
+    margin-bottom: 0.35rem;
+  }
+
+  .ai-matched-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: #475569;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 0.5rem;
+  }
+
+  .btn-ai-filter-table {
+    font-size: 0.74rem;
+    font-weight: 800;
+    padding: 0.22rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    color: #1d4ed8 !important;
+    cursor: pointer;
+  }
+
+  .ai-matched-links {
+    display: flex;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+  }
+
+  :global(.ai-email-link-card) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.38rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #93c5fd !important;
+    background: #eff6ff !important;
+    color: #1e3a8a !important;
+    font-size: 0.8rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    font-family: inherit;
+  }
+
+  :global(.ai-email-link-card:hover) {
+    background: #dbeafe !important;
+    border-color: #3b82f6 !important;
+    color: #1e40af !important;
+    transform: translateY(-1px);
+  }
+
+  /* Magic In-App Item Links (#item:<id>) & DE->EN Auto-Translation Header */
+  :global(.magic-item-link) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.22rem;
+    padding: 0.12rem 0.52rem;
+    margin: 0 0.12rem;
+    border-radius: 6px;
+    background: #eff6ff;
+    border: 1px solid #93c5fd;
+    color: #1d4ed8 !important;
+    font-weight: 800;
+    font-size: 0.81rem;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: all 0.12s ease;
+  }
+
+  :global(.magic-item-link:hover) {
+    background: #1d4ed8;
+    border-color: #1e40af;
+    color: #ffffff !important;
+    box-shadow: 0 2px 5px rgba(29, 78, 216, 0.22);
+  }
+
+  :global(.de-trans-banner) {
+    color: #dc2626 !important;
+    font-style: italic;
+    font-size: 0.76rem;
+    font-weight: 700;
+    margin: 0.25rem 0 0.55rem 0;
+    padding: 0.22rem 0.55rem;
+    background: #fef2f2;
+    border-left: 3px solid #dc2626;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  :global(.de-trans-divider) {
+    border: none;
+    border-top: 1px dashed #cbd5e1;
+    margin: 0.85rem 0;
+  }
+
+  :global(.de-italic-line) {
+    color: #64748b;
+    font-style: italic;
+  }
+
+  /* 📸 L1 Synoptic Photo Albums Table (webapp-that-riccardo-likes: Chi · Cosa · Data · Link) */
+  .photo-map-section {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 0.65rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "zero" 1;
+  }
+
+  .photo-map-section.hidden {
+    display: none;
+  }
+
+  .photo-map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .photo-map-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .photo-map-title-row h2 {
+    margin: 0;
+    font-size: 0.94rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+  }
+
+  .photo-map-count-pill {
+    display: inline-block;
+    min-width: 26px;
+    text-align: center;
+    padding: 1px 7px;
+    border-radius: 5px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: rgba(100, 116, 139, 0.12);
+    border: 1px solid rgba(100, 116, 139, 0.25);
+    color: #334155;
+  }
+
+  /* Joined Segmented Radio Control (Rule 8) */
+  .photo-act-segmented {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    padding: 2px;
+    border-radius: 7px;
+    gap: 1px;
+    margin-left: auto;
+  }
+
+  .photo-act-btn {
+    padding: 0.2rem 0.58rem;
+    border-radius: 5px;
+    border: none;
+    background: transparent;
+    color: #475569 !important;
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.1s ease;
+  }
+
+  .photo-act-btn:hover {
+    color: #0f172a !important;
+  }
+
+  .photo-act-btn.active {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1);
+  }
+
+  .photo-map-close-btn {
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #475569 !important;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .photo-table-wrap {
+    overflow-x: auto;
+  }
+
+  .photo-synoptic-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.81rem;
+    color: #1e293b;
+  }
+
+  .photo-synoptic-table thead th {
+    text-align: left;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.04em;
+    padding: 0.28rem 0.55rem;
+    border-bottom: 1px solid #cbd5e1;
+    background: #f8fafc;
+    white-space: nowrap;
+  }
+
+  .col-pt-who { width: 135px; }
+  .col-pt-what { width: auto; }
+  .col-pt-date { width: 145px; }
+  .col-pt-link { width: 340px; }
+
+  /* Compact L1 Single-Line Rows (30px height) with Low-Variance Zebra Striping (#FAFAFC vs #F2F4F8) */
+  .photo-album-row {
+    height: 31px;
+    background: #fafafc;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background 0.1s ease;
+  }
+
+  .photo-album-row:nth-child(even) {
+    background: #f2f4f8;
+  }
+
+  .photo-album-row:hover {
+    background: #e2e8f0;
+  }
+
+  .photo-album-row.hidden {
+    display: none;
+  }
+
+  .photo-album-row td {
+    padding: 0.22rem 0.55rem;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  /* Col 1: CHI (Cartoon Avatar + Carlesso Ring) */
+  .pt-who-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+  }
+
+  .pt-dual-avatars {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .pt-kid-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #ffffff;
+    flex-shrink: 0;
+  }
+
+  .pt-kid-avatar.ring-ale {
+    border: 2px solid #ef4444;
+  }
+
+  .pt-kid-avatar.ring-seb {
+    border: 2px solid #3b82f6;
+  }
+
+  .pt-kid-avatar.overlap {
+    margin-left: -7px;
+  }
+
+  .pt-kid-name {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.8rem;
+  }
+
+  .pt-kid-name small {
+    color: #64748b;
+    font-weight: 500;
+    font-size: 0.71rem;
+  }
+
+  /* Col 2: COSA (Soft-Tinted Micro-Badge + Concise Title) */
+  .pt-act-chip {
+    display: inline-block;
+    min-width: 78px;
+    text-align: center;
+    padding: 1px 7px;
+    border-radius: 5px;
+    font-size: 0.71rem;
+    font-weight: 600;
+    margin-right: 0.45rem;
+    background: rgba(100, 116, 139, 0.12);
+    border: 1px solid rgba(100, 116, 139, 0.26);
+    color: #334155;
+  }
+
+  .pt-act-chip.act-sport  { background: rgba(14, 165, 233, 0.12); border-color: rgba(14, 165, 233, 0.28); color: #0369a1; }
+  .pt-act-chip.act-arte   { background: rgba(236, 72, 153, 0.12); border-color: rgba(236, 72, 153, 0.28); color: #9d174d; }
+  .pt-act-chip.act-feste  { background: rgba(245, 158, 11, 0.14); border-color: rgba(245, 158, 11, 0.30); color: #92400e; }
+  .pt-act-chip.act-natale { background: rgba(16, 185, 129, 0.14); border-color: rgba(16, 185, 129, 0.28); color: #065f46; }
+  .pt-act-chip.act-classe { background: rgba(139, 92, 246, 0.12); border-color: rgba(139, 92, 246, 0.28); color: #5b21b6; }
+
+  .pt-what-title {
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .pt-what-teacher {
+    color: #64748b;
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
+  }
+
+  /* Col 3: DATA (DoW + Bold YYYY-MM-DD Sub-Grid) */
+  .pt-date-grid {
+    display: inline-grid;
+    grid-template-columns: 3.4ch 10.5ch;
+    align-items: baseline;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pt-dow {
+    color: #64748b;
+    font-weight: 400;
+    font-size: 0.76rem;
+  }
+
+  .pt-dow-wknd {
+    color: #d97706;
+  }
+
+  .pt-iso-date {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.8rem;
+  }
+
+  /* Col 4: LINK (Monochrome currentColor SVGs + Short URL + Local Email Link) */
+  .pt-links-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .pt-svg-icon {
+    width: 14px;
+    height: 14px;
+    color: #64748b;
+    flex-shrink: 0;
+  }
+
+  .pt-svg-ext {
+    width: 12px;
+    height: 12px;
+    color: #64748b;
+    flex-shrink: 0;
+  }
+
+  .pt-album-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: #1e293b !important;
+    font-weight: 600;
+    text-decoration: none !important;
+    padding: 1px 6px;
+    border-radius: 5px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    font-size: 0.76rem;
+  }
+
+  .pt-album-link:hover {
+    border-color: #2563eb;
+    color: #1d4ed8 !important;
+    background: #eff6ff;
+  }
+
+  .pt-album-link:hover .pt-svg-icon,
+  .pt-album-link:hover .pt-svg-ext {
+    color: #1d4ed8;
+  }
+
+  .pt-short-url {
+    font-size: 0.71rem;
+    color: #475569;
+    background: transparent;
+    padding: 0;
+  }
+
+  .pt-email-magic-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.22rem;
+    color: #475569 !important;
+    font-size: 0.74rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .pt-email-magic-link:hover {
+    color: #0f172a !important;
+    background: #e2e8f0;
+  }
+
+  .photo-table-footnote {
+    margin: 0.1rem 0 0 0;
+    font-size: 0.73rem;
+    color: #64748b;
+  }
+
+  .row-photo-chips {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.18rem;
+  }
+
+  .row-gphoto-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
+    padding: 0.14rem 0.58rem;
+    border-radius: 999px;
+    background: #faf5ff;
+    border: 1px solid #d8b4fe;
+    color: #6b21a8 !important;
+    font-size: 0.73rem;
+    font-weight: 800;
+    text-decoration: none !important;
+    transition: all 0.12s ease;
+  }
+
+  .row-gphoto-pill:hover {
+    background: #7e22ce;
+    border-color: #6b21a8;
+    color: #ffffff !important;
+  }
+
+  .modal-extracted-photos-box {
+    margin-bottom: 0.9rem;
+    padding: 0.7rem 0.95rem;
+    border-radius: 10px;
+    background: #faf5ff;
+    border: 1.5px solid #d8b4fe;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .modal-extracted-photos-hdr {
+    font-size: 0.8rem;
+    color: #581c87;
+  }
+
+  .modal-extracted-photos-list {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  :global(.ext-photo-link) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 6px;
+    background: #faf5ff;
+    border: 1px solid #c084fc;
+    color: #6b21a8 !important;
+    font-weight: 800;
+    text-decoration: underline;
+  }
+
+  :global(.ext-photo-link:hover) {
+    background: #7e22ce;
+    color: #ffffff !important;
+  }
+
+  :global(.ext-normal-link) {
+    color: #2563eb !important;
+    font-weight: 700;
+    text-decoration: underline;
+  }
+  .top-of-mind-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 0.45rem 0.85rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .tom-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .tom-title-line {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .tom-title-line h2 {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+  }
+
+  .tom-rag-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tom-parent-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background: #f1f5f9;
+    padding: 2px;
+    border-radius: 7px;
+    border: 1px solid #cbd5e1;
+  }
+
+  .tom-parent-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    padding: 0.16rem 0.55rem;
+    border-radius: 5px;
+    border: none;
+    background: transparent;
+    color: #475569 !important;
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.1s ease;
+  }
+
+  .tom-parent-btn:hover {
+    color: #0f172a !important;
+  }
+
+  .tom-parent-btn.active {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1);
+  }
+
+  .tom-parent-avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #e2e8f0;
+  }
+
+  .tom-body {
+    font-size: 0.77rem;
+    line-height: 1.42;
+    color: #1e293b;
+  }
+
+  .tom-body.hidden {
+    display: none;
+  }
+
+  .tom-body :global(.md-bullet-list) {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+  }
+
+  .tom-body :global(.md-bullet-list li) {
+    margin: 0;
+    padding: 0;
+  }
+
+  .tom-body :global(p) {
+    margin: 0;
+    padding: 0;
+  }
+
+  :global(.magic-item-link) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.04rem 0.38rem;
+    margin: 0 0.08rem;
+    border-radius: 4px;
+    background: #eff6ff;
+    border: 1px solid #93c5fd;
+    color: #1d4ed8 !important;
+    font-weight: 600;
+    font-size: 0.73rem;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: all 0.1s ease;
+  }
+
+  /* Column Header Bar (Col 1 = FIGLIO, Col 2 = MITTENTE, Col 3 = DATA Lun 16 Nov) */
   .gmail-list-header {
     display: grid;
-    grid-template-columns: 205px 86px 148px 1fr 290px;
+    grid-template-columns: 105px 195px 150px 1fr 290px;
     gap: 0.65rem;
     padding: 0.35rem 0.9rem;
     font-size: 0.7rem;
@@ -1072,7 +2921,7 @@ const enrichedItems = cleanFeed
 
   .gmail-row {
     display: grid;
-    grid-template-columns: 205px 86px 148px 1fr 290px;
+    grid-template-columns: 105px 195px 150px 1fr 290px;
     gap: 0.65rem;
     align-items: center;
     padding: 0.55rem 0.9rem;
@@ -1320,120 +3169,128 @@ const enrichedItems = cleanFeed
     text-overflow: ellipsis;
   }
 
-  /* Cell 5: Right-side Owner Segmented Radios + Note Button */
+  /* Row Provenance Chips (Instant glance: EMAIL vs GCAL vs AUTO/AI vs PIOTA) */
+  .prov-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.08rem 0.36rem;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+    border: 1px solid transparent;
+  }
+
+  .prov-email {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+  }
+
+  .prov-gcal {
+    background: #f0fdf4;
+    color: #166534;
+    border-color: #bbf7d0;
+  }
+
+  .prov-ai_auto {
+    background: #f5f3ff;
+    color: #6d28d9;
+    border-color: #ddd6fe;
+  }
+
+  .prov-piota_legacy {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #cbd5e1;
+  }
+
+  /* Cell 5: Right-side Clean, Understated Row Controls */
   .cell-controls {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.4rem;
+    gap: 0.3rem;
   }
 
-  .owner-segmented {
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
-    border-radius: 8px;
-    padding: 0.15rem;
-    margin: 0;
+  .btn-row-archive {
     display: inline-flex;
     align-items: center;
-    gap: 0.15rem;
-  }
-
-  .owner-opt {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.2rem 0.45rem;
+    gap: 0.22rem;
+    padding: 0.24rem 0.52rem;
     border-radius: 6px;
-    font-size: 0.73rem;
-    font-weight: 700;
-    color: #64748b;
-    cursor: pointer;
-    user-select: none;
-    transition: all 0.12s ease;
-  }
-
-  .owner-opt input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  .owner-opt:hover {
-    color: #0f172a;
-    background: #e2e8f0;
-  }
-
-  .owner-opt.opt-ricc:has(input:checked),
-  .owner-opt.opt-ricc.selected {
-    background: #dbeafe;
-    color: #1e40af;
-    box-shadow: 0 1px 2px rgba(30, 64, 175, 0.15);
-  }
-
-  .owner-opt.opt-kate:has(input:checked),
-  .owner-opt.opt-kate.selected {
-    background: #fce7f3;
-    color: #9d174d;
-    box-shadow: 0 1px 2px rgba(157, 23, 77, 0.15);
-  }
-
-  .owner-opt.opt-none:has(input:checked),
-  .owner-opt.opt-none.selected {
+    border: 1px solid #cbd5e1;
     background: #ffffff;
-    color: #475569;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    color: #334155;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    white-space: nowrap;
   }
 
-  .owner-mini-pic {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    object-fit: cover;
+  .btn-row-archive:hover {
+    background: #f0fdf4;
+    border-color: #86efac;
+    color: #166534;
+  }
+
+  .btn-row-snooze {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.24rem 0.48rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    white-space: nowrap;
+  }
+
+  .btn-row-snooze:hover {
+    background: #fff7ed;
+    border-color: #fdba74;
+    color: #9a3412;
+  }
+
+  .btn-row-snooze.is-snoozed-active {
+    background: #fff7ed;
+    border-color: #fdba74;
+    color: #9a3412;
   }
 
   .btn-note {
     display: inline-flex;
     align-items: center;
-    gap: 0.2rem;
-    padding: 0.28rem 0.55rem;
-    border-radius: 7px;
-    border: 1px solid #cbd5e1;
+    gap: 0.18rem;
+    padding: 0.24rem 0.48rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
     background: #ffffff;
-    color: #334155;
-    font-size: 0.74rem;
-    font-weight: 700;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.12s ease;
+    white-space: nowrap;
   }
 
   .btn-note:hover {
-    background: #fef9c3;
-    border-color: #facc15;
-    color: #713f12;
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
   }
 
   .btn-note.has-note-btn {
-    background: #fef08a;
-    border-color: #eab308;
-    color: #713f12;
-  }
-
-  .btn-archive-row {
-    border: 1px solid transparent;
-    background: transparent;
-    padding: 0.25rem 0.35rem;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.82rem;
-    opacity: 0.55;
-  }
-
-  .btn-archive-row:hover {
-    opacity: 1;
-    background: #f1f5f9;
-    border-color: #cbd5e1;
+    background: #fefce8;
+    border-color: #fde047;
+    color: #854d0e;
   }
 
   .empty-inbox {
@@ -1450,21 +3307,22 @@ const enrichedItems = cleanFeed
     display: none;
   }
 
-  /* Native <dialog> Modals */
+  /* Native <dialog> Modals — Crisp, Understated, Provenance-First */
   .piota-dialog {
-    max-width: 680px;
+    max-width: 660px;
     width: 92vw;
-    border: none;
-    border-radius: 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
     padding: 0;
-    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+    box-shadow: 0 20px 48px rgba(15, 23, 42, 0.2);
     background: #ffffff;
     color: #0f172a;
+    overflow: hidden;
   }
 
   .piota-dialog::backdrop {
-    background: rgba(15, 23, 42, 0.45);
-    backdrop-filter: blur(3px);
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(2px);
   }
 
   .note-only-dialog {
@@ -1472,152 +3330,364 @@ const enrichedItems = cleanFeed
   }
 
   .dialog-header {
-    padding: 1.1rem 1.35rem;
+    padding: 0.9rem 1.2rem 0.8rem;
     border-bottom: 1px solid #e2e8f0;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 1rem;
+    gap: 0.75rem;
+  }
+
+  .dialog-title-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.32rem;
+    min-width: 0;
+    flex: 1;
   }
 
   .dialog-meta-top {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.4rem;
     flex-wrap: wrap;
-    margin-bottom: 0.35rem;
+    align-items: center;
   }
 
-  .dialog-sender-pill,
-  .dialog-dates-pill {
-    font-size: 0.75rem;
+  .dialog-prov-pill {
+    font-size: 0.7rem;
     font-weight: 700;
-    padding: 0.15rem 0.55rem;
-    border-radius: 999px;
+    padding: 0.12rem 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #cbd5e1;
     background: #f1f5f9;
     color: #334155;
+    letter-spacing: 0.01em;
+  }
+
+  .dialog-prov-pill.prov-email {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+  }
+
+  .dialog-prov-pill.prov-gcal {
+    background: #f0fdf4;
+    color: #166534;
+    border-color: #bbf7d0;
+  }
+
+  .dialog-prov-pill.prov-ai_auto {
+    background: #f5f3ff;
+    color: #6d28d9;
+    border-color: #ddd6fe;
+  }
+
+  .dialog-prov-pill.prov-piota_legacy {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #cbd5e1;
+  }
+
+  .dialog-dates-pill {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #64748b;
   }
 
   .dialog-header h2 {
     margin: 0;
-    font-size: 1.15rem;
-    font-weight: 800;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
   }
 
   .dialog-close-btn {
-    border: none;
-    background: #f1f5f9;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
+    border: 1px solid transparent;
+    background: transparent;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
     cursor: pointer;
-    font-weight: 800;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .dialog-close-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+
+  /* Provenance Header Block (Email From/Subject/YYYYMMDD HH:MM vs AI/Auto vs Calendar) */
+  .dialog-provenance-bar {
+    padding: 0.65rem 1.2rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.78rem;
+  }
+
+  .dialog-provenance-bar.prov-bar-ai_auto {
+    background: #faf8ff;
+    border-bottom-color: #e9d5ff;
+  }
+
+  .prov-grid {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 0.22rem 0.65rem;
+    align-items: baseline;
+  }
+
+  .prov-k {
+    font-size: 0.69rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+  }
+
+  .prov-v {
+    color: #1e293b;
+    word-break: break-word;
+  }
+
+  .prov-v-strong {
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .prov-v-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .prov-v-origin {
     color: #475569;
+    font-size: 0.76rem;
+  }
+
+  .dialog-provenance-bar.prov-bar-ai_auto .prov-v-origin {
+    color: #5b21b6;
+    font-weight: 600;
   }
 
   .dialog-body {
-    padding: 1.25rem 1.35rem;
-    max-height: 52vh;
+    padding: 1.05rem 1.2rem;
+    max-height: 48vh;
     overflow-y: auto;
-    line-height: 1.6;
-    font-size: 0.92rem;
+    line-height: 1.55;
+    font-size: 0.88rem;
+    color: #1e293b;
   }
 
   .dialog-note-box {
-    padding: 0.9rem 1.35rem;
-    background: #fefce8;
-    border-top: 1px solid #fef08a;
-    border-bottom: 1px solid #fef08a;
+    padding: 0.65rem 1.2rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
-    gap: 0.45rem;
+    gap: 0.35rem;
   }
 
   .dialog-note-label {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    color: #854d0e;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
   }
 
   .dialog-note-row {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.45rem;
   }
 
   #dialog-note-input,
   #quick-note-textarea {
     flex: 1;
     width: 100%;
-    padding: 0.5rem 0.75rem;
-    border-radius: 8px;
-    border: 1px solid #fde047;
+    padding: 0.42rem 0.68rem;
+    border-radius: 7px;
+    border: 1px solid #cbd5e1;
     background: #ffffff;
-    font-size: 0.88rem;
+    font-size: 0.84rem;
     font-family: inherit;
+    color: #0f172a;
+  }
+
+  #dialog-note-input:focus,
+  #quick-note-textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+  }
+
+  .btn-note-save-subtle {
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
+    padding: 0.4rem 0.78rem;
+    border-radius: 7px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.12s ease;
+  }
+
+  .btn-note-save-subtle:hover {
+    background: #0f172a;
+    border-color: #0f172a;
+    color: #ffffff;
   }
 
   .quick-note-sub {
     margin: 0;
-    padding: 0.5rem 1.35rem 0;
-    font-size: 0.84rem;
+    padding: 0.5rem 1.2rem 0;
+    font-size: 0.82rem;
     font-weight: 600;
     color: #475569;
   }
 
   .dialog-footer {
-    padding: 0.85rem 1.35rem;
+    padding: 0.72rem 1.2rem;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .dialog-footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-svg-ico {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  .btn-modal-archive {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.42rem 0.82rem;
+    border-radius: 7px;
+    border: 1px solid #0f172a;
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s ease;
+  }
+
+  .btn-modal-archive:hover {
+    background: #1e293b;
+  }
+
+  .btn-modal-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    padding: 0.42rem 0.75rem;
+    border-radius: 7px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s ease;
+  }
+
+  .btn-modal-ghost:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+  }
+
+  .btn-modal-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.42rem 0.65rem;
+    border-radius: 7px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #2563eb;
+    text-decoration: none;
+    transition: background 0.12s ease;
+  }
+
+  .btn-modal-link:hover {
+    background: #eff6ff;
+    text-decoration: underline;
+  }
+
+  .btn-modal-link.hidden {
+    display: none;
   }
 
   .footer-right-btns {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.45rem;
   }
 
   .btn-primary-save {
-    background: #1d4ed8;
+    background: #0f172a;
     color: #ffffff;
-    border: none;
-    padding: 0.48rem 0.95rem;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 0.84rem;
-    cursor: pointer;
-  }
-
-  .btn-secondary-close {
-    background: #f1f5f9;
-    color: #334155;
-    border: 1px solid #cbd5e1;
-    padding: 0.48rem 0.9rem;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 0.84rem;
-    cursor: pointer;
-  }
-
-  .btn-danger-clear {
-    background: #fef2f2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
-    padding: 0.45rem 0.8rem;
-    border-radius: 8px;
-    font-weight: 700;
+    border: 1px solid #0f172a;
+    padding: 0.42rem 0.85rem;
+    border-radius: 7px;
+    font-weight: 600;
     font-size: 0.8rem;
     cursor: pointer;
   }
 
-  .source-ext-link {
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: #2563eb;
-    text-decoration: none;
+  .btn-secondary-close {
+    background: #ffffff;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    padding: 0.42rem 0.78rem;
+    border-radius: 7px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
   }
 
-  .source-ext-link.hidden {
-    display: none;
+  .btn-secondary-close:hover {
+    background: #f8fafc;
+    color: #0f172a;
+  }
+
+  .btn-danger-clear {
+    background: #ffffff;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    padding: 0.4rem 0.75rem;
+    border-radius: 7px;
+    font-weight: 600;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+
+  .btn-danger-clear:hover {
+    background: #fef2f2;
   }
 
   @media (max-width: 1024px) {
@@ -1648,6 +3718,7 @@ const enrichedItems = cleanFeed
     owner?: string;
     note?: string;
     archived?: boolean;
+    snoozed_until?: string;
     read_by_riccardo?: boolean;
     read_by_kate?: boolean;
   }
@@ -1662,9 +3733,9 @@ const enrichedItems = cleanFeed
   let activeUser = localStorage.getItem(USER_KEY) || 'riccardo';
   let activeTab = 'inbox';
   let activeKid = 'all';
-  let activeCat = 'all';
-  let activeSender = 'all';
+  let activeSubj = 'all';
   let searchQuery = '';
+  let aiFilterIds: Set<string> | null = null;
   let currentModalItemId: string | null = null;
 
   const rows = Array.from(document.querySelectorAll<HTMLElement>('.gmail-row'));
@@ -1673,6 +3744,43 @@ const enrichedItems = cleanFeed
 
   function saveLocalStates() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(localStates));
+  }
+
+  function updateSyncAgeBadge(isoStr?: string) {
+    const wrap = document.getElementById('sync-status-wrap');
+    const badge = document.getElementById('sync-status-badge');
+    const reloadBtn = document.getElementById('btn-reload-sync');
+    if (!wrap || !badge || !reloadBtn) return;
+
+    const rawIso = isoStr || wrap.dataset.lastSynced || '';
+    if (isoStr) wrap.dataset.lastSynced = isoStr;
+    const syncDate = new Date(rawIso);
+    if (isNaN(syncDate.getTime())) return;
+
+    const diffMs = Math.max(0, Date.now() - syncDate.getTime());
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    let ageText = 'pochi minuti fa';
+    if (diffDays >= 1) {
+      ageText = `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
+    } else if (diffHours >= 1) {
+      ageText = `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
+    } else if (diffMins >= 1) {
+      ageText = `${diffMins} min ago`;
+    }
+
+    const isStale = diffDays >= 3;
+    badge.classList.toggle('is-stale', isStale);
+    reloadBtn.classList.toggle('is-stale-btn', isStale);
+    if (isStale) {
+      badge.textContent = `🔴 Last synced ${ageText} (>3 days!)`;
+      reloadBtn.textContent = '🔴 Reload Sync Now!';
+    } else {
+      badge.textContent = `🟢 Last synced ${ageText}`;
+      reloadBtn.textContent = '🔄 Reload Sync';
+    }
   }
 
   async function persistToBackend(itemId: string, patch: ItemLocalState) {
@@ -1693,30 +3801,36 @@ const enrichedItems = cleanFeed
     const id = row.dataset.id || '';
     const st = localStates[id] || {};
 
-    const owner = st.owner !== undefined ? st.owner : (row.dataset.owner || 'unassigned');
     const note = st.note !== undefined ? st.note : (row.dataset.note || '');
     const archived = st.archived !== undefined ? st.archived : (row.dataset.archived === 'true');
+    const snoozedUntil = st.snoozed_until !== undefined ? st.snoozed_until : (row.dataset.snoozedUntil || '');
     const readR = st.read_by_riccardo !== undefined ? st.read_by_riccardo : (row.dataset.readRiccardo === 'true');
-    const readK = st.read_by_kate !== undefined ? st.read_by_kate : (row.dataset.readKate === 'true');
 
-    row.dataset.owner = owner;
     row.dataset.note = note;
     row.dataset.archived = archived ? 'true' : 'false';
+    row.dataset.snoozedUntil = snoozedUntil;
     row.dataset.readRiccardo = readR ? 'true' : 'false';
-    row.dataset.readKate = readK ? 'true' : 'false';
 
-    const isReadForCurrent = activeUser === 'riccardo' ? readR : readK;
-    row.classList.toggle('is-read', isReadForCurrent);
-    row.classList.toggle('is-unread', !isReadForCurrent);
+    row.classList.toggle('is-read', readR);
+    row.classList.toggle('is-unread', !readR);
     row.classList.toggle('has-note', Boolean(note));
 
-    // Sync radio buttons
-    const radios = row.querySelectorAll<HTMLInputElement>('input[type="radio"][data-action="change-owner"]');
-    radios.forEach((r) => {
-      const checked = r.value === owner;
-      r.checked = checked;
-      r.closest('.owner-opt')?.classList.toggle('selected', checked);
-    });
+    const nowIso = new Date().toISOString();
+    const isCurrentlySnoozed = Boolean(snoozedUntil && snoozedUntil > nowIso);
+
+    // Sync Archive button label
+    const archBtnLabel = row.querySelector<HTMLElement>('.btn-archive-label');
+    if (archBtnLabel) {
+      archBtnLabel.textContent = archived ? 'Ripristina' : 'Archivia';
+    }
+
+    // Sync Snooze button label
+    const snoozeBtn = row.querySelector<HTMLElement>('[data-action="snooze-7d"]');
+    const snoozeBtnLabel = row.querySelector<HTMLElement>('.btn-snooze-label');
+    if (snoozeBtn && snoozeBtnLabel) {
+      snoozeBtn.classList.toggle('is-snoozed-active', isCurrentlySnoozed);
+      snoozeBtnLabel.textContent = isCurrentlySnoozed ? 'Sveglia' : 'Snooze 7g';
+    }
 
     // Sync inline note pill & button
     const notePill = row.querySelector<HTMLElement>('[data-role="note-pill"]');
@@ -1738,50 +3852,87 @@ const enrichedItems = cleanFeed
     let cInbox = 0;
     let cAction = 0;
     let cNotes = 0;
-    let cMine = 0;
+    let cSnoozed = 0;
     let cArchived = 0;
     let visibleCount = 0;
+    const nowIso = new Date().toISOString();
+
+    // Matrix cell counters for current activeTab
+    const matrixCounts: Record<string, number> = {
+      'Ale:all': 0,
+      'Ale:en': 0,
+      'Ale:de': 0,
+      'Ale:fr': 0,
+      'Ale:math': 0,
+      'Ale:piano': 0,
+      'Seb:all': 0,
+      'Seb:en': 0,
+      'Seb:de': 0,
+      'Seb:fr': 0,
+      'Seb:math': 0,
+      'Seb:piano': 0,
+      'all:photos': 0,
+      'all:misc': 0,
+    };
 
     rows.forEach((row) => {
       applyRowState(row);
+      const id = row.dataset.id || '';
       const isAutoExpired = row.dataset.autoExpired === 'true';
       const isManuallyArchived = row.dataset.archived === 'true';
       const isArchived = isAutoExpired || isManuallyArchived;
+      const snoozedUntil = row.dataset.snoozedUntil || '';
+      const isSnoozed = !isArchived && Boolean(snoozedUntil && snoozedUntil > nowIso);
       const isAction = row.dataset.nature === 'action_required';
       const hasNote = Boolean(row.dataset.note);
-      const owner = row.dataset.owner || 'unassigned';
       const kid = row.dataset.kid || 'A+S';
-      const sender = row.dataset.sender || 'tandem';
+      const rowSubjs = (row.dataset.subjects || 'misc').split(',').filter(Boolean);
 
       if (isArchived) {
         cArchived++;
+      } else if (isSnoozed) {
+        cSnoozed++;
       } else {
         cInbox++;
         if (isAction) cAction++;
         if (hasNote) cNotes++;
-        if (owner === activeUser) cMine++;
       }
 
-      // Tab filter
+      // Tab filter (Snoozed items disappear from Inbox for 7 days and return automatically!)
       let matchTab = false;
       if (activeTab === 'archived') matchTab = isArchived;
-      else if (activeTab === 'inbox') matchTab = !isArchived;
-      else if (activeTab === 'action') matchTab = !isArchived && isAction;
-      else if (activeTab === 'notes') matchTab = !isArchived && hasNote;
-      else if (activeTab === 'mine') matchTab = !isArchived && owner === activeUser;
+      else if (activeTab === 'snoozed') matchTab = isSnoozed;
+      else if (activeTab === 'inbox') matchTab = !isArchived && !isSnoozed;
+      else if (activeTab === 'action') matchTab = !isArchived && !isSnoozed && isAction;
+      else if (activeTab === 'notes') matchTab = !isArchived && !isSnoozed && hasNote;
 
-      // Kid filter
-      const matchKid = activeKid === 'all' || kid === activeKid || (activeKid !== 'A+S' && kid === 'A+S');
-      // Category filter
-      const cat = row.dataset.cat || 'admin';
-      const matchCat = activeCat === 'all' || cat === activeCat;
-      // Sender filter
-      const matchSender = activeSender === 'all' || sender === activeSender;
+      // Update 2x5 matrix counters for rows matching the current Tab
+      if (matchTab) {
+        const isAleRow = kid === 'Ale' || kid === 'A+S';
+        const isSebRow = kid === 'Seb' || kid === 'A+S';
+        if (isAleRow) matrixCounts['Ale:all']++;
+        if (isSebRow) matrixCounts['Seb:all']++;
+        for (const s of ['en', 'de', 'fr', 'math', 'piano']) {
+          if (rowSubjs.includes(s)) {
+            if (isAleRow) matrixCounts[`Ale:${s}`]++;
+            if (isSebRow) matrixCounts[`Seb:${s}`]++;
+          }
+        }
+        if (rowSubjs.includes('photos')) matrixCounts['all:photos']++;
+        if (rowSubjs.includes('misc')) matrixCounts['all:misc']++;
+      }
+
+      // Kid filter from 2x5 matrix
+      const matchKid = activeKid === 'all' || kid === activeKid || kid === 'A+S';
+      // Subject filter from 2x5 matrix
+      const matchSubj = activeSubj === 'all' || rowSubjs.includes(activeSubj);
       // Search query
-      const searchable = `${row.dataset.title || ''} ${row.dataset.note || ''} ${row.dataset.senderLabel || ''}`.toLowerCase();
+      const searchable = `${row.dataset.title || ''} ${row.dataset.snippet || ''} ${row.dataset.note || ''} ${row.dataset.senderLabel || ''}`.toLowerCase();
       const matchSearch = !searchQuery || searchable.includes(searchQuery);
+      // AI matched IDs filter (when user clicks "Filtra queste righe nella tabella")
+      const matchAi = !aiFilterIds || aiFilterIds.has(id);
 
-      const show = matchTab && matchKid && matchCat && matchSender && matchSearch;
+      const show = matchTab && matchKid && matchSubj && matchSearch && matchAi;
       row.classList.toggle('hidden', !show);
       if (show) visibleCount++;
     });
@@ -1793,8 +3944,19 @@ const enrichedItems = cleanFeed
     setBadge('count-inbox', cInbox);
     setBadge('count-action', cAction);
     setBadge('count-notes', cNotes);
-    setBadge('count-mine', cMine);
+    setBadge('count-snoozed', cSnoozed);
     setBadge('count-archived', cArchived);
+
+    // Update matrix count badges
+    document.querySelectorAll<HTMLElement>('[data-mcount]').forEach((el) => {
+      const k = el.dataset.mcount || '';
+      const count = matrixCounts[k] ?? 0;
+      el.textContent = String(count);
+      const btn = el.closest<HTMLElement>('.matrix-btn');
+      if (btn && !btn.classList.contains('matrix-row-hdr')) {
+        btn.classList.toggle('zero-items', count === 0);
+      }
+    });
 
     const emptyBanner = document.getElementById('empty-inbox-banner');
     if (emptyBanner) emptyBanner.classList.toggle('hidden', visibleCount > 0);
@@ -1806,19 +3968,19 @@ const enrichedItems = cleanFeed
       const res = await fetch('/api/tickets-state');
       if (!res.ok) return;
       const data = await res.json();
+      if (data?.last_synced_at) {
+        updateSyncAgeBadge(data.last_synced_at);
+      }
       if (data && data.states) {
         for (const [id, s] of Object.entries<any>(data.states)) {
           const t = s.ticket || {};
           const c = s.consumption || {};
-          const rawOwner = String(t.owner || 'unassigned').toLowerCase();
-          const normOwner = rawOwner.startsWith('ric') ? 'riccardo' : (rawOwner.startsWith('kat') ? 'kate' : 'unassigned');
           localStates[id] = {
             ...(localStates[id] || {}),
-            owner: normOwner,
             note: t.note ?? localStates[id]?.note ?? '',
             archived: Boolean(c.archived),
+            snoozed_until: c.snoozed_until ?? localStates[id]?.snoozed_until ?? '',
             read_by_riccardo: Boolean(c.read_by_riccardo),
-            read_by_kate: Boolean(c.read_by_kate),
           };
         }
         saveLocalStates();
@@ -1829,25 +3991,102 @@ const enrichedItems = cleanFeed
     }
   }
 
-  // Wire up Active Parent User radio buttons
-  document.querySelectorAll<HTMLInputElement>('input[name="active-parent-user"]').forEach((radio) => {
-    radio.checked = radio.value === activeUser;
-    radio.addEventListener('change', () => {
-      if (radio.checked) {
-        activeUser = radio.value;
-        localStorage.setItem(USER_KEY, activeUser);
-        refreshAllAndFilter();
-      }
+  // Wire up 2x5 Matrix buttons (Ale/Seby x EN/DE/FR/Math/Piano + Photos & Misc)
+  const matrixBtns = Array.from(document.querySelectorAll<HTMLButtonElement>('.matrix-btn'));
+  const photoMapSection = document.getElementById('photo-albums-map-view');
+  const togglePhotoMapBtn = document.getElementById('btn-toggle-photo-map');
+  const closePhotoMapBtn = document.getElementById('btn-close-photo-map');
+  let activePhotoAct = 'all';
+
+  function syncUrlQueryParams() {
+    try {
+      const url = new URL(window.location.href);
+      const isPhotosVisible = Boolean(photoMapSection && !photoMapSection.classList.contains('hidden'));
+      const setOrDel = (k: string, val: string, defVal: string) => {
+        if (!val || val === defVal) url.searchParams.delete(k);
+        else url.searchParams.set(k, val);
+      };
+      setOrDel('tab', activeTab, 'inbox');
+      setOrDel('kid', activeKid, 'all');
+      setOrDel('subj', activeSubj, 'all');
+      setOrDel('photos', isPhotosVisible ? '1' : '0', '0');
+      setOrDel('photo_act', activePhotoAct, 'all');
+      setOrDel('q', searchQuery, '');
+      window.history.replaceState(null, '', url);
+    } catch {
+      // Ignore if file://
+    }
+  }
+
+  function filterPhotoMapCards() {
+    document.querySelectorAll<HTMLElement>('.photo-album-row').forEach((row) => {
+      const cKid = row.dataset.photoKid || 'A+S';
+      const cAct = row.dataset.photoActivity || 'classe';
+      const matchKid = activeKid === 'all' || cKid === activeKid || cKid === 'A+S';
+      const matchAct = activePhotoAct === 'all' || cAct === activePhotoAct;
+      row.classList.toggle('hidden', !(matchKid && matchAct));
+    });
+  }
+
+  function setPhotoMapVisible(visible: boolean) {
+    photoMapSection?.classList.toggle('hidden', !visible);
+    togglePhotoMapBtn?.classList.toggle('active', visible);
+    togglePhotoMapBtn?.setAttribute('aria-expanded', visible ? 'true' : 'false');
+    if (visible) filterPhotoMapCards();
+    syncUrlQueryParams();
+  }
+
+  togglePhotoMapBtn?.addEventListener('click', () => {
+    const isCurrentlyHidden = photoMapSection?.classList.contains('hidden');
+    setPhotoMapVisible(Boolean(isCurrentlyHidden));
+  });
+
+  closePhotoMapBtn?.addEventListener('click', () => {
+    setPhotoMapVisible(false);
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.photo-act-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll<HTMLButtonElement>('.photo-act-btn').forEach((b) => {
+        b.classList.remove('active');
+        b.setAttribute('aria-checked', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-checked', 'true');
+      activePhotoAct = btn.dataset.photoAct || 'all';
+      filterPhotoMapCards();
+      syncUrlQueryParams();
     });
   });
 
-  // Wire up Teacher filter chips
-  document.querySelectorAll<HTMLButtonElement>('.teacher-chip').forEach((btn) => {
+  function setActiveMatrixFilter(kid: string, subj: string) {
+    activeKid = kid;
+    activeSubj = subj;
+    aiFilterIds = null;
+    matrixBtns.forEach((b) => {
+      const isMatch = (b.dataset.matrixKid || 'all') === kid && (b.dataset.matrixSubj || 'all') === subj;
+      b.classList.toggle('active', isMatch);
+    });
+    // Automatically show the Photo Albums Table whenever the user clicks 📸 Photos!
+    if (subj === 'photos') {
+      setPhotoMapVisible(true);
+    } else {
+      filterPhotoMapCards();
+    }
+    refreshAllAndFilter();
+    syncUrlQueryParams();
+  }
+
+  matrixBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.teacher-chip').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      activeSender = btn.dataset.senderFilter || 'all';
-      refreshAllAndFilter();
+      const tKid = btn.dataset.matrixKid || 'all';
+      const tSubj = btn.dataset.matrixSubj || 'all';
+      // Clicking the already active filter (other than Tutto) resets back to Tutto!
+      if (activeKid === tKid && activeSubj === tSubj && !(tKid === 'all' && tSubj === 'all')) {
+        setActiveMatrixFilter('all', 'all');
+      } else {
+        setActiveMatrixFilter(tKid, tSubj);
+      }
     });
   });
 
@@ -1857,26 +4096,7 @@ const enrichedItems = cleanFeed
       document.querySelectorAll('.inbox-tab').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       activeTab = btn.dataset.tab || 'inbox';
-      refreshAllAndFilter();
-    });
-  });
-
-  // Wire up 3-char Kid filter buttons
-  document.querySelectorAll<HTMLButtonElement>('.kid-pill-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.kid-pill-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      activeKid = btn.dataset.kid || 'all';
-      refreshAllAndFilter();
-    });
-  });
-
-  // Wire up Category filter buttons
-  document.querySelectorAll<HTMLButtonElement>('.cat-pill-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.cat-pill-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      activeCat = btn.dataset.cat || 'all';
+      aiFilterIds = null;
       refreshAllAndFilter();
     });
   });
@@ -1885,7 +4105,180 @@ const enrichedItems = cleanFeed
   const searchInput = document.getElementById('gmail-search-input') as HTMLInputElement | null;
   searchInput?.addEventListener('input', () => {
     searchQuery = searchInput.value.trim().toLowerCase();
+    aiFilterIds = null;
     refreshAllAndFilter();
+  });
+
+  // Wire up Reload Sync button (POST /api/sync)
+  const reloadSyncBtn = document.getElementById('btn-reload-sync') as HTMLButtonElement | null;
+  reloadSyncBtn?.addEventListener('click', async () => {
+    if (!reloadSyncBtn) return;
+    const origText = reloadSyncBtn.textContent;
+    reloadSyncBtn.disabled = true;
+    reloadSyncBtn.textContent = '⏳ Syncing Gmail & Calendars...';
+    try {
+      const res = await fetch('/api/sync', { method: 'POST' });
+      const data = await res.json();
+      if (data?.last_synced_at) {
+        updateSyncAgeBadge(data.last_synced_at);
+      }
+      window.location.reload();
+    } catch {
+      reloadSyncBtn.disabled = false;
+      reloadSyncBtn.textContent = origText || '🔄 Reload Sync';
+    }
+  });
+
+  // Wire up Vertex AI / Gemini Assistant Panel
+  const aiPanel = document.getElementById('ai-assistant-panel');
+  const toggleAiBtn = document.getElementById('btn-toggle-ai-panel');
+  const closeAiBtn = document.getElementById('ai-close-btn');
+  const aiForm = document.getElementById('ai-question-form') as HTMLFormElement | null;
+  const aiInput = document.getElementById('ai-question-input') as HTMLInputElement | null;
+  const aiSubmitBtn = document.getElementById('ai-submit-btn') as HTMLButtonElement | null;
+  const aiRespBox = document.getElementById('ai-response-box');
+  const aiAnswerText = document.getElementById('ai-answer-text');
+  const aiMatchedLinks = document.getElementById('ai-matched-links');
+  const aiFilterTableBtn = document.getElementById('ai-filter-table-btn');
+  let lastAiMatchedIds: string[] = [];
+
+  toggleAiBtn?.addEventListener('click', () => {
+    const isHidden = aiPanel?.classList.toggle('hidden');
+    toggleAiBtn.setAttribute('aria-expanded', isHidden ? 'false' : 'true');
+    if (!isHidden) aiInput?.focus();
+  });
+
+  closeAiBtn?.addEventListener('click', () => {
+    aiPanel?.classList.add('hidden');
+    toggleAiBtn?.setAttribute('aria-expanded', 'false');
+    if (aiFilterIds) {
+      aiFilterIds = null;
+      refreshAllAndFilter();
+    }
+  });
+
+  function renderClientMarkdown(md: string): string {
+    if (!md) return '';
+    const escaped = md
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    return escaped
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+      .replace(/\[([^\]]+)\]\(#item:([^\s)]+)\)/g, '<a href="#item:$2" data-open-item="$2" class="magic-item-link">$1</a>')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+      .replace(/^- (.+)$/gm, '• $1')
+      .split(/\n{2,}/)
+      .map(p => `<p>${p.replace(/\n/g, '<br/>')}</p>`)
+      .join('');
+  }
+
+  // Wire up Top of Mind Parent Switcher (Riccardo default / Kate on click)
+  document.querySelectorAll<HTMLButtonElement>('.tom-parent-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const targetParent = btn.dataset.tomParent || 'riccardo';
+      document.querySelectorAll<HTMLButtonElement>('.tom-parent-btn').forEach((b) => {
+        const isSel = b.dataset.tomParent === targetParent;
+        b.classList.toggle('active', isSel);
+        b.setAttribute('aria-selected', isSel ? 'true' : 'false');
+      });
+      document.getElementById('tom-pane-riccardo')?.classList.toggle('hidden', targetParent !== 'riccardo');
+      document.getElementById('tom-pane-kate')?.classList.toggle('hidden', targetParent !== 'kate');
+    });
+  });
+
+  // Wire up Local Magic Links (a[data-open-item]) across Top of Mind & AI responses!
+  document.addEventListener('click', (ev) => {
+    const target = (ev.target as HTMLElement | null)?.closest<HTMLElement>('[data-open-item]');
+    if (!target) return;
+    ev.preventDefault();
+    const itemId = target.dataset.openItem || '';
+    if (!itemId) return;
+    const row = rows.find(r => r.dataset.id === itemId || (r.dataset.id || '').includes(itemId));
+    if (row) {
+      openDetailModal(row);
+    }
+  });
+
+  async function askPiotaAi(question: string) {
+    const q = question.trim();
+    if (!q || !aiRespBox || !aiAnswerText || !aiMatchedLinks) return;
+    if (aiInput) aiInput.value = q;
+    aiPanel?.classList.remove('hidden');
+    aiRespBox.classList.remove('hidden');
+    aiAnswerText.innerHTML = '<p>🤖 <em>Sto leggendo le email e i calendari di Ale e Seby con Vertex AI / Gemini...</em></p>';
+    aiMatchedLinks.innerHTML = '';
+    if (aiSubmitBtn) aiSubmitBtn.disabled = true;
+
+    let answer = '';
+    let matchedIds: string[] = [];
+    try {
+      const res = await fetch('/api/ask-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        answer = data.answer || '';
+        matchedIds = data.matched_ids || [];
+      }
+    } catch {
+      // Client-side instant fallback if offline
+    }
+
+    if (!answer) {
+      const qLow = q.toLowerCase();
+      const matchedRows = rows.filter((r) => {
+        if (r.dataset.autoExpired === 'true' || r.dataset.archived === 'true') return false;
+        const txt = `${r.dataset.title} ${r.dataset.snippet} ${r.dataset.senderLabel} ${r.dataset.subjects}`.toLowerCase();
+        return qLow.split(/\s+/).filter(w => w.length > 3).some(w => txt.includes(w));
+      }).slice(0, 5);
+      matchedIds = matchedRows.map(r => r.dataset.id || '').filter(Boolean);
+      answer = matchedRows.length
+        ? matchedRows.map(r => `- **${r.dataset.ymd}** — [📧 ${r.dataset.title}](#item:${r.dataset.id}): ${r.dataset.snippet}`).join('\n')
+        : 'Nessuna email specifica trovata; prova a cliccare uno dei tasti della matrice 2x5 qui sotto!';
+    }
+
+    if (aiSubmitBtn) aiSubmitBtn.disabled = false;
+    aiAnswerText.innerHTML = renderClientMarkdown(answer);
+    lastAiMatchedIds = matchedIds;
+
+    // Render clickable email/task links that open the full reader modal!
+    aiMatchedLinks.innerHTML = '';
+    matchedIds.forEach((mid) => {
+      const row = rows.find(r => r.dataset.id === mid);
+      if (!row) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ai-email-link-card';
+      const kidTag = row.dataset.kid === 'Ale' ? '🐉 Ale' : (row.dataset.kid === 'Seb' ? '🚗 Seb' : '🐉🚗 A+S');
+      const icon = row.dataset.type === 'alert' ? '📧' : '📅';
+      btn.textContent = `${icon} ${kidTag} · ${row.dataset.ymd} — ${row.dataset.title}`;
+      btn.title = 'Clicca per aprire questa email/compito nell\'app';
+      btn.addEventListener('click', () => openDetailModal(row));
+      aiMatchedLinks.appendChild(btn);
+    });
+  }
+
+  aiForm?.addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    if (aiInput?.value) askPiotaAi(aiInput.value);
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.ai-chip-btn').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const q = chip.dataset.aiQ || '';
+      if (q) askPiotaAi(q);
+    });
+  });
+
+  aiFilterTableBtn?.addEventListener('click', () => {
+    if (lastAiMatchedIds.length > 0) {
+      aiFilterIds = new Set(lastAiMatchedIds);
+      refreshAllAndFilter();
+    }
   });
 
   // Open Detail Modal
@@ -1899,16 +4292,42 @@ const enrichedItems = cleanFeed
     refreshAllAndFilter();
 
     const titleEl = document.getElementById('dialog-title');
-    const senderBadge = document.getElementById('dialog-sender-badge');
+    const provBadge = document.getElementById('dialog-prov-badge');
+    const provBar = document.getElementById('dialog-provenance-bar');
+    const provKFrom = document.getElementById('dialog-prov-k-from');
+    const provVFrom = document.getElementById('dialog-prov-v-from');
+    const provKSubj = document.getElementById('dialog-prov-k-subj');
+    const provVSubj = document.getElementById('dialog-prov-v-subj');
+    const provVTs = document.getElementById('dialog-prov-v-ts');
+    const provVOrigin = document.getElementById('dialog-prov-v-origin');
     const datesBadge = document.getElementById('dialog-dates-badge');
     const bodyEl = document.getElementById('dialog-body-content');
     const noteInput = document.getElementById('dialog-note-input') as HTMLInputElement | null;
     const srcLink = document.getElementById('dialog-source-link') as HTMLAnchorElement | null;
+    const srcLinkText = document.getElementById('dialog-source-link-text');
 
+    const provKind = row.dataset.provKind || 'piota_legacy';
     if (titleEl) titleEl.textContent = row.dataset.title || '';
-    if (senderBadge) senderBadge.textContent = row.dataset.senderLabel || '';
     if (datesBadge) datesBadge.textContent = row.dataset.datesLabel || '';
     if (noteInput) noteInput.value = row.dataset.note || '';
+
+    if (provBadge) {
+      provBadge.textContent = row.dataset.provBadge || '';
+      provBadge.className = `dialog-prov-pill prov-${provKind}`;
+    }
+    if (provBar) {
+      provBar.className = `dialog-provenance-bar prov-bar-${provKind}`;
+    }
+    if (provKFrom) {
+      provKFrom.textContent = provKind === 'email' ? 'Mittente' : provKind === 'gcal' ? 'Calendario' : provKind === 'ai_auto' ? 'Generatore' : 'Mittente';
+    }
+    if (provKSubj) {
+      provKSubj.textContent = provKind === 'email' ? 'Subject' : provKind === 'gcal' ? 'Evento' : 'Titolo';
+    }
+    if (provVFrom) provVFrom.textContent = row.dataset.provFrom || '';
+    if (provVSubj) provVSubj.textContent = row.dataset.provSubject || row.dataset.title || '';
+    if (provVTs) provVTs.textContent = row.dataset.provTs || row.dataset.ymd || '—';
+    if (provVOrigin) provVOrigin.textContent = row.dataset.provOrigin || '';
 
     const tpl = row.querySelector<HTMLTemplateElement>('.item-body-template');
     if (bodyEl && tpl) {
@@ -1918,8 +4337,10 @@ const enrichedItems = cleanFeed
 
     if (srcLink) {
       const url = row.dataset.sourceUrl || '';
+      const label = row.dataset.sourceLabel || 'Apri sorgente';
       if (url) {
         srcLink.href = url;
+        if (srcLinkText) srcLinkText.textContent = label;
         srcLink.classList.remove('hidden');
       } else {
         srcLink.classList.add('hidden');
@@ -1947,13 +4368,19 @@ const enrichedItems = cleanFeed
 
     // 1. Toggle Read dot
     row.querySelector('[data-action="toggle-read"]')?.addEventListener('click', () => {
-      const curRead = activeUser === 'riccardo' ? row.dataset.readRiccardo === 'true' : row.dataset.readKate === 'true';
-      const patch = activeUser === 'riccardo' ? { read_by_riccardo: !curRead } : { read_by_kate: !curRead };
-      persistToBackend(id, patch);
+      const curRead = row.dataset.readRiccardo === 'true';
+      persistToBackend(id, { read_by_riccardo: !curRead });
       refreshAllAndFilter();
     });
 
-    // 2. Click Subject/Content to open reader modal
+    // Prevent clicking inline Google Photos chip from opening the row modal
+    row.querySelectorAll<HTMLElement>('.row-gphoto-pill').forEach((pill) => {
+      pill.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+      });
+    });
+
+    // 2. Click Subject/Content to open reader modal (/show/)
     const contentCell = row.querySelector<HTMLElement>('[data-action="open-detail"]');
     contentCell?.addEventListener('click', () => openDetailModal(row));
     contentCell?.addEventListener('keydown', (ev) => {
@@ -1963,27 +4390,62 @@ const enrichedItems = cleanFeed
       }
     });
 
-    // 3. Owner Radio Buttons (Ricc / Kate / —)
-    row.querySelectorAll<HTMLInputElement>('input[type="radio"][data-action="change-owner"]').forEach((radio) => {
-      radio.addEventListener('change', () => {
-        if (radio.checked) {
-          persistToBackend(id, { owner: radio.value });
-          refreshAllAndFilter();
-        }
+    // 3. ARCHIVIA button (marks as read + removes from inbox)
+    row.querySelector('[data-action="archive-read"]')?.addEventListener('click', () => {
+      const curArch = row.dataset.archived === 'true';
+      persistToBackend(id, {
+        archived: !curArch,
+        read_by_riccardo: true,
+        snoozed_until: '',
       });
+      refreshAllAndFilter();
     });
 
-    // 4. Open Quick Note Dialog
+    // 4. SNOOZE 7g button (hides for 7 days then returns automatically)
+    row.querySelector('[data-action="snooze-7d"]')?.addEventListener('click', () => {
+      const nowIso = new Date().toISOString();
+      const curSnooze = row.dataset.snoozedUntil || '';
+      const isSnoozed = Boolean(curSnooze && curSnooze > nowIso);
+      const nextSnooze = isSnoozed ? '' : new Date(Date.now() + 7 * 86400000).toISOString();
+      persistToBackend(id, {
+        snoozed_until: nextSnooze,
+        archived: false,
+      });
+      refreshAllAndFilter();
+    });
+
+    // 5. Open Quick Note Dialog
     row.querySelector('[data-action="open-note"]')?.addEventListener('click', () => {
       openQuickNoteModal(row);
     });
+  });
 
-    // 5. Toggle Archive
-    row.querySelector('[data-action="toggle-archive"]')?.addEventListener('click', () => {
-      const curArch = row.dataset.archived === 'true';
-      persistToBackend(id, { archived: !curArch });
-      refreshAllAndFilter();
+  // Big "HO LETTO — Archivia" button inside /show/ Detail Modal
+  document.getElementById('dialog-ho-letto-btn')?.addEventListener('click', () => {
+    if (!currentModalItemId) return;
+    const noteInput = document.getElementById('dialog-note-input') as HTMLInputElement | null;
+    const val = (noteInput?.value || '').trim();
+    const patch: ItemLocalState = {
+      read_by_riccardo: true,
+      archived: true,
+      snoozed_until: '',
+    };
+    if (val) patch.note = val;
+    persistToBackend(currentModalItemId, patch);
+    refreshAllAndFilter();
+    detailDialog?.close();
+  });
+
+  // "Snooze 7 giorni" button inside /show/ Detail Modal
+  document.getElementById('dialog-snooze-btn')?.addEventListener('click', () => {
+    if (!currentModalItemId) return;
+    const nextSnooze = new Date(Date.now() + 7 * 86400000).toISOString();
+    persistToBackend(currentModalItemId, {
+      snoozed_until: nextSnooze,
+      archived: false,
     });
+    refreshAllAndFilter();
+    detailDialog?.close();
   });
 
   // Save Note inside Detail Modal
@@ -2016,22 +4478,34 @@ const enrichedItems = cleanFeed
   document.getElementById('quick-note-cancel')?.addEventListener('click', () => quickNoteDialog?.close());
   document.getElementById('quick-note-close-btn')?.addEventListener('click', () => quickNoteDialog?.close());
 
-  // Initial render + URL query params (?tab=mine|notes|action, ?kid=Ale|Seb) + fetch server state
+  // Initial render + URL query params (?tab=..., ?kid=Ale|Seb, ?subj=..., ?photos=1, ?photo_act=...) + fetch server state
   const urlParams = new URLSearchParams(window.location.search);
   const qTab = urlParams.get('tab');
-  if (qTab && ['inbox', 'action', 'notes', 'mine', 'archived'].includes(qTab)) {
+  if (qTab && ['inbox', 'action', 'notes', 'snoozed', 'archived'].includes(qTab)) {
     activeTab = qTab;
     document.querySelectorAll('.inbox-tab').forEach((b) => {
       b.classList.toggle('active', (b as HTMLElement).dataset.tab === qTab);
     });
   }
-  const qKid = urlParams.get('kid');
-  if (qKid && ['all', 'Ale', 'Seb', 'A+S'].includes(qKid)) {
-    activeKid = qKid;
-    document.querySelectorAll('.kid-pill-btn').forEach((b) => {
-      b.classList.toggle('active', (b as HTMLElement).dataset.kid === qKid);
+  const qPhotoAct = urlParams.get('photo_act');
+  if (qPhotoAct) {
+    activePhotoAct = qPhotoAct;
+    document.querySelectorAll<HTMLButtonElement>('.photo-act-btn').forEach((b) => {
+      const isSel = b.dataset.photoAct === qPhotoAct;
+      b.classList.toggle('active', isSel);
+      b.setAttribute('aria-checked', isSel ? 'true' : 'false');
     });
   }
-  refreshAllAndFilter();
+  const qKid = urlParams.get('kid') || 'all';
+  const qSubj = urlParams.get('subj') || 'all';
+  if (qKid !== 'all' || qSubj !== 'all') {
+    setActiveMatrixFilter(qKid, qSubj);
+  } else {
+    refreshAllAndFilter();
+  }
+  if (urlParams.get('photos') === '1' || qSubj === 'photos') {
+    setPhotoMapVisible(true);
+  }
+  updateSyncAgeBadge();
   syncFromServer();
 </script>

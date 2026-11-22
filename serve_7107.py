@@ -6,6 +6,7 @@ Static & API HTTP server for er-piotta on http://localhost:7107
   and Notes changes in the Gmail Web UI persist both to `src/data/piota_feed.json`
   and to Google Cloud Firestore (`palladius-genai/piota_items`)!
 """
+import datetime
 import http.server
 import json
 import os
@@ -19,9 +20,201 @@ REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 DIST_DIR = os.path.join(REPO_DIR, "dist")
 FEED_JSON_PATH = os.path.join(REPO_DIR, "src", "data", "piota_feed.json")
 PVT_PYTHON = "/home/riccardo/git/er-piotta-pvt/.venv/bin/python3"
+PVT_CLI = "/home/riccardo/git/er-piotta-pvt/bin/piota-cli"
 PVT_ROOT = "/home/riccardo/git/er-piotta-pvt"
 
 _feed_lock = threading.Lock()
+
+
+def _get_last_synced_iso(items: list) -> str:
+    """Return ISO timestamp of latest sync (max of file mtime and item crawled_at)."""
+    candidates = []
+    if os.path.exists(FEED_JSON_PATH):
+        try:
+            mtime = os.path.getmtime(FEED_JSON_PATH)
+            candidates.append(datetime.datetime.fromtimestamp(mtime, tz=datetime.timezone.utc).isoformat())
+        except Exception:
+            pass
+    for it in items:
+        ca = str(it.get("crawled_at") or "")
+        if ca and len(ca) >= 10:
+            candidates.append(ca)
+    return max(candidates) if candidates else datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+
+def _answer_ai_question(query: str) -> dict:
+    """Answer user question using active emails & calendar events (Vertex AI / Gemini + deterministic fallback)."""
+    q = (query or "").strip()
+    if not q:
+        return {"ok": False, "error": "Domanda vuota"}
+
+    items = []
+    if os.path.exists(FEED_JSON_PATH):
+        with _feed_lock:
+            try:
+                with open(FEED_JSON_PATH, "r", encoding="utf-8") as f:
+                    items = json.load(f)
+            except Exception:
+                items = []
+
+    today_iso = datetime.date.today().isoformat()
+    q_low = q.lower()
+
+    # Filter active & relevant items
+    active_items = []
+    for it in items:
+        iid = str(it.get("id") or "")
+        itype = it.get("type", "alert")
+        if itype == "event" and iid.startswith("event_") and not iid.startswith("event_gcal_"):
+            continue
+        if itype == "alert" and not iid.startswith("alert_gmail_"):
+            continue
+        title = str(it.get("title") or "")
+        body = str(it.get("body") or "")
+        if title.startswith("Fwd: [") or "Briefing Settimana" in title or "Weekly Digest" in title:
+            continue
+        raw_ev = str(it.get("datestart") or it.get("created_at") or today_iso)[:10]
+        if itype == "event" and raw_ev < today_iso:
+            continue
+        active_items.append(it)
+
+    # Score items against query
+    want_seb = any(w in q_low for w in ["sebi", "seby", "seb", "p1", "primary 1", "faux", "rayment"])
+    want_ale = any(w in q_low for w in ["ale", "alessandro", "p3", "primary 3", "biehl", "penrose"])
+    want_fr = any(w in q_low for w in ["francese", "french", "français", "conde", "leçon"])
+    want_de = any(w in q_low for w in ["tedesco", "deutsch", "german", "übungsheft", "schreibheft"])
+    want_en = any(w in q_low for w in ["inglese", "english", "gps", "reading", "sats", "raz"])
+    want_math = any(w in q_low for w in ["mate", "mathe", "math", "lzk", "ziffern", "test", "verific"])
+    want_piano = any(w in q_low for w in ["piano", "pianoforte", "musica", "spartiti"])
+    want_photo = any(w in q_low for w in ["foto", "photo", "album", "diwali"])
+    want_hw = any(w in q_low for w in ["compit", "homework", "studiar", "fare", "quando", "zaino", "settimana", "luned", "marted", "gioved", "venerd"])
+
+    scored = []
+    for it in active_items:
+        iid = str(it.get("id") or "")
+        itype = it.get("type", "alert")
+        raw_ev = str(it.get("datestart") or it.get("created_at") or today_iso)[:10]
+        text = f"{it.get('title','')} {it.get('body','')} {it.get('sender','')}".lower()
+        t_low = str(it.get("title") or "").lower()
+        kids = [k.lower() for k in it.get("target_kids", [])]
+        is_ale = any(k in ("ale", "alessandro", "p3") for k in kids) or "p3" in text or "primary 3" in text
+        is_seb = any(k in ("seby", "sebastian", "seb", "p1") for k in kids) or "p1" in text or "primary 1" in text
+        score = 0
+        if want_seb and is_seb and not is_ale:
+            score += 6
+        elif want_seb and not is_seb:
+            score -= 8
+        if want_ale and is_ale and not is_seb:
+            score += 6
+        elif want_ale and not is_ale:
+            score -= 8
+
+        is_hw_or_test = any(w in t_low for w in ["hw:", "homework", "test", "lzk", "lernzielkontrolle", "sats", "pianoforte", "library", "bibliothek", "raz kids"])
+        if want_hw:
+            if itype == "event" and today_iso <= raw_ev <= (datetime.date.today() + datetime.timedelta(days=10)).isoformat() and is_hw_or_test:
+                score += 12
+            elif is_hw_or_test:
+                score += 6
+            elif any(w in t_low for w in ["kalender link", "timetable", "weekly photo", "lexus"]):
+                score -= 5
+
+        if want_fr and any(w in text for w in ["french", "français", "leçon", "aconde", "amaia conde", "mon emploi du temps"]):
+            score += 10
+        if want_de and any(w in text for w in ["deutsch", "übungsheft", "schreibheft", "schlittschuh"]):
+            score += 10
+        if want_en and any(w in text for w in ["english", "gps", "grammar", "reading", "sats", "raz"]):
+            score += 10
+        if want_math and any(w in text for w in ["mathe", "lzk", "ziffern", "lernzielkontrolle"]):
+            score += 10
+        if want_piano and any(w in text for w in ["piano", "pianoforte"]):
+            score += 10
+        if want_photo and any(w in text for w in ["photo", "album", "goo.gl"]):
+            score += 10
+
+        for token in [w for w in q_low.replace("?", " ").split() if len(w) > 3]:
+            if token in text:
+                score += 2
+        if score > 0:
+            scored.append((score, it))
+
+    scored.sort(key=lambda x: (-x[0], str(x[1].get("datestart") or x[1].get("created_at") or "")))
+    top_matches = [it for _, it in scored[:6]]
+    if not top_matches:
+        top_matches = active_items[:6]
+
+    matched_ids = [it["id"] for it in top_matches if it.get("id")]
+
+    # Try calling Gemini via google-genai in PVT_PYTHON
+    ai_answer = None
+    if os.path.exists(PVT_PYTHON):
+        ctx_docs = []
+        for it in top_matches:
+            ctx_docs.append({
+                "id": it.get("id"),
+                "title": it.get("title"),
+                "date": str(it.get("datestart") or it.get("created_at") or "")[:10],
+                "kids": it.get("target_kids"),
+                "body": str(it.get("body") or "")[:900],
+            })
+        py_script = (
+            "import sys, os, json\n"
+            "from google import genai\n"
+            "q = sys.argv[1]\n"
+            "docs = json.loads(sys.argv[2])\n"
+            "api_key = os.environ.get('GEMINI_API_KEY') or os.environ.get('GOOGLE_API_KEY')\n"
+            "client = genai.Client(api_key=api_key) if api_key else genai.Client(vertexai=True, project='palladius-genai', location='us-central1')\n"
+            "prompt = f'''Sei Piota AI, assistente scolastico per Riccardo e Kate (figli: Ale in Primary 3 e Seby in Primary 1 a Tandem IMS Seefeld). "
+            "Rispondi in italiano in modo super pratico, conciso e diretto (punti elenco Markdown) alla domanda: {q}\\n"
+            "Per OGNI compito o email che citi, inserisci un link Markdown locale nel formato esatto [📧 Titolo Breve](#item:ID_DOCUMENTO) usando il campo id di ciascun documento.\\n"
+            "Documenti:\\n{json.dumps(docs, ensure_ascii=False)}'''\n"
+            "resp = client.models.generate_content(model='gemini-2.5-flash', contents=prompt)\n"
+            "print(resp.text.strip())\n"
+        )
+        try:
+            proc = subprocess.run(
+                [PVT_PYTHON, "-c", py_script, q, json.dumps(ctx_docs, ensure_ascii=False)],
+                capture_output=True,
+                text=True,
+                timeout=12,
+                check=False,
+            )
+            if proc.returncode == 0 and proc.stdout.strip():
+                ai_answer = proc.stdout.strip()
+        except Exception:
+            pass
+
+    if not ai_answer:
+        # Crisp deterministic Italian synthesis with clickable local Magic Links [#item:<id>]
+        lines = []
+        for it in top_matches[:5]:
+            iid = it.get("id", "")
+            icon = "📧" if it.get("type") == "alert" else "📅"
+            t = str(it.get("title") or "").replace("[P1 Seby] ", "").replace("[P3 Ale] ", "")
+            d = str(it.get("datestart") or it.get("created_at") or "")[:10]
+            b = " ".join(
+                ln.strip() for ln in str(it.get("body") or "").splitlines()
+                if ln.strip()
+                and not ln.startswith("#")
+                and not ln.startswith("**")
+                and not ln.startswith("[[AUTO_TRANSLATED")
+                and not ln.startswith("---")
+                and not ln.startswith("*")
+                and not ln.startswith("Class calendar")
+            )
+            if len(b) > 200:
+                b = b[:197] + "..."
+            lines.append(f"- **{d}** — [{icon} {t}](#item:{iid}): {b}")
+        ai_answer = (
+            f"Ecco i compiti e le comunicazioni rilevanti per **\"{q}\"** (clicca direttamente sui link blu per aprire l'email o il compito nell'app):\n\n"
+            + "\n".join(lines)
+        )
+
+    return {
+        "ok": True,
+        "query": q,
+        "answer": ai_answer,
+        "matched_ids": matched_ids,
+    }
 
 
 def _update_feed_and_firestore(payload: dict) -> dict:
@@ -33,6 +226,7 @@ def _update_feed_and_firestore(payload: dict) -> dict:
     note = payload.get("note")
     status = payload.get("status")
     archived = payload.get("archived")
+    snoozed_until = payload.get("snoozed_until")
     read_r = payload.get("read_by_riccardo")
     read_k = payload.get("read_by_kate")
     user = str(payload.get("user") or "riccardo").lower()
@@ -56,6 +250,10 @@ def _update_feed_and_firestore(payload: dict) -> dict:
                             t["note"] = note
                         if archived is not None:
                             c["archived"] = bool(archived)
+                            if archived:
+                                c["snoozed_until"] = ""
+                        if snoozed_until is not None:
+                            c["snoozed_until"] = str(snoozed_until)
                         if read_r is not None:
                             c["read_by_riccardo"] = bool(read_r)
                         if read_k is not None:
@@ -105,6 +303,7 @@ class PiotaHandler(http.server.SimpleHTTPRequestHandler):
         clean_path = self.path.split("?", 1)[0]
         if clean_path in ("/api/tickets-state", "/er-piotta/api/tickets-state"):
             state_map = {}
+            items = []
             if os.path.exists(FEED_JSON_PATH):
                 try:
                     with _feed_lock:
@@ -119,20 +318,49 @@ class PiotaHandler(http.server.SimpleHTTPRequestHandler):
                             }
                 except Exception as e:
                     return self._send_json(500, {"ok": False, "error": str(e)})
-            return self._send_json(200, {"ok": True, "states": state_map})
+            return self._send_json(200, {
+                "ok": True,
+                "last_synced_at": _get_last_synced_iso(items),
+                "states": state_map,
+            })
         return super().do_GET()
 
     def do_POST(self):
         clean_path = self.path.split("?", 1)[0]
+        length = int(self.headers.get("Content-Length", "0"))
+        raw = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
+        try:
+            payload = json.loads(raw) if raw.strip() else {}
+        except Exception:
+            payload = {}
+
         if clean_path in ("/api/ticket", "/er-piotta/api/ticket"):
-            length = int(self.headers.get("Content-Length", "0"))
-            raw = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
-            try:
-                payload = json.loads(raw)
-            except Exception:
-                return self._send_json(400, {"ok": False, "error": "Invalid JSON"})
             res = _update_feed_and_firestore(payload)
             return self._send_json(200 if res.get("ok") else 400, res)
+
+        if clean_path in ("/api/ask-ai", "/er-piotta/api/ask-ai"):
+            res = _answer_ai_question(str(payload.get("query") or ""))
+            return self._send_json(200 if res.get("ok") else 400, res)
+
+        if clean_path in ("/api/sync", "/er-piotta/api/sync"):
+            try:
+                proc = subprocess.run(
+                    [PVT_CLI, "sync"],
+                    cwd=PVT_ROOT,
+                    capture_output=True,
+                    text=True,
+                    timeout=90,
+                    check=False,
+                )
+                subprocess.run(["npm", "run", "build"], cwd=REPO_DIR, timeout=45, check=False)
+                return self._send_json(200, {
+                    "ok": proc.returncode == 0,
+                    "last_synced_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                    "output": (proc.stdout or "")[-600:],
+                })
+            except Exception as e:
+                return self._send_json(500, {"ok": False, "error": str(e)})
+
         self.send_error(404, "Endpoint not found")
 
     def translate_path(self, path):
