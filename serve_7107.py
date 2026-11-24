@@ -22,6 +22,7 @@ FEED_JSON_PATH = os.path.join(REPO_DIR, "src", "data", "piota_feed.json")
 PVT_PYTHON = "/home/riccardo/git/er-piotta-pvt/.venv/bin/python3"
 PVT_CLI = "/home/riccardo/git/er-piotta-pvt/bin/piota-cli"
 PVT_ROOT = "/home/riccardo/git/er-piotta-pvt"
+PVT_FACE_CROPS_DIR = os.path.join(PVT_ROOT, "data", "face_crops")
 
 _feed_lock = threading.Lock()
 
@@ -167,7 +168,7 @@ def _answer_ai_question(query: str) -> dict:
             "Rispondi in italiano in modo super pratico, conciso e diretto (punti elenco Markdown) alla domanda: {q}\\n"
             "Per OGNI compito o email che citi, inserisci un link Markdown locale nel formato esatto [📧 Titolo Breve](#item:ID_DOCUMENTO) usando il campo id di ciascun documento.\\n"
             "Documenti:\\n{json.dumps(docs, ensure_ascii=False)}'''\n"
-            "resp = client.models.generate_content(model='gemini-2.5-flash', contents=prompt)\n"
+            "resp = client.models.generate_content(model='gemini-3.8-flash', contents=prompt)\n"
             "print(resp.text.strip())\n"
         )
         try:
@@ -301,6 +302,28 @@ class PiotaHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         clean_path = self.path.split("?", 1)[0]
+        if clean_path in ("/compagni", "/er-piotta/compagni"):
+            self.send_response(302)
+            self.send_header("Location", "/compagni/")
+            self.end_headers()
+            return
+        if clean_path.startswith("/compagni/") or clean_path.startswith("/er-piotta/compagni/"):
+            rel = clean_path.split("/compagni/", 1)[1]
+            if not rel or rel == "index.html":
+                rel = "compagni.html"
+            target = os.path.realpath(os.path.join(PVT_FACE_CROPS_DIR, rel))
+            if not target.startswith(os.path.realpath(PVT_FACE_CROPS_DIR)) or not os.path.isfile(target):
+                return self.send_error(404, "Compagni resource not found")
+            ctype = self.guess_type(target)
+            with open(target, "rb") as f:
+                data = f.read()
+            self.send_response(200)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(data)
+            return
         if clean_path in ("/api/tickets-state", "/er-piotta/api/tickets-state"):
             state_map = {}
             items = []
@@ -333,6 +356,30 @@ class PiotaHandler(http.server.SimpleHTTPRequestHandler):
             payload = json.loads(raw) if raw.strip() else {}
         except Exception:
             payload = {}
+
+        if clean_path in ("/api/save", "/compagni/api/save", "/api/seby/save", "/compagni/api/seby/save"):
+            is_seby = "seby" in clean_path
+            assigned_fn = "seby_assigned_faces.json" if is_seby else "assigned_faces.json"
+            faces_fn = "seby_faces_data.json" if is_seby else "faces_data.json"
+            try:
+                data = payload if isinstance(payload, list) else []
+                with open(os.path.join(PVT_FACE_CROPS_DIR, assigned_fn), "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False)
+                faces_path = os.path.join(PVT_FACE_CROPS_DIR, faces_fn)
+                if os.path.exists(faces_path):
+                    with open(faces_path, "r", encoding="utf-8") as f:
+                        faces = json.load(f)
+                    dmap = {item.get("face_id"): item for item in data}
+                    for face in faces:
+                        fid = face.get("face_id")
+                        if fid in dmap:
+                            face["assigned_name"] = dmap[fid].get("assigned_name", "")
+                            face["color"] = dmap[fid].get("color", "")
+                    with open(faces_path, "w", encoding="utf-8") as f:
+                        json.dump(faces, f, indent=2, ensure_ascii=False)
+                return self._send_json(200, {"status": "ok", "saved_count": len(data)})
+            except Exception as e:
+                return self._send_json(500, {"error": str(e)})
 
         if clean_path in ("/api/ticket", "/er-piotta/api/ticket"):
             res = _update_feed_and_firestore(payload)

@@ -175,7 +175,7 @@ const cleanFeed = feedData.filter((item: any) => {
   if (isBusOrKusnacht) return false;
   const titleL = (item.title || '').toLowerCase();
   if (titleL.includes('ptc') && titleL.includes('(') && titleL.includes(')')) {
-    if (!['carlesso', 'riccardo', 'kate', 'knight', 'palladius'].some(f => text.includes(f))) {
+    if (!['carlesso', 'riccardo', 'kate carlesso', 'knight', 'palladius'].some(f => text.includes(f))) {
       return false;
     }
   }
@@ -188,8 +188,13 @@ const cleanFeed = feedData.filter((item: any) => {
   ) {
     return false;
   }
-  // Skip legacy Piota SQLite events since Google Classroom iCal events (event_gcal_) are canonical
-  if (item.type === 'event' && String(item.id || '').startsWith('event_') && !String(item.id || '').startsWith('event_gcal_')) {
+  // Skip legacy Piota SQLite events since Google Classroom iCal events (event_gcal_) and Layer-2 AI events (event_ai_) are canonical
+  if (
+    item.type === 'event' &&
+    String(item.id || '').startsWith('event_') &&
+    !String(item.id || '').startsWith('event_gcal_') &&
+    !String(item.id || '').startsWith('event_ai_')
+  ) {
     return false;
   }
   return true;
@@ -816,6 +821,83 @@ const topOfMindKateMd = [
 
 const topOfMindRiccardoHtml = renderSimpleMarkdown(topOfMindRiccardoMd);
 const topOfMindKateHtml = renderSimpleMarkdown(topOfMindKateMd);
+
+// Build Dual-Calendar 5-Day Workweek Dataset (Layer 1: Canonical Tandem IMS + Layer 2: Piotta AI GCal)
+interface WeeklyCalEvent {
+  id: string;
+  date: string;
+  kid: string;
+  title: string;
+  layer: 'canonical' | 'ai';
+  kind: 'test' | 'hw' | 'ptc' | 'trip' | 'ai';
+  snippet: string;
+  openItemId: string;
+}
+
+const weeklyCalEvents: WeeklyCalEvent[] = [];
+const seenWcal = new Set<string>();
+for (const it of cleanFeed as any[]) {
+  const iid = String(it.id || '');
+  if (it.type !== 'event') continue;
+  if (iid.includes('piano') && !iid.startsWith('event_ai_')) continue;
+  const dIso = String(it.event_date || it.datestart || '').slice(0, 10);
+  if (!dIso || dIso.length !== 10) continue;
+  const isAi = iid.startsWith('event_ai_') || it.layer === 'ai' || it.source === 'piotta_ai_gcal';
+  let cTitle = String(it.title || 'Evento').trim();
+  for (const pref of ['[P1 Seby] ', '[P3 Ale] ', '[P1] ', '[P3] ', '🤖 [Ale] ', '🤖 [Seby] ', '🤖 [A+S] ']) {
+    if (cTitle.startsWith(pref)) cTitle = cTitle.slice(pref.length).trim();
+  }
+  const sMeta = inferSender(it);
+  const kid = it.kid_code || sMeta.kidCode || 'A+S';
+  const tl = cTitle.toLowerCase();
+  const kind: WeeklyCalEvent['kind'] = isAi
+    ? 'ai'
+    : (['test', 'lzk', 'lernzielkontrolle', 'sats', 'assessment'].some(k => tl.includes(k))
+      ? 'test'
+      : (tl.includes('ptc')
+        ? 'ptc'
+        : (['excursion', 'exkursion', 'kino', 'museum', 'christmas', 'breakfast', 'library', 'bibliothek'].some(k => tl.includes(k))
+          ? 'trip'
+          : 'hw')));
+  const dk = `${dIso}|${kid}|${cTitle.toLowerCase()}`;
+  if (seenWcal.has(dk)) continue;
+  seenWcal.add(dk);
+  weeklyCalEvents.push({
+    id: iid,
+    date: dIso,
+    kid,
+    title: cTitle,
+    layer: isAi ? 'ai' : 'canonical',
+    kind,
+    snippet: String(it.body || '').replace(/\s+/g, ' ').trim().slice(0, 180),
+    openItemId: String(it.source_email_id || iid),
+  });
+}
+
+// Add explicit dated Gmail email facts to Layer 1 of the 5-day calendar
+const gmailCalFacts: Array<{ hint: string; date: string; kid: string; title: string; kind: WeeklyCalEvent['kind']; snippet: string }> = [
+  { hint: '1a1e3c5e86', date: '2026-11-23', kid: 'Ale', title: 'Art History — Open Book Assessment', kind: 'test', snippet: 'Open Book Assessment di Art History con Mrs Christina Schmid' },
+  { hint: '1a1c907cd1', date: '2026-11-27', kid: 'A+S', title: 'Scadenza Iscrizione Silvesterlauf', kind: 'trip', snippet: 'Ultimo giorno iscrizione Zürcher Silvesterlauf (Audrey Riklin)' },
+  { hint: '1a1f2c5e61', date: '2026-12-17', kid: 'Ale', title: 'P3 Christmas Play & Breakfast (08:30)', kind: 'trip', snippet: 'Spettacolo di Natale e colazione Primary 3 con Miss Penrose' },
+];
+for (const gf of gmailCalFacts) {
+  const openId = findItemIdByHint(gf.hint);
+  const dk = `${gf.date}|${gf.kid}|${gf.title.toLowerCase()}`;
+  if (!seenWcal.has(dk)) {
+    seenWcal.add(dk);
+    weeklyCalEvents.push({
+      id: `gfact_${gf.hint}`,
+      date: gf.date,
+      kid: gf.kid,
+      title: gf.title,
+      layer: 'canonical',
+      kind: gf.kind,
+      snippet: gf.snippet,
+      openItemId: openId || '',
+    });
+  }
+}
+const weeklyCalEventsJson = JSON.stringify(weeklyCalEvents);
 ---
 
 <Layout title="Inbox & Action Tickets — Tandem IMS (Ale & Seby)" activeTab="tickets">
@@ -908,6 +990,55 @@ const topOfMindKateHtml = renderSimpleMarkdown(topOfMindKateMd);
       <!-- Compact Bullet List Panes with Local Magic Links (#item:<id>) -->
       <div class="tom-body" id="tom-pane-riccardo" set:html={topOfMindRiccardoHtml} />
       <div class="tom-body hidden" id="tom-pane-kate" set:html={topOfMindKateHtml} />
+    </section>
+
+    <!-- 📅 DUAL-CALENDAR 5-DAY WORKWEEK VIEW (Lun–Ven: Tandem IMS + Piotta AI GCal) -->
+    <section class="weekly-cal-card" id="weekly-cal-section" aria-label="Calendario">
+      <div class="wcal-header">
+        <div class="wcal-title-group">
+          <h2>Calendario</h2>
+          <span class="wcal-range-label" id="wcal-range-label">Lun – Ven</span>
+        </div>
+
+        <div class="wcal-controls">
+          <!-- Week Navigation Cursors -->
+          <div class="wcal-nav-group" role="group" aria-label="Naviga settimane">
+            <button type="button" id="wcal-prev" class="wcal-nav-btn" title="Settimana precedente">◀</button>
+            <button type="button" id="wcal-today" class="wcal-nav-btn wcal-nav-today" title="Torna ai prossimi 5 giorni lavorativi">Prossimi 5g</button>
+            <button type="button" id="wcal-next" class="wcal-nav-btn" title="Settimana successiva">▶</button>
+          </div>
+
+          <!-- Joined Segmented Kid Radio (Tutti | Ale | Seby) -->
+          <div class="wcal-kid-segmented" role="radiogroup" aria-label="Filtra calendario per figlio">
+            <button type="button" class="wcal-kid-btn active" data-wcal-kid="all" role="radio" aria-checked="true">Tutti</button>
+            <button type="button" class="wcal-kid-btn" data-wcal-kid="Ale" role="radio" aria-checked="false">Ale</button>
+            <button type="button" class="wcal-kid-btn" data-wcal-kid="Seb" role="radio" aria-checked="false">Seby</button>
+          </div>
+
+          <!-- Layer 2 Toggle: Piotta AI GCal -->
+          <label class="wcal-ai-toggle" title="Mostra o nascondi i promemoria generati da Piotta AI GCal (ripasso, zaino, pianoforte)">
+            <input type="checkbox" id="wcal-show-ai" checked />
+            <span>Piotta AI GCal</span>
+          </label>
+
+          <!-- Direct Monochrome Link to Google Calendar -->
+          <a
+            href="https://calendar.google.com/calendar/u/0/r/week"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="wcal-gcal-link"
+            title="Apri Tandem IMS & Piotta AI GCal su Google Calendar"
+          >
+            <svg class="wcal-svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+            </svg>
+            <span>GCal</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="wcal-grid" id="wcal-grid" role="grid" aria-label="Settimana lavorativa Lun-Ven"></div>
+      <script type="application/json" id="wcal-events-json" set:html={weeklyCalEventsJson} />
     </section>
 
     <!-- Collapsible Vertex AI / Gemini Q&A Drawer with Clickable Email Links -->
@@ -2897,6 +3028,298 @@ const topOfMindKateHtml = renderSimpleMarkdown(topOfMindKateMd);
     transition: all 0.1s ease;
   }
 
+  /* 📅 Dual-Calendar 5-Day Workweek Card (Lun–Ven) */
+  .weekly-cal-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 0.5rem 0.85rem 0.65rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .wcal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .wcal-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .wcal-title-group h2 {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+  }
+
+  .wcal-range-label {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #475569;
+    background: #f1f5f9;
+    padding: 0.12rem 0.48rem;
+    border-radius: 5px;
+  }
+
+  .wcal-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .wcal-nav-group {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+  }
+
+  .wcal-nav-btn {
+    border: none;
+    background: transparent;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    border-right: 1px solid #e2e8f0;
+  }
+
+  .wcal-nav-btn:last-child {
+    border-right: none;
+  }
+
+  .wcal-nav-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+
+  .wcal-kid-segmented {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #f8fafc;
+  }
+
+  .wcal-kid-btn {
+    border: none;
+    background: transparent;
+    padding: 0.2rem 0.52rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    border-right: 1px solid #e2e8f0;
+  }
+
+  .wcal-kid-btn:last-child {
+    border-right: none;
+  }
+
+  .wcal-kid-btn.active {
+    background: #0f172a;
+    color: #ffffff;
+  }
+
+  .wcal-ai-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.18rem 0.5rem;
+    border-radius: 6px;
+    border: 1px dashed #c4b5fd;
+    background: #faf8ff;
+    color: #5b21b6;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .wcal-ai-toggle input {
+    accent-color: #6d28d9;
+    margin: 0;
+  }
+
+  .wcal-gcal-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.24rem;
+    padding: 0.2rem 0.48rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .wcal-gcal-link:hover {
+    background: #f8fafc;
+    color: #0f172a;
+    border-color: #cbd5e1;
+  }
+
+  .wcal-svg-ico {
+    width: 13px;
+    height: 13px;
+  }
+
+  .wcal-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  :global(.wcal-day-col) {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.38rem 0.42rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.28rem;
+    min-height: 92px;
+  }
+
+  :global(.wcal-day-col.wcal-is-today) {
+    background: #f0f7ff;
+    border-color: #93c5fd;
+  }
+
+  :global(.wcal-day-hdr) {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #334155;
+    padding-bottom: 0.22rem;
+    border-bottom: 1px solid #e2e8f0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :global(.wcal-day-col.wcal-is-today .wcal-day-hdr) {
+    color: #1d4ed8;
+  }
+
+  :global(.wcal-day-empty) {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 0.2rem 0;
+  }
+
+  :global(.wcal-pill) {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.22rem 0.36rem;
+    border-radius: 5px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 0.71rem;
+    line-height: 1.25;
+    cursor: pointer;
+    transition: border-color 0.1s ease, background 0.1s ease;
+  }
+
+  :global(.wcal-pill:hover) {
+    border-color: #64748b;
+    background: #f1f5f9;
+  }
+
+  :global(.wcal-pill.kind-test) {
+    border-left: 3px solid #dc2626;
+    background: #fffafb;
+  }
+
+  :global(.wcal-pill.kind-hw) {
+    border-left: 3px solid #d97706;
+  }
+
+  :global(.wcal-pill.kind-ptc),
+  :global(.wcal-pill.kind-trip) {
+    border-left: 3px solid #059669;
+  }
+
+  :global(.wcal-pill.layer-ai) {
+    border: 1px dashed #c4b5fd;
+    border-left: 3px solid #7c3aed;
+    background: #faf8ff;
+    color: #4c1d95;
+  }
+
+  :global(.wcal-pill-kid) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 0 0.26rem;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  :global(.wcal-pill-kid.kid-Ale) {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  :global(.wcal-pill-kid.kid-Seb) {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  :global(.wcal-pill-kid.kid-AS) {
+    background: #f3e8ff;
+    color: #6b21a8;
+  }
+
+  :global(.wcal-pill-ai-tag) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.58rem;
+    font-weight: 700;
+    color: #6d28d9;
+    background: #ede9fe;
+    padding: 0 0.22rem;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  :global(.wcal-pill-title) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 600;
+  }
+
+  @media (max-width: 900px) {
+    .wcal-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
   /* Column Header Bar (Col 1 = FIGLIO, Col 2 = MITTENTE, Col 3 = DATA Lun 16 Nov) */
   .gmail-list-header {
     display: grid;
@@ -4478,8 +4901,158 @@ const topOfMindKateHtml = renderSimpleMarkdown(topOfMindKateMd);
   document.getElementById('quick-note-cancel')?.addEventListener('click', () => quickNoteDialog?.close());
   document.getElementById('quick-note-close-btn')?.addEventListener('click', () => quickNoteDialog?.close());
 
-  // Initial render + URL query params (?tab=..., ?kid=Ale|Seb, ?subj=..., ?photos=1, ?photo_act=...) + fetch server state
+  // Initial render + URL query params (?tab=..., ?kid=Ale|Seb, ?subj=..., ?photos=1, ?photo_act=..., ?week=0, ?show_ai=1) + fetch server state
   const urlParams = new URLSearchParams(window.location.search);
+
+  // --- 📅 5-Day Workweek Dual-Calendar Engine (Lun–Ven) ---
+  interface WCalEv {
+    id: string;
+    date: string;
+    kid: string;
+    title: string;
+    layer: 'canonical' | 'ai';
+    kind: string;
+    snippet: string;
+    openItemId: string;
+  }
+  let wcalEvents: WCalEv[] = [];
+  try {
+    const rawJson = document.getElementById('wcal-events-json')?.textContent || '[]';
+    wcalEvents = JSON.parse(rawJson);
+  } catch {
+    wcalEvents = [];
+  }
+
+  let wcalWeekOffset = parseInt(urlParams.get('week') || '0', 10) || 0;
+  let wcalKidFilter = urlParams.get('kid') || 'all';
+  let wcalShowAi = urlParams.get('show_ai') !== '0';
+
+  const wcalShowAiInput = document.getElementById('wcal-show-ai') as HTMLInputElement | null;
+  if (wcalShowAiInput) wcalShowAiInput.checked = wcalShowAi;
+
+  function getMondayOfTargetWeek(offsetWeeks: number): Date {
+    const now = new Date();
+    const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    const dow = d.getUTCDay(); // 0=Sun, 6=Sat
+    // On Sat/Sun, week=0 automatically targets the upcoming Monday!
+    const deltaToMon = dow === 0 ? 1 : (dow === 6 ? 2 : 1 - dow);
+    d.setUTCDate(d.getUTCDate() + deltaToMon + offsetWeeks * 7);
+    return d;
+  }
+
+  function renderWeeklyCalendar() {
+    const grid = document.getElementById('wcal-grid');
+    const rangeLbl = document.getElementById('wcal-range-label');
+    if (!grid) return;
+
+    const mon = getMondayOfTargetWeek(wcalWeekOffset);
+    const wdNames = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven'];
+    const monNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    const days: Date[] = [];
+    for (let i = 0; i < 5; i++) {
+      const dd = new Date(mon.getTime() + i * 86400000);
+      days.push(dd);
+    }
+
+    if (rangeLbl) {
+      const f = days[0];
+      const l = days[4];
+      rangeLbl.textContent = `Lun ${String(f.getUTCDate()).padStart(2, '0')} ${monNames[f.getUTCMonth()]} – Ven ${String(l.getUTCDate()).padStart(2, '0')} ${monNames[l.getUTCMonth()]} ${l.getUTCFullYear()}`;
+    }
+
+    grid.innerHTML = '';
+    days.forEach((dd, idx) => {
+      const iso = dd.toISOString().slice(0, 10);
+      const col = document.createElement('div');
+      col.className = `wcal-day-col ${iso === todayStr ? 'wcal-is-today' : ''}`;
+
+      const hdr = document.createElement('div');
+      hdr.className = 'wcal-day-hdr';
+      hdr.innerHTML = `<span>${wdNames[idx]} ${String(dd.getUTCDate()).padStart(2, '0')} ${monNames[dd.getUTCMonth()]}</span>` + (iso === todayStr ? '<span>Oggi</span>' : '');
+      col.appendChild(hdr);
+
+      const dayEvs = wcalEvents
+        .filter((ev) => {
+          if (ev.date !== iso) return false;
+          if (!wcalShowAi && ev.layer === 'ai') return false;
+          if (wcalKidFilter !== 'all' && ev.kid !== wcalKidFilter && ev.kid !== 'A+S') return false;
+          return true;
+        })
+        .sort((a, b) => {
+          const rank = (x: WCalEv) => x.kind === 'test' ? 0 : x.kind === 'ptc' ? 1 : x.kind === 'hw' ? 2 : x.kind === 'trip' ? 3 : 4;
+          return rank(a) - rank(b);
+        });
+
+      if (dayEvs.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'wcal-day-empty';
+        empty.textContent = 'Nessuna scadenza';
+        col.appendChild(empty);
+      } else {
+        dayEvs.forEach((ev) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `wcal-pill kind-${ev.kind} layer-${ev.layer}`;
+          btn.title = `${ev.layer === 'ai' ? '[Piotta AI GCal] ' : '[Tandem IMS] '}${ev.title}${ev.snippet ? ' — ' + ev.snippet : ''}`;
+          const kidCls = ev.kid === 'Ale' ? 'kid-Ale' : (ev.kid === 'Seb' ? 'kid-Seb' : 'kid-AS');
+          const kidTxt = ev.kid === 'Ale' ? 'Ale' : (ev.kid === 'Seb' ? 'Seb' : 'A+S');
+          btn.innerHTML = `<span class="wcal-pill-kid ${kidCls}">${kidTxt}</span>` +
+            (ev.layer === 'ai' ? `<span class="wcal-pill-ai-tag">AI</span>` : '') +
+            `<span class="wcal-pill-title"></span>`;
+          const tSpan = btn.querySelector('.wcal-pill-title');
+          if (tSpan) tSpan.textContent = ev.title;
+          btn.addEventListener('click', () => {
+            const targetId = ev.openItemId || ev.id;
+            const row = rows.find(r => r.dataset.id === targetId || (r.dataset.id || '').includes(targetId));
+            if (row) openDetailModal(row);
+          });
+          col.appendChild(btn);
+        });
+      }
+      grid.appendChild(col);
+    });
+
+    // Update URL query params for week & show_ai
+    try {
+      const u = new URL(window.location.href);
+      if (wcalWeekOffset === 0) u.searchParams.delete('week');
+      else u.searchParams.set('week', String(wcalWeekOffset));
+      if (wcalShowAi) u.searchParams.delete('show_ai');
+      else u.searchParams.set('show_ai', '0');
+      window.history.replaceState(null, '', u);
+    } catch {}
+  }
+
+  document.getElementById('wcal-prev')?.addEventListener('click', () => { wcalWeekOffset--; renderWeeklyCalendar(); });
+  document.getElementById('wcal-today')?.addEventListener('click', () => { wcalWeekOffset = 0; renderWeeklyCalendar(); });
+  document.getElementById('wcal-next')?.addEventListener('click', () => { wcalWeekOffset++; renderWeeklyCalendar(); });
+  wcalShowAiInput?.addEventListener('change', () => {
+    wcalShowAi = Boolean(wcalShowAiInput.checked);
+    renderWeeklyCalendar();
+  });
+  document.querySelectorAll<HTMLButtonElement>('.wcal-kid-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const k = btn.dataset.wcalKid || 'all';
+      wcalKidFilter = k;
+      document.querySelectorAll<HTMLButtonElement>('.wcal-kid-btn').forEach((b) => {
+        const isSel = b.dataset.wcalKid === k;
+        b.classList.toggle('active', isSel);
+        b.setAttribute('aria-checked', isSel ? 'true' : 'false');
+      });
+      renderWeeklyCalendar();
+    });
+  });
+
+  if (wcalKidFilter !== 'all') {
+    document.querySelectorAll<HTMLButtonElement>('.wcal-kid-btn').forEach((b) => {
+      const isSel = b.dataset.wcalKid === wcalKidFilter;
+      b.classList.toggle('active', isSel);
+      b.setAttribute('aria-checked', isSel ? 'true' : 'false');
+    });
+  }
+  renderWeeklyCalendar();
   const qTab = urlParams.get('tab');
   if (qTab && ['inbox', 'action', 'notes', 'snoozed', 'archived'].includes(qTab)) {
     activeTab = qTab;
