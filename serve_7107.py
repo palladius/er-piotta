@@ -324,6 +324,30 @@ class PiotaHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(data)
             return
+        if clean_path in ("/api/mobile-feed", "/er-piotta/api/mobile-feed"):
+            items = []
+            if os.path.exists(FEED_JSON_PATH):
+                try:
+                    with _feed_lock:
+                        with open(FEED_JSON_PATH, "r", encoding="utf-8") as f:
+                            items = json.load(f)
+                except Exception as e:
+                    return self._send_json(500, {"ok": False, "error": str(e)})
+            logs_path = os.path.join(PVT_ROOT, "data", "piotta_kid_logs.json")
+            kid_logs = []
+            if os.path.exists(logs_path):
+                try:
+                    with open(logs_path, "r", encoding="utf-8") as f:
+                        kid_logs = json.load(f)
+                except Exception:
+                    kid_logs = []
+            return self._send_json(200, {
+                "ok": True,
+                "last_synced_at": _get_last_synced_iso(items),
+                "items": items,
+                "kid_logs": kid_logs,
+            })
+
         if clean_path in ("/api/tickets-state", "/er-piotta/api/tickets-state"):
             state_map = {}
             items = []
@@ -385,9 +409,117 @@ class PiotaHandler(http.server.SimpleHTTPRequestHandler):
             res = _update_feed_and_firestore(payload)
             return self._send_json(200 if res.get("ok") else 400, res)
 
+        if clean_path in ("/api/piotta-log", "/er-piotta/api/piotta-log"):
+            kid = str(payload.get("kid") or "A+S").strip()
+            topic = str(payload.get("topic") or "Altro").strip()
+            subtopic = str(payload.get("subtopic") or "").strip()
+            text = str(payload.get("text") or "").strip()
+            score = str(payload.get("score") or "").strip()
+            author = str(payload.get("author") or "Riccardo").strip()
+            item_id = str(payload.get("item_id") or "").strip()
+            sync_septober = bool(payload.get("sync_septober", False))
+            if not text:
+                return self._send_json(400, {"ok": False, "error": "Missing text"})
+
+            now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            entry = {
+                "id": f"log_{int(datetime.datetime.now().timestamp() * 1000)}",
+                "timestamp": now_iso,
+                "kid": kid,
+                "topic": topic,
+                "subtopic": subtopic,
+                "text": text,
+                "score": score,
+                "item_id": item_id,
+                "author": author,
+                "septober_link": str(payload.get("septober_link") or "").strip(),
+            }
+            if sync_septober:
+                sept_cli = os.path.expanduser("~/git/septober/bin/septober-cli-26")
+                if os.path.exists(sept_cli):
+                    title_parts = [f"[Tandem][{kid}][{topic}]"]
+                    if subtopic:
+                        title_parts.append(f"[{subtopic}]")
+                    title_parts.append(text)
+                    if score:
+                        title_parts.append(f"({score})")
+                    try:
+                        proc = subprocess.run(
+                            ["python3", sept_cli, "--agent", "piotta", "add", "--title", " ".join(title_parts)],
+                            capture_output=True, text=True, timeout=15, check=False,
+                        )
+                        if proc.returncode == 0:
+                            entry["septober_link"] = "septober://synced"
+                    except Exception:
+                        pass
+
+            logs_path = os.path.join(PVT_ROOT, "data", "piotta_kid_logs.json")
+            os.makedirs(os.path.dirname(logs_path), exist_ok=True)
+            existing_logs = []
+            if os.path.exists(logs_path):
+                try:
+                    with open(logs_path, "r", encoding="utf-8") as f:
+                        existing_logs = json.load(f)
+                except Exception:
+                    existing_logs = []
+            existing_logs.insert(0, entry)
+            with open(logs_path, "w", encoding="utf-8") as f:
+                json.dump(existing_logs, f, indent=2, ensure_ascii=False)
+            return self._send_json(200, {"ok": True, "entry": entry})
+
         if clean_path in ("/api/ask-ai", "/er-piotta/api/ask-ai"):
             res = _answer_ai_question(str(payload.get("query") or ""))
             return self._send_json(200 if res.get("ok") else 400, res)
+
+        if clean_path in ("/api/tts", "/er-piotta/api/tts"):
+            text = str(payload.get("text") or "").strip()
+            voice = str(payload.get("voice") or "Puck").strip()
+            if not text:
+                return self._send_json(400, {"ok": False, "error": "Missing text"})
+            import hashlib, base64, wave, io, urllib.request, urllib.error
+            cache_key = hashlib.sha1(f"{voice}:{text}".encode("utf-8")).hexdigest()[:16]
+            wav_path = f"/tmp/er_piotta_tts_{cache_key}.wav"
+            if not os.path.exists(wav_path) or os.path.getsize(wav_path) < 100:
+                api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or ""
+                if not api_key:
+                    return self._send_json(502, {"ok": False, "error": "Missing GEMINI_API_KEY"})
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key={api_key}"
+                req_body = json.dumps({
+                    "contents": [{"parts": [{"text": f"Leggi in modo caldo, naturale e amichevole in italiano: {text}"}]}],
+                    "generationConfig": {
+                        "responseModalities": ["AUDIO"],
+                        "speechConfig": {
+                            "voiceConfig": {
+                                "prebuiltVoiceConfig": {"voiceName": voice}
+                            }
+                        }
+                    }
+                }).encode("utf-8")
+                req = urllib.request.Request(url, data=req_body, headers={"Content-Type": "application/json"}, method="POST")
+                try:
+                    with urllib.request.urlopen(req, timeout=25) as resp:
+                        data = json.loads(resp.read().decode("utf-8"))
+                    b64_audio = data["candidates"][0]["content"]["parts"][0]["inlineData"]["data"]
+                    raw_pcm = base64.b64decode(b64_audio)
+                    with wave.open(wav_path, "wb") as wf:
+                        wf.setnchannels(1)
+                        wf.setsampwidth(2)
+                        wf.setframerate(24000)
+                        wf.writeframes(raw_pcm)
+                except urllib.error.HTTPError as e:
+                    err_body = e.read().decode("utf-8", errors="ignore")[-300:]
+                    return self._send_json(502, {"ok": False, "error": f"HTTP {e.code}: {err_body}"})
+                except Exception as e:
+                    return self._send_json(502, {"ok": False, "error": str(e)})
+            with open(wav_path, "rb") as f:
+                wav_bytes = f.read()
+            self.send_response(200)
+            self.send_header("Content-Type", "audio/wav")
+            self.send_header("Content-Length", str(len(wav_bytes)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(wav_bytes)
+            return
 
         if clean_path in ("/api/sync", "/er-piotta/api/sync"):
             try:
