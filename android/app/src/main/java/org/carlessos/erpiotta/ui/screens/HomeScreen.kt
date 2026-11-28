@@ -75,7 +75,7 @@ private fun isHomework(title: String): Boolean =
 private fun isZaino(title: String): Boolean =
     ZAINO_KEYWORDS.any { title.lowercase().contains(it) }
 
-private fun formatCompactDayNoMonth(isoDate: String): String {
+private fun formatCompactDayNoSpace(isoDate: String): String {
     if (isoDate.length < 10) return isoDate
     return try {
         val d = java.time.LocalDate.parse(isoDate.take(10))
@@ -84,60 +84,57 @@ private fun formatCompactDayNoMonth(isoDate: String): String {
         val mons = listOf("Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic")
         val wd = wds[d.dayOfWeek.value - 1]
         if (d.monthValue == today.monthValue && d.year == today.year) {
-            "$wd ${d.dayOfMonth}"
+            "$wd${d.dayOfMonth}"
         } else {
-            "$wd ${d.dayOfMonth} ${mons[d.monthValue - 1]}"
+            "$wd${d.dayOfMonth}${mons[d.monthValue - 1]}"
         }
     } catch (_: Exception) {
         isoDate.take(10)
     }
 }
 
+private fun semanticIconFor(title: String): String = when {
+    isUrgentTest(title) -> "📝"
+    isZaino(title) -> "🎒"
+    isHomework(title) -> "📚"
+    else -> "📅"
+}
+
 private data class SynopsisData(
-    val lead: AnnotatedString,
-    val rest: AnnotatedString?,
-    val full: AnnotatedString,
+    val items: List<PiotaItem>,
+    val emptyMsg: String,
     val plain: String,
 )
 
-private fun AnnotatedString.Builder.appendStyledToken(it: PiotaItem) {
-    val token = "📅 ${formatCompactDayNoMonth(it.primaryDate)} ${it.cleanTitle}"
+private fun buildStyledEventLine(it: PiotaItem): AnnotatedString = buildAnnotatedString {
+    val icon = semanticIconFor(it.cleanTitle)
+    val dateCompact = formatCompactDayNoSpace(it.primaryDate)
+    // Smaller, muted boring gray date prefix so the event title pops
+    withStyle(SpanStyle(color = Color(0xFF64748B), fontSize = 11.sp, fontWeight = FontWeight.Medium)) {
+        append("$icon$dateCompact ")
+    }
     when {
         isUrgentTest(it.cleanTitle) -> withStyle(SpanStyle(color = PiotaColors.TestAccent, fontWeight = FontWeight.Bold)) {
-            append(token)
+            append(it.cleanTitle)
         }
         isHomework(it.cleanTitle) -> withStyle(SpanStyle(color = PiotaColors.HwAccent, fontWeight = FontWeight.SemiBold)) {
-            append(token)
+            append(it.cleanTitle)
         }
         isZaino(it.cleanTitle) -> withStyle(SpanStyle(color = PiotaColors.EventAccent, fontWeight = FontWeight.SemiBold)) {
-            append(token)
+            append(it.cleanTitle)
         }
-        else -> append(token)
+        else -> withStyle(SpanStyle(color = PiotaColors.Ink, fontWeight = FontWeight.Medium)) {
+            append(it.cleanTitle)
+        }
     }
 }
 
-private fun buildStyledTokens(items: List<PiotaItem>, emptyMsg: String): SynopsisData {
-    if (items.isEmpty()) {
-        val empty = AnnotatedString(emptyMsg)
-        return SynopsisData(lead = empty, rest = null, full = empty, plain = emptyMsg)
-    }
+private fun buildSynopsisData(items: List<PiotaItem>, emptyMsg: String): SynopsisData {
     val top = items.take(4)
-    val lead = buildAnnotatedString { appendStyledToken(top.first()) }
-    val restList = top.drop(1)
-    val rest = if (restList.isEmpty()) null else buildAnnotatedString {
-        restList.forEachIndexed { idx, it ->
-            if (idx > 0) append("  ")
-            appendStyledToken(it)
-        }
+    val plain = if (top.isEmpty()) emptyMsg else top.joinToString(". ") {
+        "${formatCompactDayNoSpace(it.primaryDate)}: ${it.cleanTitle}"
     }
-    val full = buildAnnotatedString {
-        top.forEachIndexed { idx, it ->
-            if (idx > 0) append("  ")
-            appendStyledToken(it)
-        }
-    }
-    val plain = top.joinToString(". ") { "${formatCompactDayNoMonth(it.primaryDate)}: ${it.cleanTitle}" }
-    return SynopsisData(lead = lead, rest = rest, full = full, plain = plain)
+    return SynopsisData(items = top, emptyMsg = emptyMsg, plain = plain)
 }
 
 private fun buildAleSynopsis(items: List<PiotaItem>): SynopsisData {
@@ -147,7 +144,7 @@ private fun buildAleSynopsis(items: List<PiotaItem>): SynopsisData {
         !it.isArchived && it.kidCode == "Ale" && it.isActionRequired &&
             (it.type == "alert" || (it.primaryDate >= today && it.primaryDate <= in7d))
     }
-    return buildStyledTokens(upcoming, "Tutto tranquillo nei prossimi 7 giorni.")
+    return buildSynopsisData(upcoming, "Tutto tranquillo nei prossimi 7 giorni.")
 }
 
 private fun buildSebySynopsis(items: List<PiotaItem>): SynopsisData {
@@ -157,7 +154,7 @@ private fun buildSebySynopsis(items: List<PiotaItem>): SynopsisData {
         !it.isArchived && it.kidCode == "Seb" && it.isActionRequired &&
             (it.type == "alert" || (it.primaryDate >= today && it.primaryDate <= in7d))
     }
-    return buildStyledTokens(upcoming, "Tutto tranquillo nei prossimi 7 giorni.")
+    return buildSynopsisData(upcoming, "Tutto tranquillo nei prossimi 7 giorni.")
 }
 
 private fun buildRiccardoSynopsis(items: List<PiotaItem>): SynopsisData {
@@ -174,7 +171,7 @@ private fun buildRiccardoSynopsis(items: List<PiotaItem>): SynopsisData {
                     }
                 )
     }
-    return buildStyledTokens(adminAndEvents, "Nessuna quota, PTC o evento genitori aperto.")
+    return buildSynopsisData(adminAndEvents, "Nessuna quota, PTC o evento genitori aperto.")
 }
 
 private suspend fun fetchGeminiTtsWav(cacheDir: File, cardId: String, text: String, voice: String): File? =
@@ -206,6 +203,7 @@ fun HomeScreen(
     onOpenAle: () -> Unit,
     onOpenSeby: () -> Unit,
     onOpenRiccardo: () -> Unit,
+    onOpenItem: (PiotaItem) -> Unit = {},
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -303,6 +301,7 @@ fun HomeScreen(
                 toggleSpeak("ale", "Ciao! Ecco cosa bolle in pentola per Alessandro in Primary 3: ${aleSyn.plain}", "Puck")
             },
             onClick = onOpenAle,
+            onOpenItem = onOpenItem,
             modifier = Modifier.weight(1f),
         )
 
@@ -322,6 +321,7 @@ fun HomeScreen(
                 toggleSpeak("seby", "Ciao! Ecco cosa c'è per Sebastian in Primary 1: ${sebSyn.plain}", "Kore")
             },
             onClick = onOpenSeby,
+            onOpenItem = onOpenItem,
             modifier = Modifier.weight(1f),
         )
 
@@ -341,6 +341,7 @@ fun HomeScreen(
                 toggleSpeak("riccardo", "Ecco tutto il resto per Riccardo e famiglia: ${ricSyn.plain}", "Fenrir")
             },
             onClick = onOpenRiccardo,
+            onOpenItem = onOpenItem,
             reserveFabSpace = true,
             modifier = Modifier.weight(1f),
         )
@@ -361,9 +362,13 @@ private fun SynopsisHeroCard(
     isLoading: Boolean,
     onToggleAudio: () -> Unit,
     onClick: () -> Unit,
+    onOpenItem: (PiotaItem) -> Unit,
     reserveFabSpace: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
+    val leadItem = if (subtitle == null) synopsis.items.firstOrNull() else null
+    val bottomItems = if (subtitle == null) synopsis.items.drop(1).take(3) else synopsis.items.take(3)
+
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -395,7 +400,7 @@ private fun SynopsisHeroCard(
                     modifier = Modifier
                         .weight(1f)
                         .padding(top = 8.dp, end = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(3.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -446,37 +451,68 @@ private fun SynopsisHeroCard(
                         }
                     }
 
-                    // For Ale & Seby (no static subtitle), start writing the lead event RIGHT HERE beside the portrait!
+                    // For Ale & Seby (no static subtitle), clickable lead event starts RIGHT HERE beside the portrait!
                     if (subtitle == null) {
-                        Text(
-                            text = synopsis.lead,
-                            fontSize = 13.sp,
-                            lineHeight = 17.5.sp,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            color = PiotaColors.Ink,
-                        )
+                        if (leadItem != null) {
+                            Text(
+                                text = buildStyledEventLine(leadItem),
+                                fontSize = 13.sp,
+                                lineHeight = 17.sp,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .clickable { onOpenItem(leadItem) }
+                                    .padding(vertical = 2.dp),
+                            )
+                        } else {
+                            Text(
+                                text = synopsis.emptyMsg,
+                                fontSize = 12.5.sp,
+                                color = PiotaColors.Muted,
+                                maxLines = 2,
+                            )
+                        }
                     }
                 }
             }
 
-            // Remaining events flow cleanly across full card width with zero clipping
-            val bottomText = if (subtitle == null) synopsis.rest else synopsis.full
-            if (bottomText != null) {
-                Text(
-                    text = bottomText,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                    maxLines = if (subtitle == null) 3 else 4,
-                    overflow = TextOverflow.Ellipsis,
-                    color = PiotaColors.Ink,
-                    modifier = Modifier.padding(
+            // Individually clickable remaining events flowing cleanly across card width
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
                         start = 12.dp,
                         end = if (reserveFabSpace) 68.dp else 12.dp,
-                        top = 6.dp,
-                        bottom = 10.dp,
+                        top = 5.dp,
+                        bottom = 8.dp,
                     ),
-                )
+                verticalArrangement = Arrangement.spacedBy(3.dp),
+            ) {
+                if (bottomItems.isEmpty() && subtitle != null) {
+                    Text(
+                        text = synopsis.emptyMsg,
+                        fontSize = 12.5.sp,
+                        color = PiotaColors.Muted,
+                        maxLines = 2,
+                    )
+                } else {
+                    bottomItems.forEach { ev ->
+                        Text(
+                            text = buildStyledEventLine(ev),
+                            fontSize = 13.sp,
+                            lineHeight = 17.sp,
+                            maxLines = if (bottomItems.size <= 2) 2 else 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(6.dp))
+                                .clickable { onOpenItem(ev) }
+                                .padding(vertical = 2.dp),
+                        )
+                    }
+                }
             }
         }
     }

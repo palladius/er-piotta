@@ -322,6 +322,9 @@ fun ErPiottaApp(repo: PiotaRepository) {
                         kidFilter = KidFilter.ALL
                         navState = navState.selectTab(PiotaTab.NEWS)
                     },
+                    onOpenItem = { item ->
+                        navState = navState.openDetail(item)
+                    },
                 )
 
                 PiotaTab.TODO -> TodoScreen(
