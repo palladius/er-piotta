@@ -106,11 +106,24 @@ private data class SynopsisData(
     val plain: String,
 )
 
+private fun isWeekendDate(isoDate: String): Boolean {
+    if (isoDate.length < 10) return false
+    return try {
+        val dow = java.time.LocalDate.parse(isoDate.take(10)).dayOfWeek.value
+        dow == 6 || dow == 7 // Sab or Dom
+    } catch (_: Exception) {
+        false
+    }
+}
+
 private fun buildStyledEventLine(it: PiotaItem): AnnotatedString = buildAnnotatedString {
     val icon = semanticIconFor(it.cleanTitle)
     val dateCompact = formatCompactDayNoSpace(it.primaryDate)
-    // Smaller, muted boring gray date prefix so the event title pops
-    withStyle(SpanStyle(color = Color(0xFF64748B), fontSize = 11.sp, fontWeight = FontWeight.Medium)) {
+    val weekend = isWeekendDate(it.primaryDate)
+    // Distinct deep violet for Weekend (Sab/Dom), boring muted slate gray for Mon-Fri
+    val dateColor = if (weekend) Color(0xFF7C3AED) else Color(0xFF64748B)
+    val dateWeight = if (weekend) FontWeight.Bold else FontWeight.Medium
+    withStyle(SpanStyle(color = dateColor, fontSize = 11.sp, fontWeight = dateWeight)) {
         append("$icon$dateCompact ")
     }
     when {
